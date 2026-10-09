@@ -28,6 +28,15 @@ WB_OUT = os.path.join(HERE, "B2-E4-workbook.md")
 SEED = 20261009
 QUOTA = {"zero_cover": 25, "anchor": 25, "confluence": 20, "random": 30}
 MAX_SRC_LINES = 60
+# 抽样框限定：site-packages（pip 及其 vendored 第三方）**排除**。
+# 依据 EXP/B2-E4-framecheck.json：全框 18198 单元中 site-packages 占 27.45%
+# （pip/_vendor 3419 + pip/_internal 1573），其缺陷率特征与标准库不同源；
+# 若不排除却宣称"靶仓=标准库"，读数即标签失真。
+EXCLUDE_SITE_PACKAGES = True
+
+
+def is_site_packages(u):
+    return u["file"].replace("\\", "/").startswith("site-packages/")
 
 
 def callees_of(src):
@@ -71,14 +80,18 @@ def main():
         for i in members:
             covered.add(i)
             pool_of.setdefault(i, []).append(name)
-    zero = [i for i in range(n) if i not in covered]
+    frame = [i for i in range(n)
+             if not (EXCLUDE_SITE_PACKAGES and is_site_packages(sp.units[i]))]
+    print("抽样框: %d / %d 单元（site-packages 已排除：%d）"
+          % (len(frame), n, n - len(frame)))
+    zero = [i for i in frame if i not in covered]
 
     anchor_field = sp.fields.get("anchor", {})
-    anchor_hit = [i for i in range(n) if anchor_field.get(i)]
+    anchor_hit = [i for i in frame if anchor_field.get(i)]
     curv = sp.fields.get("forman", {})
     cv = sorted(v for v in curv.values() if v is not None)
     thr = cv[len(cv) // 3] if cv else None
-    confluence = [i for i in range(n)
+    confluence = [i for i in frame
                   if curv.get(i) is not None and thr is not None and curv[i] <= thr]
 
     rng = random.Random(SEED)
@@ -89,7 +102,7 @@ def main():
         picked.setdefault(i, "anchor")
     for i in rng.sample(confluence, min(QUOTA["confluence"], len(confluence))):
         picked.setdefault(i, "confluence")
-    rest = [i for i in range(n) if i not in picked]
+    rest = [i for i in frame if i not in picked]
     for i in rng.sample(rest, min(100 - len(picked), len(rest))):
         picked.setdefault(i, "random")
 
@@ -153,11 +166,11 @@ def main():
         w.writerows(csv_rows)
     head = [
         "# E-B2-4 参照标准定向工作簿（100 单元）\n",
-        "> 靶仓：Python 标准库（N=%d 单元）｜池 %d 个｜零覆盖 %.1f%%"
-        % (n, len(sp.rows), 100.0 * len(zero) / max(n, 1)),
+        "> 靶仓：Python 3.13.12 **标准库**（已排除 site-packages，见 B2-E4-framecheck.json）\n> 抽样框 %d 单元（全框 %d，含 site-packages 的混合版见 B2-E4-workbook-mixed.md）｜池 %d 个｜零覆盖 %.1f%%"
+        % (len(frame), n, len(sp.rows), 100.0 * len(zero) / max(len(frame), 1)),
         "> **这份工作簿不是让你标真值**——人不是真值（Devign 4 专家 × 600 人时 × 两轮交叉，",
         "> 复测正确率仅 24%）。它的作用是 **定向**（打破 Hui–Walter 镜像等价解）、",
-        "> **一致性量化**（双盲 → Cohen's κ，κ<0.60 则该轴标称作废）、**误差棒**。",
+        "> **一致性量化**（双盲 → Krippendorff's α，作废规则=双阶段，见 PREREG/B2.md v1.5）、**误差棒**（Wilson + 分层 bootstrap）。",
         "> 判不出来填 `None`——None 比猜一个 0/1 有价值得多。",
         "> 分层分布：%s" % dict(Counter(r["stratum"] for r in csv_rows)),
         "",
@@ -167,8 +180,9 @@ def main():
     with open(WB_OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(head) + "\n".join(wb))
 
-    print("单元 N=%d  池=%d  零覆盖 %.1f%%" % (n, len(sp.rows),
-                                            100.0 * len(zero) / max(n, 1)))
+    print("单元 N=%d  池=%d  零覆盖 %.1f%%（抽样框内口径，分母=%d）"
+          % (n, len(sp.rows),
+             100.0 * len(zero) / max(len(frame), 1), len(frame)))
     print("分层: %s" % dict(Counter(r["stratum"] for r in csv_rows)))
     print("CSV    -> %s (%d 行)" % (CSV_OUT, len(csv_rows)))
     print("工作簿 -> %s" % WB_OUT)

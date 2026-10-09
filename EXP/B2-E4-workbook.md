@@ -1,43 +1,69 @@
 # E-B2-4 参照标准定向工作簿（100 单元）
 
-> 靶仓：Python 标准库（N=18198 单元）｜池 4 个｜零覆盖 97.8%
+> 靶仓：Python 3.13.12 **标准库**（已排除 site-packages，见 B2-E4-framecheck.json）
+> 抽样框 13203 单元（全框 18198，含 site-packages 的混合版见 B2-E4-workbook-mixed.md）｜池 4 个｜零覆盖 97.6%
 > **这份工作簿不是让你标真值**——人不是真值（Devign 4 专家 × 600 人时 × 两轮交叉，
 > 复测正确率仅 24%）。它的作用是 **定向**（打破 Hui–Walter 镜像等价解）、
-> **一致性量化**（双盲 → Cohen's κ，κ<0.60 则该轴标称作废）、**误差棒**。
+> **一致性量化**（双盲 → Krippendorff's α，作废规则=双阶段，见 PREREG/B2.md v1.5）、**误差棒**（Wilson + 分层 bootstrap）。
 > 判不出来填 `None`——None 比猜一个 0/1 有价值得多。
-> 分层分布：{'random': 30, 'confluence': 20, 'zero_cover': 25, 'anchor': 25}
+> 分层分布：{'random': 30, 'confluence': 20, 'anchor': 25, 'zero_cover': 25}
 
 ---
-## #1 · random · `_dims_setter`
+## #1 · random · `_ActionsContainer._add_action`
 
-- **位置**：`ast.py:681`（2 行）
+- **位置**：`argparse.py:1529`（20 行）
 - **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`_ActionsContainer.add_argument`, `_ActionsContainer._add_container_actions`, `_ArgumentGroup._add_action`, `_MutuallyExclusiveGroup._add_action`, `ArgumentParser.add_subparsers`, `ArgumentParser._add_action`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def _dims_setter(self, value):
-        self.elts = value
+    def _add_action(self, action):
+        # resolve any conflicts
+        self._check_conflict(action)
+
+        # add to actions list
+        self._actions.append(action)
+        action.container = self
+
+        # index the action by any option strings it has
+        for option_string in action.option_strings:
+            self._option_string_actions[option_string] = action
+
+        # set the flag if any option strings look like negative numbers
+        for option_string in action.option_strings:
+            if self._negative_number_matcher.match(option_string):
+                if not self._has_negative_number_optionals:
+                    self._has_negative_number_optionals.append(True)
+
+        # return the created action
+        return action
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #2 · random · `StreamReaderWriter.readline`
+## #2 · random · `_Unparser.escape_char`
 
-- **位置**：`codecs.py:712`（3 行）
+- **位置**：`ast.py:1209`（9 行）
 - **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`StreamReader.readline`, `StreamReader.__next__`, `StreamRecoder.readline`（跨文件调用者未扫描）
+- **同文件调用者**：`_Unparser._str_literal_helper`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def readline(self, size=None, keepends=True):
-
-        return self.reader.readline(size, keepends)
+        def escape_char(c):
+            # \n and \t are non-printable, but we only escape them if
+            # escape_special_whitespace is True
+            if not escape_special_whitespace and c in "\n\t":
+                return c
+            # Always escape backslashes and other non-printable characters
+            if c == "\\" or not c.isprintable():
+                return c.encode("unicode_escape").decode("ascii")
+            return c
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
@@ -87,7 +113,86 @@ def _maybe_compile(compiler, source, filename, symbol):
 
 ---
 
-## #4 · confluence · `_update_func_cell_for__class__`
+## #4 · random · `compile_file`
+
+- **位置**：`compileall.py:132`（148 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=-386 ｜ 池：p_big1
+- **本函数调用**：`Path`, `ValueError`, `basename`, `cache_from_source`, `cmp`, `compile`, `decode`, `encode`, `enumerate`, `format`, `fspath`, `getdefaultencoding`
+- **同文件调用者**：`compile_dir`, `main`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+def compile_file(fullname, ddir=None, force=False, rx=None, quiet=0,
+                 legacy=False, optimize=-1,
+                 invalidation_mode=None, *, stripdir=None, prependdir=None,
+                 limit_sl_dest=None, hardlink_dupes=False):
+    """Byte-compile one file.
+
+    Arguments (only fullname is required):
+
+    fullname:  the file to byte-compile
+    ddir:      if given, the directory name compiled in to the
+               byte-code file.
+    force:     if True, force compilation, even if timestamps are up-to-date
+    quiet:     full output with False or 0, errors only with 1,
+               no output with 2
+    legacy:    if True, produce legacy pyc paths instead of PEP 3147 paths
+    optimize:  int or list of optimization levels or -1 for level of
+               the interpreter. Multiple levels leads to multiple compiled
+               files each with one optimization level.
+    invalidation_mode: how the up-to-dateness of the pyc will be checked
+    stripdir:  part of path to left-strip from source file path
+    prependdir: path to prepend to beginning of original file path, applied
+               after stripdir
+    limit_sl_dest: ignore symlinks if they are pointing outside of
+                   the defined path.
+    hardlink_dupes: hardlink duplicated pyc files
+    """
+
+    if ddir is not None and (stripdir is not None or prependdir is not None):
+        raise ValueError(("Destination dir (ddir) cannot be used "
+                          "in combination with stripdir or prependdir"))
+
+    success = True
+    fullname = os.fspath(fullname)
+    stripdir = os.fspath(stripdir) if stripdir is not None else None
+    name = os.path.basename(fullname)
+
+    dfile = None
+
+    if ddir is not None:
+        dfile = os.path.join(ddir, name)
+
+    if stripdir is not None:
+        fullname_parts = fullname.split(os.path.sep)
+        stripdir_parts = stripdir.split(os.path.sep)
+
+        if stripdir_parts != fullname_parts[:len(stripdir_parts)]:
+            if quiet < 2:
+                print("The stripdir path {!r} is not a valid prefix for "
+                      "source path {!r}; ignoring".format(stripdir, fullname))
+        else:
+            dfile = os.path.join(*fullname_parts[len(stripdir_parts):])
+
+    if prependdir is not None:
+        if dfile is None:
+            dfile = os.path.join(prependdir, fullname)
+        else:
+            dfile = os.path.join(prependdir, dfile)
+
+    if isinstance(optimize, int):
+        optimize = [optimize]
+```
+
+> 已截断（共 148 行），完整见 `compileall.py:132`
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #5 · confluence · `_update_func_cell_for__class__`
 
 - **位置**：`dataclasses.py:1222`（27 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-183
@@ -131,86 +236,262 @@ def _update_func_cell_for__class__(f, oldcls, newcls):
 
 ---
 
-## #5 · zero_cover · `_is_internal_class`
+## #6 · anchor · `Enum.__new__`
 
-- **位置**：`enum.py:69`（8 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=-94 ｜ 池：（不在任何池内）
-- **本函数调用**：`endswith`, `getattr`, `isinstance`
-- **同文件调用者**：`EnumDict.__setitem__`（跨文件调用者未扫描）
+- **位置**：`enum.py:1158`（60 行）
+- **层**：anchor ｜ 锚点命中 import:import_pickle
+- **结构量**：Forman=None ｜ 池：p_anchor_breadth
+- **同文件调用者**：`EnumType.__new__`, `EnumType.__call__`, `EnumType._create_`, `StrEnum.__new__`, `Flag._missing_`（跨文件调用者未扫描）
+- **锚点命中行**：
+  - L4 `# __call__ (i.e. Color(3) ), and by pickle` → import:import_pickle
 
 **源码**：
 
 ```python
-def _is_internal_class(cls_name, obj):
-    # do not use `re` as `re` imports `enum`
-    if not isinstance(obj, type):
-        return False
-    qualname = getattr(obj, '__qualname__', '')
-    s_pattern = cls_name + '.' + getattr(obj, '__name__', '')
-    e_pattern = '.' + s_pattern
-    return qualname == s_pattern or qualname.endswith(e_pattern)
+    def __new__(cls, value):
+        # all enum instances are actually created during class construction
+        # without calling this method; this method is called by the metaclass'
+        # __call__ (i.e. Color(3) ), and by pickle
+        if type(value) is cls:
+            # For lookups like Color(Color.RED)
+            return value
+        # by-value search for a matching enum member
+        # see if it's in the reverse mapping (for hashable values)
+        try:
+            return cls._value2member_map_[value]
+        except KeyError:
+            # Not found, no need to do long O(n) search
+            pass
+        except TypeError:
+            # not there, now do long search -- O(n) behavior
+            for name, unhashable_values in cls._unhashable_values_map_.items():
+                if value in unhashable_values:
+                    return cls[name]
+            for name, member in cls._member_map_.items():
+                if value == member._value_:
+                    return cls[name]
+        # still not found -- verify that members exist, in-case somebody got here mistakenly
+        # (such as via super when trying to override __new__)
+        if not cls._member_map_:
+            if getattr(cls, '_%s__in_progress' % cls.__name__, False):
+                raise TypeError('do not use `super().__new__; call the appropriate __new__ directly') from None
+            raise TypeError("%r has no members defined" % cls)
+        #
+        # still not found -- try _missing_ hook
+        try:
+            exc = None
+            result = cls._missing_(value)
+        except Exception as e:
+            exc = e
+            result = None
+        try:
+            if isinstance(result, cls):
+                return result
+            elif (
+                    Flag is not None and issubclass(cls, Flag)
+                    and cls._boundary_ is EJECT and isinstance(result, int)
+                ):
+                return result
+            else:
+                ve_exc = ValueError("%r is not a valid %s" % (value, cls.__qualname__))
+                if result is None and exc is None:
+                    raise ve_exc
+                elif exc is None:
+                    exc = TypeError(
+                            'error in %s._missing_: returned %r instead of None or a valid member'
+                            % (cls.__name__, result)
+                            )
+                if not isinstance(exc, ValueError):
+                    exc.__context__ = ve_exc
+                raise exc
+        finally:
+            # ensure all variables that could hold an exception are destroyed
+            exc = None
+            ve_exc = None
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #6 · random · `_round_to_figures`
+## #7 · random · `isstdin`
 
-- **位置**：`fractions.py:103`（37 行）
+- **位置**：`fileinput.py:162`（8 行）
 - **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=-171 ｜ 池：（不在任何池内）
-- **本函数调用**：`_round_to_exponent`, `abs`, `len`, `str`
-- **同文件调用者**：`Fraction._format_float_style`（跨文件调用者未扫描）
+- **结构量**：Forman=-20 ｜ 池：（不在任何池内）
+- **本函数调用**：`RuntimeError`, `isstdin`
+- **同文件调用者**：`FileInput.isstdin`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-def _round_to_figures(n, d, figures):
-    """Round a rational number to a given number of significant figures.
-
-    Rounds the rational number n/d to the given number of significant figures
-    using the round-ties-to-even rule, and returns a triple
-    (sign: bool, significand: int, exponent: int) representing the rounded
-    value (-1)**sign * significand * 10**exponent.
-
-    In the special case where n = 0, returns a significand of zero and
-    an exponent of 1 - figures, for compatibility with formatting.
-    Otherwise, the returned significand satisfies
-    10**(figures - 1) <= significand < 10**figures.
-
-    d must be positive, but n and d need not be relatively prime.
-    figures must be positive.
+def isstdin():
     """
-    # Special case for n == 0.
-    if n == 0:
-        return False, 0, 1 - figures
-
-    # Find integer m satisfying 10**(m - 1) <= abs(n)/d <= 10**m. (If abs(n)/d
-    # is a power of 10, either of the two possible values for m is fine.)
-    str_n, str_d = str(abs(n)), str(d)
-    m = len(str_n) - len(str_d) + (str_d <= str_n)
-
-    # Round to a multiple of 10**(m - figures). The significand we get
-    # satisfies 10**(figures - 1) <= significand <= 10**figures.
-    exponent = m - figures
-    sign, significand = _round_to_exponent(n, d, exponent)
-
-    # Adjust in the case where significand == 10**figures, to ensure that
-    # 10**(figures - 1) <= significand < 10**figures.
-    if len(str(significand)) == figures + 1:
-        significand //= 10
-        exponent += 1
-
-    return sign, significand, exponent
+    Returns true if the last line was read from sys.stdin,
+    otherwise returns false.
+    """
+    if not _state:
+        raise RuntimeError("no active input()")
+    return _state.isstdin()
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #7 · confluence · `getfile`
+## #8 · random · `partial.__setstate__`
+
+- **位置**：`functools.py:330`（23 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=-39 ｜ 池：（不在任何池内）
+
+**源码**：
+
+```python
+    def __setstate__(self, state):
+        if not isinstance(state, tuple):
+            raise TypeError("argument to __setstate__ must be a tuple")
+        if len(state) != 4:
+            raise TypeError(f"expected 4 items in state, got {len(state)}")
+        func, args, kwds, namespace = state
+        if (not callable(func) or not isinstance(args, tuple) or
+           (kwds is not None and not isinstance(kwds, dict)) or
+           (namespace is not None and not isinstance(namespace, dict))):
+            raise TypeError("invalid partial state")
+
+        args = tuple(args) # just in case it's a subclass
+        if kwds is None:
+            kwds = {}
+        elif type(kwds) is not dict: # XXX does it need to be *exactly* dict?
+            kwds = dict(kwds)
+        if namespace is None:
+            namespace = {}
+
+        self.__dict__ = namespace
+        self.func = func
+        self.args = args
+        self.keywords = kwds
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #9 · zero_cover · `is_related`
+
+- **位置**：`functools.py:767`（4 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=-4 ｜ 池：（不在任何池内）
+- **同文件调用者**：`_compose_mro`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def is_related(typ):
+        return (typ not in bases and hasattr(typ, '__mro__')
+                                 and not isinstance(typ, GenericAlias)
+                                 and issubclass(cls, typ))
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #10 · confluence · `_Globber.compile`
+
+- **位置**：`glob.py:394`（2 行）
+- **层**：confluence ｜ 曲率汇合点 forman=-129
+- **结构量**：Forman=-129 ｜ 池：（不在任何池内）
+- **同文件调用者**：`_compile_pattern`, `_Globber.wildcard_selector`, `_Globber.recursive_selector`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def compile(self, pat):
+        return _compile_pattern(pat, self.sep, self.case_sensitive, self.recursive)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #11 · zero_cover · `GzipFile.seek`
+
+- **位置**：`gzip.py:423`（22 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`_PaddedFile.seek`, `GzipFile._init_write`, `GzipFile.rewind`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def seek(self, offset, whence=io.SEEK_SET):
+        if self.mode == WRITE:
+            self._check_not_closed()
+            # Flush buffer to ensure validity of self.offset
+            self._buffer.flush()
+            if whence != io.SEEK_SET:
+                if whence == io.SEEK_CUR:
+                    offset = self.offset + offset
+                else:
+                    raise ValueError('Seek from end not supported')
+            if offset < self.offset:
+                raise OSError('Negative seek in write mode')
+            count = offset - self.offset
+            chunk = b'\0' * self._buffer_size
+            for i in range(count // self._buffer_size):
+                self.write(chunk)
+            self.write(b'\0' * (count % self._buffer_size))
+        elif self.mode == READ:
+            self._check_not_closed()
+            return self._buffer.seek(offset, whence)
+
+        return self.offset
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #12 · random · `IMAP4.uid`
+
+- **位置**：`imaplib.py:888`（23 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+
+**源码**：
+
+```python
+    def uid(self, command, *args):
+        """Execute "command arg ..." with messages identified by UID,
+                rather than message number.
+
+        (typ, [data]) = <instance>.uid(command, arg1, arg2, ...)
+
+        Returns response appropriate to 'command'.
+        """
+        command = command.upper()
+        if not command in Commands:
+            raise self.error("Unknown IMAP4 UID command: %s" % command)
+        if self.state not in Commands[command]:
+            raise self.error("command %s illegal in state %s, "
+                             "only allowed in states %s" %
+                             (command, self.state,
+                              ', '.join(Commands[command])))
+        name = 'UID'
+        typ, dat = self._simple_command(name, command, *args)
+        if command in ('SEARCH', 'SORT', 'THREAD'):
+            name = command
+        else:
+            name = 'FETCH'
+        return self._untagged_response(typ, dat, name)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #13 · confluence · `getfile`
 
 - **位置**：`inspect.py:923`（27 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-239
@@ -254,7 +535,7 @@ def getfile(object):
 
 ---
 
-## #8 · confluence · `getfullargspec`
+## #14 · confluence · `getfullargspec`
 
 - **位置**：`inspect.py:1340`（91 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-381
@@ -333,7 +614,32 @@ def getfullargspec(func):
 
 ---
 
-## #9 · confluence · `normalize`
+## #15 · random · `IPv4Address.is_unspecified`
+
+- **位置**：`ipaddress.py:1389`（9 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`_BaseNetwork.is_unspecified`, `IPv6Address.is_unspecified`, `IPv6Interface.is_unspecified`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def is_unspecified(self):
+        """Test if the address is unspecified.
+
+        Returns:
+            A boolean, True if this is the unspecified address as defined in
+            RFC 5735 3.
+
+        """
+        return self == self._constants._unspecified_address
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #16 · confluence · `normalize`
 
 - **位置**：`locale.py:381`（82 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-393
@@ -412,26 +718,111 @@ def normalize(localename):
 
 ---
 
-## #10 · random · `ixor`
+## #17 · random · `ModuleFinder.import_hook`
 
-- **位置**：`operator.py:407`（4 行）
+- **位置**：`modulefinder.py:167`（10 行）
 - **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **结构量**：Forman=-7 ｜ 池：（不在任何池内）
+- **同文件调用者**：`test`, `ModuleFinder._safe_import_hook`, `ModuleFinder.scan_code`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-def ixor(a, b):
-    "Same as a ^= b."
-    a ^= b
-    return a
+    def import_hook(self, name, caller=None, fromlist=None, level=-1):
+        self.msg(3, "import_hook", name, caller, fromlist, level)
+        parent = self.determine_parent(caller, level=level)
+        q, tail = self.find_head_package(parent, name)
+        m = self.load_tail(q, tail)
+        if not fromlist:
+            return q
+        if m.__path__:
+            self.ensure_fromlist(m, fromlist)
+        return None
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #11 · anchor · `spawnl`
+## #18 · zero_cover · `netrc._parse`
+
+- **位置**：`netrc.py:93`（63 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`netrc.__init__`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def _parse(self, file, fp, default_netrc):
+        lexer = _netrclex(fp)
+        while 1:
+            # Look for a machine, default, or macdef top-level keyword
+            saved_lineno = lexer.lineno
+            toplevel = tt = lexer.get_token()
+            if not tt:
+                break
+            elif tt[0] == '#':
+                if lexer.lineno == saved_lineno and len(tt) == 1:
+                    lexer.instream.readline()
+                continue
+            elif tt == 'machine':
+                entryname = lexer.get_token()
+            elif tt == 'default':
+                entryname = 'default'
+            elif tt == 'macdef':
+                entryname = lexer.get_token()
+                self.macros[entryname] = []
+                while 1:
+                    line = lexer.instream.readline()
+                    if not line:
+                        raise NetrcParseError(
+                            "Macro definition missing null line terminator.",
+                            file, lexer.lineno)
+                    if line == '\n':
+                        # a macro definition finished with consecutive new-line
+                        # characters. The first \n is encountered by the
+                        # readline() method and this is the second \n.
+                        break
+                    self.macros[entryname].append(line)
+                continue
+            else:
+                raise NetrcParseError(
+                    "bad toplevel token %r" % tt, file, lexer.lineno)
+
+            if not entryname:
+                raise NetrcParseError("missing %r name" % tt, file, lexer.lineno)
+
+            # We're looking at start of an entry for a named machine or default.
+            login = account = password = ''
+            self.hosts[entryname] = {}
+            while 1:
+                prev_lineno = lexer.lineno
+                tt = lexer.get_token()
+                if tt.startswith('#'):
+                    if lexer.lineno == prev_lineno:
+                        lexer.instream.readline()
+                    continue
+                if tt in {'', 'machine', 'default', 'macdef'}:
+                    self.hosts[entryname] = (login, account, password)
+                    lexer.push_token(tt)
+                    break
+                elif tt == 'login' or tt == 'user':
+                    login = lexer.get_token()
+                elif tt == 'account':
+                    account = lexer.get_token()
+                elif tt == 'password':
+                    password = lexer.get_token()
+                else:
+```
+
+> 已截断（共 63 行），完整见 `netrc.py:93`
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #19 · anchor · `spawnl`
 
 - **位置**：`os.py:961`（8 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -456,100 +847,28 @@ otherwise return -SIG, where SIG is the signal that killed it. """
 
 ---
 
-## #12 · random · `Pdb._hold_exceptions`
+## #20 · random · `_Unpickler.load_binbytes`
 
-- **位置**：`pdb.py:602`（19 行）
+- **位置**：`pickle.py:1387`（6 行）
 - **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`Pdb.interaction`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def _hold_exceptions(self, exceptions):
-        """
-        Context manager to ensure proper cleaning of exceptions references
-
-        When given a chained exception instead of a traceback,
-        pdb may hold references to many objects which may leak memory.
-
-        We use this context manager to make sure everything is properly cleaned
-
-        """
-        try:
-            self._chained_exceptions = exceptions
-            self._chained_exception_index = len(exceptions) - 1
-            yield
-        finally:
-            # we can't put those in forget as otherwise they would
-            # be cleared on exception change
-            self._chained_exceptions = tuple()
-            self._chained_exception_index = 0
+    def load_binbytes(self):
+        len, = unpack('<I', self.read(4))
+        if len > maxsize:
+            raise UnpicklingError("BINBYTES exceeds system's maximum size "
+                                  "of %d bytes" % maxsize)
+        self.append(self.read(len))
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #13 · random · `Pdb._help_message_from_doc`
-
-- **位置**：`pdb.py:2287`（21 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`Pdb.do_help`, `Pdb._print_invalid_arg`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def _help_message_from_doc(self, doc, usage_only=False):
-        lines = [line.strip() for line in doc.rstrip().splitlines()]
-        if not lines:
-            return "No help message found."
-        if "" in lines:
-            usage_end = lines.index("")
-        else:
-            usage_end = 1
-        formatted = []
-        indent = " " * len(self.prompt)
-        for i, line in enumerate(lines):
-            if i == 0:
-                prefix = "Usage: "
-            elif i < usage_end:
-                prefix = "       "
-            else:
-                if usage_only:
-                    break
-                prefix = ""
-            formatted.append(indent + prefix + line)
-        return "\n".join(formatted)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #14 · zero_cover · `_Unframer.load_frame`
-
-- **位置**：`pickle.py:307`（5 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`_Unpickler.load_frame`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def load_frame(self, frame_size):
-        if self.current_frame and self.current_frame.read() != b'':
-            raise UnpicklingError(
-                "beginning of a new frame before end of current frame")
-        self.current_frame = io.BytesIO(self.file_read(frame_size))
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #15 · anchor · `_Unpickler.find_class`
+## #21 · anchor · `_Unpickler.find_class`
 
 - **位置**：`pickle.py:1608`（13 行）
 - **层**：anchor ｜ 锚点命中 import:import_pickle
@@ -580,7 +899,54 @@ otherwise return -SIG, where SIG is the signal that killed it. """
 
 ---
 
-## #16 · anchor · `OpcodeInfo.__init__`
+## #22 · anchor · `genops`
+
+- **位置**：`pickletools.py:2300`（24 行）
+- **层**：anchor ｜ 锚点命中 import:import_pickle
+- **结构量**：Forman=-8 ｜ 池：p_anchor_breadth
+- **本函数调用**：`_genops`
+- **同文件调用者**：`_genops`, `optimize`, `dis`（跨文件调用者未扫描）
+- **锚点命中行**：
+  - L1 `def genops(pickle):` → import:import_pickle
+  - L2 `"""Generate all the opcodes in a pickle.` → import:import_pickle
+  - L4 `'pickle' is a file-like object, or string, containing the pickle.` → import:import_pickle
+  - L6 `Each opcode in the pickle is generated, from the current pickle position,` → import:import_pickle
+  - L14 `If the opcode has an argument embedded in the pickle, arg is its decoded` → import:import_pickle
+
+**源码**：
+
+```python
+def genops(pickle):
+    """Generate all the opcodes in a pickle.
+
+    'pickle' is a file-like object, or string, containing the pickle.
+
+    Each opcode in the pickle is generated, from the current pickle position,
+    stopping after a STOP opcode is delivered.  A triple is generated for
+    each opcode:
+
+        opcode, arg, pos
+
+    opcode is an OpcodeInfo record, describing the current opcode.
+
+    If the opcode has an argument embedded in the pickle, arg is its decoded
+    value, as a Python object.  If the opcode doesn't have an argument, arg
+    is None.
+
+    If the pickle has a tell() method, pos was the value of pickle.tell()
+    before reading the current opcode.  If the pickle is a bytes object,
+    it's wrapped in a BytesIO object, and the latter's tell() result is
+    used.  Else (the pickle doesn't have a tell(), and it's not obvious how
+    to query its current position) pos is None.
+    """
+    return _genops(pickle)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #23 · anchor · `OpcodeInfo.__init__`
 
 - **位置**：`pickletools.py:1124`（27 行）
 - **层**：anchor ｜ 锚点命中 import:import_pickle
@@ -625,47 +991,79 @@ otherwise return -SIG, where SIG is the signal that killed it. """
 
 ---
 
-## #17 · zero_cover · `Profile.create_stats`
+## #24 · zero_cover · `ProfileBrowser.do_callers`
 
-- **位置**：`profile.py:399`（3 行）
+- **位置**：`pstats.py:677`（2 行）
 - **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`Profile.dump_stats`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def create_stats(self):
-        self.simulate_cmd_complete()
-        self.snapshot_stats()
+        def do_callers(self, line):
+            return self.generic('print_callers', line)
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #18 · random · `TextRepr.__init__`
+## #25 · random · `_ModuleBrowser.visit_ImportFrom`
 
-- **位置**：`pydoc.py:1235`（5 行）
+- **位置**：`pyclbr.py:248`（19 行）
 - **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`_start_server`, `ErrorDuringImport.__init__`, `HTMLRepr.__init__`, `HTMLDoc.docclass`, `TextDoc.docclass`, `Helper.__init__`, `DocServer.__init__`, `ServerThread.__init__`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def __init__(self):
-        Repr.__init__(self)
-        self.maxlist = self.maxtuple = 20
-        self.maxdict = 10
-        self.maxstring = self.maxother = 100
+    def visit_ImportFrom(self, node):
+        if node.col_offset != 0:
+            return
+        try:
+            module = "." * node.level
+            if node.module:
+                module += node.module
+            module = _readmodule(module, self.path, self.inpackage)
+        except (ImportError, SyntaxError):
+            return
+
+        for name in node.names:
+            if name.name in module:
+                self.tree[name.asname or name.name] = module[name.name]
+            elif name.name == "*":
+                for import_name, import_value in module.items():
+                    if import_name.startswith("_"):
+                        continue
+                    self.tree[import_name] = import_value
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #19 · confluence · `_rmtree_unsafe`
+## #26 · zero_cover · `TextRepr.repr_instance`
+
+- **位置**：`pydoc.py:1259`（5 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`HTMLRepr.repr_instance`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def repr_instance(self, x, level):
+        try:
+            return cram(stripid(repr(x)), self.maxstring)
+        except:
+            return '<%s instance>' % x.__class__.__name__
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #27 · confluence · `_rmtree_unsafe`
 
 - **位置**：`shutil.py:608`（28 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-367
@@ -710,10 +1108,33 @@ def _rmtree_unsafe(path, onexc):
 
 ---
 
-## #20 · random · `_SocketWriter.writable`
+## #28 · random · `TCPServer.get_request`
+
+- **位置**：`socketserver.py:505`（7 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`BaseServer._handle_request_noblock`, `UDPServer.get_request`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def get_request(self):
+        """Get the request and client address from the socket.
+
+        May be overridden.
+
+        """
+        return self.socket.accept()
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #29 · zero_cover · `_SocketWriter.writable`
 
 - **位置**：`socketserver.py:841`（2 行）
-- **层**：random ｜ 随机层（无偏基线）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
 
 **源码**：
@@ -727,7 +1148,7 @@ def _rmtree_unsafe(path, onexc):
 
 ---
 
-## #21 · anchor · `check_output`
+## #30 · anchor · `check_output`
 
 - **位置**：`subprocess.py:423`（51 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -797,59 +1218,243 @@ def check_output(*popenargs, timeout=None, **kwargs):
 
 ---
 
-## #22 · random · `_MainThread.__init__`
+## #31 · zero_cover · `TarInfo._proc_gnusparse_01`
 
-- **位置**：`threading.py:1353`（9 行）
+- **位置**：`tarfile.py:1613`（5 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`TarInfo._proc_pax`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def _proc_gnusparse_01(self, next, pax_headers):
+        """Process a GNU tar extended sparse header, version 0.1.
+        """
+        sparse = [int(x) for x in pax_headers["GNU.sparse.map"].split(",")]
+        next.sparse = list(zip(sparse[::2], sparse[1::2]))
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #32 · zero_cover · `TarFile.makelink_with_filter`
+
+- **位置**：`tarfile.py:2677`（52 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`TarFile._extract_member`, `TarFile.makelink`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def makelink_with_filter(self, tarinfo, targetpath,
+                             filter_function, extraction_root):
+        """Make a (symbolic) link called targetpath. If it cannot be created
+          (platform limitation), we try to make a copy of the referenced file
+          instead of a link.
+
+          filter_function is only used when extracting a *different*
+          member (e.g. as fallback to creating a link).
+        """
+        keyerror_to_extracterror = False
+        try:
+            # For systems that support symbolic and hard links.
+            if tarinfo.issym():
+                if os.path.lexists(targetpath):
+                    # Avoid FileExistsError on following os.symlink.
+                    os.unlink(targetpath)
+                os.symlink(tarinfo.linkname, targetpath)
+                return
+            else:
+                if os.path.exists(tarinfo._link_target):
+                    if os.path.lexists(targetpath):
+                        # Avoid FileExistsError on following os.link.
+                        os.unlink(targetpath)
+                    os.link(tarinfo._link_target, targetpath)
+                    return
+        except symlink_exception:
+            keyerror_to_extracterror = True
+
+        try:
+            unfiltered = self._find_link_target(tarinfo)
+        except KeyError:
+            if keyerror_to_extracterror:
+                raise ExtractError(
+                    "unable to resolve link inside archive") from None
+            else:
+                raise
+
+        if filter_function is None:
+            filtered = unfiltered
+        else:
+            if extraction_root is None:
+                raise ExtractError(
+                    "makelink_with_filter: if filter_function is not None, "
+                    + "extraction_root must also not be None")
+            try:
+                filtered = filter_function(unfiltered, extraction_root)
+            except _FILTER_ERRORS as cause:
+                raise LinkFallbackError(tarinfo, unfiltered.name) from cause
+        if filtered is not None:
+            self._extract_member(filtered, targetpath,
+                                 filter_function=filter_function,
+                                 extraction_root=extraction_root)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #33 · random · `main`
+
+- **位置**：`tokenize.py:502`（62 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=-154 ｜ 池：（不在任何池内）
+- **本函数调用**：`ArgumentParser`, `_builtin_open`, `_generate_tokens_from_c_tokenizer`, `add_argument`, `error`, `exit`, `list`, `parse_args`, `perror`, `print`, `tokenize`, `write`
+
+**源码**：
+
+```python
+def main():
+    import argparse
+
+    # Helper error handling routines
+    def perror(message):
+        sys.stderr.write(message)
+        sys.stderr.write('\n')
+
+    def error(message, filename=None, location=None):
+        if location:
+            args = (filename,) + location + (message,)
+            perror("%s:%d:%d: error: %s" % args)
+        elif filename:
+            perror("%s: error: %s" % (filename, message))
+        else:
+            perror("error: %s" % message)
+        sys.exit(1)
+
+    # Parse the arguments and options
+    parser = argparse.ArgumentParser(prog='python -m tokenize')
+    parser.add_argument(dest='filename', nargs='?',
+                        metavar='filename.py',
+                        help='the file to tokenize; defaults to stdin')
+    parser.add_argument('-e', '--exact', dest='exact', action='store_true',
+                        help='display token names using the exact type')
+    args = parser.parse_args()
+
+    try:
+        # Tokenize the input
+        if args.filename:
+            filename = args.filename
+            with _builtin_open(filename, 'rb') as f:
+                tokens = list(tokenize(f.readline))
+        else:
+            filename = "<stdin>"
+            tokens = _generate_tokens_from_c_tokenizer(
+                sys.stdin.readline, extra_tokens=True)
+
+
+        # Output the tokenization
+        for token in tokens:
+            token_type = token.type
+            if args.exact:
+                token_type = token.exact_type
+            token_range = "%d,%d-%d,%d:" % (token.start + token.end)
+            print("%-20s%-15s%-15r" %
+                  (token_range, tok_name[token_type], token.string))
+    except IndentationError as err:
+        line, column = err.args[1][1:3]
+        error(err.args[0], filename, (line, column))
+    except TokenError as err:
+        line, column = err.args[1]
+        error(err.args[0], filename, (line, column))
+    except SyntaxError as err:
+        error(err, filename)
+    except OSError as err:
+        error(err)
+    except KeyboardInterrupt:
+        print("interrupted\n")
+    except Exception as err:
+```
+
+> 已截断（共 62 行），完整见 `tokenize.py:502`
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #34 · random · `_compare_args_orderless`
+
+- **位置**：`typing.py:368`（10 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=-147 ｜ 池：（不在任何池内）
+- **本函数调用**：`_deduplicate_unhashable`, `list`, `remove`
+- **同文件调用者**：`_UnionGenericAlias.__eq__`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+def _compare_args_orderless(first_args, second_args):
+    first_unhashable = _deduplicate_unhashable(first_args)
+    second_unhashable = _deduplicate_unhashable(second_args)
+    t = list(second_unhashable)
+    try:
+        for elem in first_unhashable:
+            t.remove(elem)
+    except ValueError:
+        return False
+    return not t
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #35 · zero_cover · `_is_universal`
+
+- **位置**：`uuid.py:409`（2 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=-8 ｜ 池：（不在任何池内）
+- **同文件调用者**：`_find_mac_near_keyword`, `_find_mac_under_heading`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+def _is_universal(mac):
+    return not (mac & (1 << 41))
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #36 · random · `WeakValueDictionary.popitem`
+
+- **位置**：`weakref.py:252`（8 行）
 - **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`_RLock.__init__`, `Condition.__init__`, `Semaphore.__init__`, `BoundedSemaphore.__init__`, `Event.__init__`, `Barrier.__init__`, `Thread.__init__`, `Thread.__repr__`（跨文件调用者未扫描）
+- **同文件调用者**：`WeakKeyDictionary.popitem`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def __init__(self):
-        Thread.__init__(self, name="MainThread", daemon=False)
-        self._started.set()
-        self._ident = _get_main_thread_ident()
-        self._handle = _make_thread_handle(self._ident)
-        if _HAVE_THREAD_NATIVE_ID:
-            self._set_native_id()
-        with _active_limbo_lock:
-            _active[self._ident] = self
+    def popitem(self):
+        if self._pending_removals:
+            self._commit_removals()
+        while True:
+            key, wr = self.data.popitem()
+            o = wr()
+            if o is not None:
+                return key, o
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #23 · zero_cover · `print_stack`
-
-- **位置**：`traceback.py:230`（10 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=-3 ｜ 池：（不在任何池内）
-- **本函数调用**：`_getframe`, `extract_stack`, `print_list`
-- **同文件调用者**：`extract_stack`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def print_stack(f=None, limit=None, file=None):
-    """Print a stack trace from its invocation point.
-
-    The optional 'f' argument can be used to specify an alternate
-    stack frame at which to start. The optional 'limit' and 'file'
-    arguments have the same meaning as for print_exception().
-    """
-    if f is None:
-        f = sys._getframe().f_back
-    print_list(extract_stack(f, limit=limit), file=file)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #24 · anchor · `register_standard_browsers`
+## #37 · anchor · `register_standard_browsers`
 
 - **位置**：`webbrowser.py:491`（87 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -931,7 +1536,7 @@ def register_standard_browsers():
 
 ---
 
-## #25 · anchor · `GenericBrowser.open`
+## #38 · anchor · `GenericBrowser.open`
 
 - **位置**：`webbrowser.py:188`（13 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -963,7 +1568,7 @@ def register_standard_browsers():
 
 ---
 
-## #26 · anchor · `Konqueror.open`
+## #39 · anchor · `Konqueror.open`
 
 - **位置**：`webbrowser.py:369`（45 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -1029,7 +1634,7 @@ def register_standard_browsers():
 
 ---
 
-## #27 · anchor · `_aix_bos_rte`
+## #40 · anchor · `_aix_bos_rte`
 
 - **位置**：`_aix_support.py:42`（19 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -1069,59 +1674,150 @@ def _aix_bos_rte():
 
 ---
 
-## #28 · anchor · `timezone.__getinitargs__`
+## #41 · random · `MutableSequence.pop`
 
-- **位置**：`_pydatetime.py:2347`（5 行）
-- **层**：anchor ｜ 锚点命中 import:import_pickle
-- **结构量**：Forman=None ｜ 池：p_anchor_breadth
-- **锚点命中行**：
-  - L2 `"""pickle support"""` → import:import_pickle
-
-**源码**：
-
-```python
-    def __getinitargs__(self):
-        """pickle support"""
-        if self._name is None:
-            return (self._offset,)
-        return (self._offset, self._name)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #29 · random · `Overflow.handle`
-
-- **位置**：`_pydecimal.py:279`（14 行）
+- **位置**：`_collections_abc.py:1167`（7 行）
 - **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`DecimalException.handle`, `InvalidOperation.handle`, `ConversionSyntax.handle`, `DivisionByZero.handle`, `DivisionImpossible.handle`, `DivisionUndefined.handle`, `InvalidContext.handle`, `Context._raise_error`（跨文件调用者未扫描）
+- **同文件调用者**：`MutableSet.pop`, `MutableSet.clear`, `MutableMapping.pop`, `MutableSequence.clear`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def handle(self, context, sign, *args):
-        if context.rounding in (ROUND_HALF_UP, ROUND_HALF_EVEN,
-                                ROUND_HALF_DOWN, ROUND_UP):
-            return _SignedInfinity[sign]
-        if sign == 0:
-            if context.rounding == ROUND_CEILING:
-                return _SignedInfinity[sign]
-            return _dec_from_triple(sign, '9'*context.prec,
-                            context.Emax-context.prec+1)
-        if sign == 1:
-            if context.rounding == ROUND_FLOOR:
-                return _SignedInfinity[sign]
-            return _dec_from_triple(sign, '9'*context.prec,
-                             context.Emax-context.prec+1)
+    def pop(self, index=-1):
+        '''S.pop([index]) -> item -- remove and return item at index (default
+        last).  Raise IndexError if list is empty or index is out of range.
+        '''
+        v = self[index]
+        del self[index]
+        return v
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #30 · anchor · `BaseEventLoop._log_subprocess`
+## #42 · zero_cover · `time.__le__`
+
+- **位置**：`_pydatetime.py:1428`（5 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`timedelta.__le__`, `date.__le__`, `datetime.__le__`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def __le__(self, other):
+        if isinstance(other, time):
+            return self._cmp(other) <= 0
+        else:
+            return NotImplemented
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #43 · zero_cover · `Decimal.compare`
+
+- **位置**：`_pydecimal.py:840`（17 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`Decimal.compare_signal`, `Context.compare`, `Context.compare_signal`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def compare(self, other, context=None):
+        """Compare self to other.  Return a decimal value:
+
+        a or b is a NaN ==> Decimal('NaN')
+        a < b           ==> Decimal('-1')
+        a == b          ==> Decimal('0')
+        a > b           ==> Decimal('1')
+        """
+        other = _convert_other(other, raiseit=True)
+
+        # Compare(NaN, NaN) = NaN
+        if (self._is_special or other and other._is_special):
+            ans = self._check_nans(other, context)
+            if ans:
+                return ans
+
+        return Decimal(self._cmp(other))
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #44 · random · `TextIOWrapper.errors`
+
+- **位置**：`_pyio.py:2121`（2 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`TextIOBase.errors`, `StringIO.errors`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def errors(self):
+        return self._errors
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #45 · random · `parse_int`
+
+- **位置**：`_strptime.py:574`（5 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=-27 ｜ 池：（不在任何池内）
+- **同文件调用者**：`_strptime`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+        def parse_int(s):
+            try:
+                return locale_time.LC_alt_digits.index(s)
+            except ValueError:
+                return int(s)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #46 · anchor · `_format_pipe`
+
+- **位置**：`asyncio/base_events.py:80`（7 行）
+- **层**：anchor ｜ 锚点命中 import:import_subprocess
+- **结构量**：Forman=-55 ｜ 池：p_anchor_breadth
+- **本函数调用**：`repr`
+- **同文件调用者**：`BaseEventLoop._log_subprocess`（跨文件调用者未扫描）
+- **锚点命中行**：
+  - L2 `if fd == subprocess.PIPE:` → import:import_subprocess
+  - L4 `elif fd == subprocess.STDOUT:` → import:import_subprocess
+
+**源码**：
+
+```python
+def _format_pipe(fd):
+    if fd == subprocess.PIPE:
+        return '<pipe>'
+    elif fd == subprocess.STDOUT:
+        return '<stdout>'
+    else:
+        return repr(fd)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #47 · anchor · `BaseEventLoop._log_subprocess`
 
 - **位置**：`asyncio/base_events.py:1736`（12 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -1151,7 +1847,7 @@ def _aix_bos_rte():
 
 ---
 
-## #31 · anchor · `AbstractEventLoop.subprocess_exec`
+## #48 · anchor · `AbstractEventLoop.subprocess_exec`
 
 - **位置**：`asyncio/events.py:542`（6 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -1176,16 +1872,93 @@ def _aix_bos_rte():
 
 ---
 
-## #32 · zero_cover · `AbstractEventLoop.set_exception_handler`
+## #49 · zero_cover · `wrap_future`
 
-- **位置**：`asyncio/events.py:617`（2 行）
+- **位置**：`asyncio/futures.py:406`（11 行）
 - **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **结构量**：Forman=-13 ｜ 池：（不在任何池内）
+- **本函数调用**：`_chain_future`, `create_future`, `get_event_loop`, `isfuture`, `isinstance`
 
 **源码**：
 
 ```python
-    def set_exception_handler(self, handler):
+def wrap_future(future, *, loop=None):
+    """Wrap concurrent.futures.Future object."""
+    if isfuture(future):
+        return future
+    assert isinstance(future, concurrent.futures.Future), \
+        f'concurrent.futures.Future is expected, got {future!r}'
+    if loop is None:
+        loop = events.get_event_loop()
+    new_future = loop.create_future()
+    _chain_future(future, new_future)
+    return new_future
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #50 · random · `Lock.__repr__`
+
+- **位置**：`asyncio/locks.py:79`（6 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`Event.__repr__`, `Condition.__repr__`, `Semaphore.__repr__`, `Barrier.__repr__`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def __repr__(self):
+        res = super().__repr__()
+        extra = 'locked' if self._locked else 'unlocked'
+        if self._waiters:
+            extra = f'{extra}, waiters:{len(self._waiters)}'
+        return f'<{res[1:-1]} [{extra}]>'
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #51 · zero_cover · `BoundedSemaphore.release`
+
+- **位置**：`asyncio/locks.py:462`（4 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`_ContextManagerMixin.__aexit__`, `Lock.release`, `Condition.__init__`, `Condition.wait`, `Semaphore.acquire`, `Semaphore.release`, `Barrier.wait`, `Barrier._release`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def release(self):
+        if self._value >= self._bound_value:
+            raise ValueError('BoundedSemaphore released too many times')
+        super().release()
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #52 · anchor · `SubprocessTransport.get_returncode`
+
+- **位置**：`asyncio/transports.py:207`（7 行）
+- **层**：anchor ｜ 锚点命中 import:import_subprocess
+- **结构量**：Forman=None ｜ 池：p_anchor_breadth
+- **锚点命中行**：
+  - L2 `"""Get subprocess returncode.` → import:import_subprocess
+  - L5 `http://docs.python.org/3/library/subprocess#subprocess.Popen.returncode` → import:import_subprocess
+
+**源码**：
+
+```python
+    def get_returncode(self):
+        """Get subprocess returncode.
+
+        See also
+        http://docs.python.org/3/library/subprocess#subprocess.Popen.returncode
+        """
         raise NotImplementedError
 ```
 
@@ -1193,123 +1966,7 @@ def _aix_bos_rte():
 
 ---
 
-## #33 · random · `_LoopBoundMixin._get_loop`
-
-- **位置**：`asyncio/mixins.py:12`（10 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-
-**源码**：
-
-```python
-    def _get_loop(self):
-        loop = events._get_running_loop()
-
-        if self._loop is None:
-            with _global_lock:
-                if self._loop is None:
-                    self._loop = loop
-        if loop is not self._loop:
-            raise RuntimeError(f'{self!r} is bound to a different event loop')
-        return loop
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #34 · zero_cover · `BaseSelectorEventLoop._add_reader`
-
-- **位置**：`asyncio/selector_events.py:278`（14 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`BaseSelectorEventLoop._make_self_pipe`, `BaseSelectorEventLoop._start_serving`, `BaseSelectorEventLoop.add_reader`, `BaseSelectorEventLoop.sock_recv`, `BaseSelectorEventLoop.sock_recv_into`, `BaseSelectorEventLoop.sock_recvfrom`, `BaseSelectorEventLoop.sock_recvfrom_into`, `BaseSelectorEventLoop._sock_accept`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def _add_reader(self, fd, callback, *args):
-        self._check_closed()
-        handle = events.Handle(callback, args, self, None)
-        key = self._selector.get_map().get(fd)
-        if key is None:
-            self._selector.register(fd, selectors.EVENT_READ,
-                                    (handle, None))
-        else:
-            mask, (reader, writer) = key.events, key.data
-            self._selector.modify(fd, mask | selectors.EVENT_READ,
-                                  (handle, writer))
-            if reader is not None:
-                reader.cancel()
-        return handle
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #35 · random · `BaseSelectorEventLoop.sock_recvfrom`
-
-- **位置**：`asyncio/selector_events.py:448`（22 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`BaseSelectorEventLoop._sock_recvfrom`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    async def sock_recvfrom(self, sock, bufsize):
-        """Receive a datagram from a datagram socket.
-
-        The return value is a tuple of (bytes, address) representing the
-        datagram received and the address it came from.
-        The maximum amount of data to be received at once is specified by
-        nbytes.
-        """
-        base_events._check_ssl_socket(sock)
-        if self._debug and sock.gettimeout() != 0:
-            raise ValueError("the socket must be non-blocking")
-        try:
-            return sock.recvfrom(bufsize)
-        except (BlockingIOError, InterruptedError):
-            pass
-        fut = self.create_future()
-        fd = sock.fileno()
-        self._ensure_fd_no_transport(fd)
-        handle = self._add_reader(fd, self._sock_recvfrom, fut, sock, bufsize)
-        fut.add_done_callback(
-            functools.partial(self._sock_read_done, fd, handle=handle))
-        return await fut
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #36 · zero_cover · `_SelectorSocketTransport._make_empty_waiter`
-
-- **位置**：`asyncio/selector_events.py:1206`（7 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`BaseSelectorEventLoop._sendfile_native`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def _make_empty_waiter(self):
-        if self._empty_waiter is not None:
-            raise RuntimeError("Empty waiter is already set")
-        self._empty_waiter = self._loop.create_future()
-        if not self._buffer:
-            self._empty_waiter.set_result(None)
-        return self._empty_waiter
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #37 · anchor · `SubprocessTransport.kill`
+## #53 · anchor · `SubprocessTransport.kill`
 
 - **位置**：`asyncio/transports.py:241`（10 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -1338,7 +1995,57 @@ def _aix_bos_rte():
 
 ---
 
-## #38 · anchor · `namedtuple`
+## #54 · anchor · `_UnixSelectorEventLoop._make_subprocess_transport`
+
+- **位置**：`asyncio/unix_events.py:198`（32 行）
+- **层**：anchor ｜ 锚点命中 import:import_subprocess
+- **结构量**：Forman=None ｜ 池：p_anchor_breadth
+- **锚点命中行**：
+  - L12 `# prevents subprocess execution if the watcher` → import:import_subprocess
+  - L15 `"subprocess support is not installed.")` → import:import_subprocess
+
+**源码**：
+
+```python
+    async def _make_subprocess_transport(self, protocol, args, shell,
+                                         stdin, stdout, stderr, bufsize,
+                                         extra=None, **kwargs):
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', DeprecationWarning)
+            watcher = events.get_child_watcher()
+
+        with watcher:
+            if not watcher.is_active():
+                # Check early.
+                # Raising exception before process creation
+                # prevents subprocess execution if the watcher
+                # is not ready to handle it.
+                raise RuntimeError("asyncio.get_child_watcher() is not activated, "
+                                "subprocess support is not installed.")
+            waiter = self.create_future()
+            transp = _UnixSubprocessTransport(self, protocol, args, shell,
+                                            stdin, stdout, stderr, bufsize,
+                                            waiter=waiter, extra=extra,
+                                            **kwargs)
+            watcher.add_child_handler(transp.get_pid(),
+                                    self._child_watcher_callback, transp)
+            try:
+                await waiter
+            except (SystemExit, KeyboardInterrupt):
+                raise
+            except BaseException:
+                transp.close()
+                await transp._wait()
+                raise
+
+        return transp
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #55 · anchor · `namedtuple`
 
 - **位置**：`collections/__init__.py:358`（173 行）
 - **层**：anchor ｜ 锚点命中 sink:eval, import:import_pickle
@@ -1419,62 +2126,7 @@ def namedtuple(typename, field_names, *, rename=False, defaults=None, module=Non
 
 ---
 
-## #39 · random · `test`
-
-- **位置**：`ctypes/util.py:347`（39 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=-213 ｜ 池：（不在任何池内）
-- **本函数调用**：`CDLL`, `LoadLibrary`, `find_library`, `load`, `print`, `startswith`
-
-**源码**：
-
-```python
-def test():
-    from ctypes import cdll
-    if os.name == "nt":
-        print(cdll.msvcrt)
-        print(cdll.load("msvcrt"))
-        print(find_library("msvcrt"))
-
-    if os.name == "posix":
-        # find and load_version
-        print(find_library("m"))
-        print(find_library("c"))
-        print(find_library("bz2"))
-
-        # load
-        if sys.platform == "darwin":
-            print(cdll.LoadLibrary("libm.dylib"))
-            print(cdll.LoadLibrary("libcrypto.dylib"))
-            print(cdll.LoadLibrary("libSystem.dylib"))
-            print(cdll.LoadLibrary("System.framework/System"))
-        # issue-26439 - fix broken test call for AIX
-        elif sys.platform.startswith("aix"):
-            from ctypes import CDLL
-            if sys.maxsize < 2**32:
-                print(f"Using CDLL(name, os.RTLD_MEMBER): {CDLL('libc.a(shr.o)', os.RTLD_MEMBER)}")
-                print(f"Using cdll.LoadLibrary(): {cdll.LoadLibrary('libc.a(shr.o)')}")
-                # librpm.so is only available as 32-bit shared library
-                print(find_library("rpm"))
-                print(cdll.LoadLibrary("librpm.so"))
-            else:
-                print(f"Using CDLL(name, os.RTLD_MEMBER): {CDLL('libc.a(shr_64.o)', os.RTLD_MEMBER)}")
-                print(f"Using cdll.LoadLibrary(): {cdll.LoadLibrary('libc.a(shr_64.o)')}")
-            print(f"crypt\t:: {find_library('crypt')}")
-            print(f"crypt\t:: {cdll.LoadLibrary(find_library('crypt'))}")
-            print(f"crypto\t:: {find_library('crypto')}")
-            print(f"crypto\t:: {cdll.LoadLibrary(find_library('crypto'))}")
-        else:
-            print(cdll.LoadLibrary("libm.so"))
-            print(cdll.LoadLibrary("libcrypt.so"))
-            print(find_library("crypt"))
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #40 · anchor · `_findLib_gcc`
+## #56 · anchor · `_findLib_gcc`
 
 - **位置**：`ctypes/util.py:114`（48 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -1542,24 +2194,7 @@ def test():
 
 ---
 
-## #41 · random · `isctrl`
-
-- **位置**：`curses/ascii.py:68`（1 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=-13 ｜ 池：（不在任何池内）
-- **本函数调用**：`_ctoi`
-
-**源码**：
-
-```python
-def isctrl(c): return 0 <= _ctoi(c) < 32
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #42 · confluence · `_encode_base64`
+## #57 · confluence · `_encode_base64`
 
 - **位置**：`email/contentmanager.py:136`（7 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-380
@@ -1583,85 +2218,172 @@ def _encode_base64(data, max_line_length):
 
 ---
 
-## #43 · random · `encode_7or8bit`
+## #58 · zero_cover · `BufferedSubFile.unreadline`
 
-- **位置**：`email/encoders.py:47`（15 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=-82 ｜ 池：（不在任何池内）
-- **本函数调用**：`decode`, `get_payload`
-
-**源码**：
-
-```python
-def encode_7or8bit(msg):
-    """Set the Content-Transfer-Encoding header to 7bit or 8bit."""
-    orig = msg.get_payload(decode=True)
-    if orig is None:
-        # There's no payload.  For backwards compatibility we use 7bit
-        msg['Content-Transfer-Encoding'] = '7bit'
-        return
-    # We play a trick to make this go fast.  If decoding from ASCII succeeds,
-    # we know the data must be 7bit, otherwise treat it as 8bit.
-    try:
-        orig.decode('ascii')
-    except UnicodeError:
-        msg['Content-Transfer-Encoding'] = '8bit'
-    else:
-        msg['Content-Transfer-Encoding'] = '7bit'
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #44 · zero_cover · `Generator.__init__`
-
-- **位置**：`email/generator.py:38`（31 行）
+- **位置**：`email/feedparser.py:97`（4 行）
 - **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`DecodedGenerator.__init__`（跨文件调用者未扫描）
+- **同文件调用者**：`FeedParser._parsegen`, `FeedParser._parse_headers`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def __init__(self, outfp, mangle_from_=None, maxheaderlen=None, *,
-                 policy=None):
-        """Create the generator for message flattening.
-
-        outfp is the output file-like object for writing the message to.  It
-        must have a write() method.
-
-        Optional mangle_from_ is a flag that, when True (the default if policy
-        is not set), escapes From_ lines in the body of the message by putting
-        a `>' in front of them.
-
-        Optional maxheaderlen specifies the longest length for a non-continued
-        header.  When a header line is longer (in characters, with tabs
-        expanded to 8 spaces) than maxheaderlen, the header will split as
-        defined in the Header class.  Set maxheaderlen to zero to disable
-        header wrapping.  The default is 78, as recommended (but not required)
-        by RFC 5322 section 2.1.1.
-
-        The policy keyword specifies a policy object that controls a number of
-        aspects of the generator's operation.  If no policy is specified,
-        the policy associated with the Message object passed to the
-        flatten method is used.
-
-        """
-
-        if mangle_from_ is None:
-            mangle_from_ = True if policy is None else policy.mangle_from_
-        self._fp = outfp
-        self._mangle_from_ = mangle_from_
-        self.maxheaderlen = maxheaderlen
-        self.policy = policy
+    def unreadline(self, line):
+        # Let the consumer push a line back into the buffer.
+        assert line is not NeedMoreData
+        self._lines.appendleft(line)
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #45 · confluence · `_au`
+## #59 · zero_cover · `BufferedSubFile.pushlines`
+
+- **位置**：`email/feedparser.py:123`（2 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`BufferedSubFile.close`, `BufferedSubFile.push`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def pushlines(self, lines):
+        self._lines.extend(lines)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #60 · zero_cover · `FeedParser._new_message`
+
+- **位置**：`email/feedparser.py:197`（12 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`FeedParser._parsegen`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def _new_message(self):
+        if self._old_style_factory:
+            msg = self._factory()
+        else:
+            msg = self._factory(policy=self.policy)
+        if self._cur and self._cur.get_content_type() == 'multipart/digest':
+            msg.set_default_type('message/rfc822')
+        if self._msgstack:
+            self._msgstack[-1].attach(msg)
+        self._msgstack.append(msg)
+        self._cur = msg
+        self._last = msg
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #61 · zero_cover · `MIMEPart._add_multipart`
+
+- **位置**：`email/message.py:1183`（9 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`MIMEPart.add_related`, `MIMEPart.add_alternative`, `MIMEPart.add_attachment`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def _add_multipart(self, _subtype, *args, _disp=None, **kw):
+        if (self.get_content_maintype() != 'multipart' or
+                self.get_content_subtype() != _subtype):
+            getattr(self, 'make_' + _subtype)()
+        part = type(self)(policy=self.policy)
+        part.set_content(*args, **kw)
+        if _disp and 'content-disposition' not in part:
+            part['Content-Disposition'] = _disp
+        self.attach(part)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #62 · confluence · `get_local_part`
+
+- **位置**：`email/_header_value_parser.py:1486`（38 行）
+- **层**：confluence ｜ 曲率汇合点 forman=-407
+- **结构量**：Forman=-407 ｜ 池：p_hot, p_deep_conf
+- **本函数调用**：`HeaderParseError`, `InvalidHeaderDefect`, `LocalPart`, `NonASCIILocalPartDefect`, `ObsoleteHeaderDefect`, `TokenList`, `append`, `encode`, `format`, `get_cfws`, `get_dot_atom`, `get_obs_local_part`
+- **同文件调用者**：`get_addr_spec`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+def get_local_part(value):
+    """ local-part = dot-atom / quoted-string / obs-local-part
+
+    """
+    local_part = LocalPart()
+    leader = None
+    if value and value[0] in CFWS_LEADER:
+        leader, value = get_cfws(value)
+    if not value:
+        raise errors.HeaderParseError(
+            "expected local-part but found '{}'".format(value))
+    try:
+        token, value = get_dot_atom(value)
+    except errors.HeaderParseError:
+        try:
+            token, value = get_word(value)
+        except errors.HeaderParseError:
+            if value[0] != '\\' and value[0] in PHRASE_ENDS:
+                raise
+            token = TokenList()
+    if leader is not None:
+        token[:0] = [leader]
+    local_part.append(token)
+    if value and (value[0]=='\\' or value[0] not in PHRASE_ENDS):
+        obs_local_part, value = get_obs_local_part(str(local_part) + value)
+        if obs_local_part.token_type == 'invalid-obs-local-part':
+            local_part.defects.append(errors.InvalidHeaderDefect(
+                "local-part is not dot-atom, quoted-string, or obs-local-part"))
+        else:
+            local_part.defects.append(errors.ObsoleteHeaderDefect(
+                "local-part is not a dot-atom (contains CFWS)"))
+        local_part[0] = obs_local_part
+    try:
+        local_part.value.encode('ascii')
+    except UnicodeEncodeError:
+        local_part.defects.append(errors.NonASCIILocalPartDefect(
+                "local-part contains non-ASCII characters)"))
+    return local_part, value
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #63 · confluence · `rule`
+
+- **位置**：`email/mime/audio.py:68`（3 行）
+- **层**：confluence ｜ 曲率汇合点 forman=-376
+- **结构量**：Forman=-376 ｜ 池：（不在任何池内）
+- **本函数调用**：`append`
+
+**源码**：
+
+```python
+def rule(rulefunc):
+    _rules.append(rulefunc)
+    return rulefunc
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #64 · confluence · `_au`
 
 - **位置**：`email/mime/audio.py:84`（5 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-209
@@ -1682,47 +2404,44 @@ def _au(h):
 
 ---
 
-## #46 · zero_cover · `StreamReader.decode`
+## #65 · random · `IncrementalEncoder.encode`
 
-- **位置**：`encodings/raw_unicode_escape.py:32`（2 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **位置**：`encodings/koi8_r.py:18`（2 行）
+- **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`IncrementalDecoder._buffer_decode`（跨文件调用者未扫描）
+- **同文件调用者**：`Codec.encode`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def decode(self, input, errors='strict'):
-        return codecs.raw_unicode_escape_decode(input, errors, False)
+    def encode(self, input, final=False):
+        return codecs.charmap_encode(input,self.errors,encoding_table)[0]
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #47 · zero_cover · `StreamWriter.reset`
+## #66 · random · `IncrementalEncoder.reset`
 
-- **位置**：`encodings/utf_8_sig.py:86`（6 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **位置**：`encodings/utf_16.py:33`（3 行）
+- **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`IncrementalEncoder.reset`, `IncrementalDecoder.reset`, `StreamReader.reset`（跨文件调用者未扫描）
+- **同文件调用者**：`IncrementalDecoder.reset`, `StreamWriter.reset`, `StreamReader.reset`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
     def reset(self):
-        codecs.StreamWriter.reset(self)
-        try:
-            del self.encode
-        except AttributeError:
-            pass
+        codecs.IncrementalEncoder.reset(self)
+        self.encoder = None
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #48 · anchor · `_run_pip`
+## #67 · anchor · `_run_pip`
 
 - **位置**：`ensurepip/__init__.py:65`（24 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -1766,7 +2485,44 @@ runpy.run_module("pip", run_name="__main__", alter_sys=True)
 
 ---
 
-## #49 · confluence · `_url_collapse_path`
+## #68 · random · `LineTooLong.__init__`
+
+- **位置**：`http/client.py:1569`（3 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`HTTPResponse.__init__`, `HTTPConnection.__init__`, `UnknownProtocol.__init__`, `IncompleteRead.__init__`, `BadStatusLine.__init__`, `RemoteDisconnected.__init__`, `HTTPSConnection.__init__`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def __init__(self, line_type):
+        HTTPException.__init__(self, "got more than %d bytes when reading %s"
+                                     % (_MAXLINE, line_type))
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #69 · zero_cover · `Morsel.__ior__`
+
+- **位置**：`http/cookies.py:344`（3 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+
+**源码**：
+
+```python
+    def __ior__(self, values):
+        self.update(values)
+        return self
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #70 · confluence · `_url_collapse_path`
 
 - **位置**：`http/server.py:922`（45 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-380
@@ -1828,7 +2584,113 @@ def _url_collapse_path(path):
 
 ---
 
-## #50 · confluence · `_install`
+## #71 · zero_cover · `HTTPServer.server_bind`
+
+- **位置**：`http/server.py:138`（6 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`DualStackServer.server_bind`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def server_bind(self):
+        """Override server_bind to store the server name."""
+        socketserver.TCPServer.server_bind(self)
+        host, port = self.server_address[:2]
+        self.server_name = socket.getfqdn(host)
+        self.server_port = port
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #72 · anchor · `CGIHTTPRequestHandler.run_cgi`
+
+- **位置**：`http/server.py:1074`（196 行）
+- **层**：anchor ｜ 锚点命中 import:import_subprocess
+- **结构量**：Forman=None ｜ 池：p_anchor_breadth, p_big1
+- **同文件调用者**：`CGIHTTPRequestHandler.do_POST`, `CGIHTTPRequestHandler.send_head`（跨文件调用者未扫描）
+- **锚点命中行**：
+  - L145 `# Non-Unix -- use subprocess` → import:import_subprocess
+  - L146 `import subprocess` → import:import_subprocess
+  - L156 `self.log_message("command: %s", subprocess.list2cmdline(cmdline))` → import:import_subprocess
+  - L161 `p = subprocess.Popen(cmdline,` → import:import_subprocess
+  - L162 `stdin=subprocess.PIPE,` → import:import_subprocess
+
+**源码**：
+
+```python
+    def run_cgi(self):
+        """Execute a CGI script."""
+        dir, rest = self.cgi_info
+        path = dir + '/' + rest
+        i = path.find('/', len(dir)+1)
+        while i >= 0:
+            nextdir = path[:i]
+            nextrest = path[i+1:]
+
+            scriptdir = self.translate_path(nextdir)
+            if os.path.isdir(scriptdir):
+                dir, rest = nextdir, nextrest
+                i = path.find('/', len(dir)+1)
+            else:
+                break
+
+        # find an explicit query string, if present.
+        rest, _, query = rest.partition('?')
+
+        # dissect the part after the directory name into a script name &
+        # a possible additional path, to be stored in PATH_INFO.
+        i = rest.find('/')
+        if i >= 0:
+            script, rest = rest[:i], rest[i:]
+        else:
+            script, rest = rest, ''
+
+        scriptname = dir + '/' + script
+        scriptfile = self.translate_path(scriptname)
+        if not os.path.exists(scriptfile):
+            self.send_error(
+                HTTPStatus.NOT_FOUND,
+                "No such CGI script (%r)" % scriptname)
+            return
+        if not os.path.isfile(scriptfile):
+            self.send_error(
+                HTTPStatus.FORBIDDEN,
+                "CGI script is not a plain file (%r)" % scriptname)
+            return
+        ispy = self.is_python(scriptname)
+        if self.have_fork or not ispy:
+            if not self.is_executable(scriptfile):
+                self.send_error(
+                    HTTPStatus.FORBIDDEN,
+                    "CGI script is not executable (%r)" % scriptname)
+                return
+
+        # Reference: https://www6.uniovi.es/~antonio/ncsa_httpd/cgi/env.html
+        # XXX Much of the following could be prepared ahead of time!
+        env = copy.deepcopy(os.environ)
+        env['SERVER_SOFTWARE'] = self.version_string()
+        env['SERVER_NAME'] = self.server.server_name
+        env['GATEWAY_INTERFACE'] = 'CGI/1.1'
+        env['SERVER_PROTOCOL'] = self.protocol_version
+        env['SERVER_PORT'] = str(self.server.server_port)
+        env['REQUEST_METHOD'] = self.command
+        uqrest = urllib.parse.unquote(rest)
+        env['PATH_INFO'] = uqrest
+        env['PATH_TRANSLATED'] = self.translate_path(uqrest)
+        env['SCRIPT_NAME'] = scriptname
+```
+
+> 已截断（共 196 行），完整见 `http/server.py:1074`
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #73 · confluence · `_install`
 
 - **位置**：`importlib/_bootstrap.py:1546`（6 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-377
@@ -1851,61 +2713,33 @@ def _install(sys_module, _imp_module):
 
 ---
 
-## #51 · anchor · `_compile_bytecode`
+## #74 · random · `NamespaceReader._resolve_zip_path`
 
-- **位置**：`importlib/_bootstrap_external.py:779`（11 行）
-- **层**：anchor ｜ 锚点命中 sink:marshal
-- **结构量**：Forman=-19 ｜ 池：p_anchor_breadth
-- **本函数调用**：`ImportError`, `_fix_co_filename`, `_verbose_message`, `isinstance`, `loads`
-- **同文件调用者**：`SourceLoader.get_code`, `SourcelessFileLoader.get_code`（跨文件调用者未扫描）
-- **锚点命中行**：
-  - L3 `code = marshal.loads(data)` → sink:marshal
-
-**源码**：
-
-```python
-def _compile_bytecode(data, name=None, bytecode_path=None, source_path=None):
-    """Compile bytecode as found in a pyc."""
-    code = marshal.loads(data)
-    if isinstance(code, _code_type):
-        _bootstrap._verbose_message('code object from {!r}', bytecode_path)
-        if source_path is not None:
-            _imp._fix_co_filename(code, source_path)
-        return code
-    else:
-        raise ImportError(f'Non-code object in {bytecode_path!r}',
-                          name=name, path=bytecode_path)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #52 · random · `FileLoader.get_data`
-
-- **位置**：`importlib/_bootstrap_external.py:1211`（8 行）
+- **位置**：`importlib/resources/readers.py:165`（10 行）
 - **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`SourceLoader.get_source`, `SourceLoader.get_code`, `SourcelessFileLoader.get_code`（跨文件调用者未扫描）
+- **同文件调用者**：`NamespaceReader._candidate_paths`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def get_data(self, path):
-        """Return the data from path as raw bytes."""
-        if isinstance(self, (SourceLoader, SourcelessFileLoader, ExtensionFileLoader)):
-            with _io.open_code(str(path)) as file:
-                return file.read()
-        else:
-            with _io.FileIO(path, 'r') as file:
-                return file.read()
+    def _resolve_zip_path(path_str: str):
+        for match in reversed(list(re.finditer(r'[\\/]', path_str))):
+            with contextlib.suppress(
+                FileNotFoundError,
+                IsADirectoryError,
+                NotADirectoryError,
+                PermissionError,
+            ):
+                inner = path_str[match.end() :].replace('\\', '/') + '/'
+                yield zipfile.Path(path_str[: match.start()], inner.lstrip('/'))
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #53 · confluence · `_strip_spaces`
+## #75 · confluence · `_strip_spaces`
 
 - **位置**：`logging/config.py:108`（2 行）
 - **层**：confluence ｜ 曲率汇合点 forman=-227
@@ -1924,7 +2758,7 @@ def _strip_spaces(alist):
 
 ---
 
-## #54 · anchor · `SocketHandler.makePickle`
+## #76 · anchor · `SocketHandler.makePickle`
 
 - **位置**：`logging/handlers.py:649`（21 行）
 - **层**：anchor ｜ 锚点命中 import:import_pickle
@@ -1963,83 +2797,35 @@ def _strip_spaces(alist):
 
 ---
 
-## #55 · random · `QueueListener.enqueue_sentinel`
+## #77 · confluence · `_checkLevel`
 
-- **位置**：`logging/handlers.py:1608`（9 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`QueueListener.stop`（跨文件调用者未扫描）
+- **位置**：`logging/__init__.py:205`（11 行）
+- **层**：confluence ｜ 曲率汇合点 forman=-172
+- **结构量**：Forman=-172 ｜ 池：（不在任何池内）
+- **本函数调用**：`TypeError`, `ValueError`, `isinstance`, `str`
+- **同文件调用者**：`Handler.__init__`, `Handler.setLevel`, `Manager.disable`, `Logger.__init__`, `Logger.setLevel`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def enqueue_sentinel(self):
-        """
-        This is used to enqueue the sentinel record.
-
-        The base implementation uses put_nowait. You may want to override this
-        method if you want to use timeouts or work with custom queue
-        implementations.
-        """
-        self.queue.put_nowait(self._sentinel)
+def _checkLevel(level):
+    if isinstance(level, int):
+        rv = level
+    elif str(level) == level:
+        if level not in _nameToLevel:
+            raise ValueError("Unknown level: %r" % level)
+        rv = _nameToLevel[level]
+    else:
+        raise TypeError("Level not an integer or a valid string: %r"
+                        % (level,))
+    return rv
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #56 · random · `Logger.getChild`
-
-- **位置**：`logging/__init__.py:1784`（18 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-
-**源码**：
-
-```python
-    def getChild(self, suffix):
-        """
-        Get a logger which is a descendant to this one.
-
-        This is a convenience method, such that
-
-        logging.getLogger('abc').getChild('def.ghi')
-
-        is the same as
-
-        logging.getLogger('abc.def.ghi')
-
-        It's useful, for example, when the parent logger is named using
-        __name__ rather than a literal string.
-        """
-        if self.root is not self:
-            suffix = '.'.join((self.name, suffix))
-        return self.manager.getLogger(suffix)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #57 · random · `_ConnectionBase.__exit__`
-
-- **位置**：`multiprocessing/connection.py:267`（2 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`Listener.__exit__`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        self.close()
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #58 · anchor · `XmlListener.accept`
+## #78 · anchor · `XmlListener.accept`
 
 - **位置**：`multiprocessing/connection.py:1019`（5 行）
 - **层**：anchor ｜ 锚点命中 import:import_xmlrpclib
@@ -2062,24 +2848,25 @@ def _strip_spaces(alist):
 
 ---
 
-## #59 · zero_cover · `BarrierProxy.abort`
+## #79 · random · `ApplyResult.wait`
 
-- **位置**：`multiprocessing/managers.py:1116`（2 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **位置**：`multiprocessing/pool.py:764`（2 行）
+- **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`Pool._wait_for_updates`, `ApplyResult.get`, `IMapIterator.next`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def abort(self):
-        return self._callmethod('abort')
+    def wait(self, timeout=None):
+        self._event.wait(timeout)
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #60 · anchor · `get_preparation_data`
+## #80 · anchor · `get_preparation_data`
 
 - **位置**：`multiprocessing/spawn.py:160`（45 行）
 - **层**：anchor ｜ 锚点命中 import:import_subprocess
@@ -2142,1299 +2929,682 @@ def get_preparation_data(name):
 
 ---
 
-## #61 · random · `Condition._make_methods`
+## #81 · random · `Condition.__setstate__`
 
-- **位置**：`multiprocessing/synchronize.py:242`（3 行）
+- **位置**：`multiprocessing/synchronize.py:231`（4 行）
 - **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`SemLock.__init__`, `SemLock._make_methods`, `SemLock.__setstate__`, `Condition.__init__`, `Condition.__setstate__`（跨文件调用者未扫描）
+- **同文件调用者**：`SemLock.__setstate__`, `Barrier.__init__`, `Barrier.__setstate__`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def _make_methods(self):
-        self.acquire = self._lock.acquire
-        self.release = self._lock.release
+    def __setstate__(self, state):
+        (self._lock, self._sleeping_count,
+         self._woken_count, self._wait_semaphore) = state
+        self._make_methods()
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #62 · anchor · `InprocessBuildEnvironmentInstaller.install`
+## #82 · zero_cover · `_AssertRaisesBaseContext.handle`
 
-- **位置**：`site-packages/pip/_internal/build_env.py:320`（51 行）
-- **层**：anchor ｜ 锚点命中 import:import_subprocess
-- **结构量**：Forman=None ｜ 池：p_anchor_breadth
-- **同文件调用者**：`BuildEnvironmentInstaller.install`, `SubprocessBuildEnvironmentInstaller.install`, `BuildEnvironment.install_requirements`（跨文件调用者未扫描）
-- **锚点命中行**：
-  - L27 `# Format similar to a nested subprocess error, where the` → import:import_subprocess
-
-**源码**：
-
-```python
-    def install(
-        self,
-        requirements: Iterable[str],
-        prefix: _Prefix,
-        *,
-        kind: str,
-        for_req: InstallRequirement | None,
-    ) -> None:
-        """Install entrypoint. Manages output capturing and error handling."""
-        capture_logs = not logger.isEnabledFor(VERBOSE) and self._level == 0
-        if capture_logs:
-            # Hide the logs from the installation of build dependencies.
-            # They will be shown only if an error occurs.
-            capture_ctx: ContextManager[StringIO] = capture_logging()
-            spinner: ContextManager[None] = open_rich_spinner(f"Installing {kind}")
-        else:
-            # Otherwise, pass-through all logs (with a header).
-            capture_ctx, spinner = nullcontext(StringIO()), nullcontext()
-            logger.info("Installing %s ...", kind)
-
-        try:
-            self._level += 1
-            with spinner, capture_ctx as stream:
-                self._install_impl(requirements, prefix)
-
-        except DiagnosticPipError as exc:
-            # Format similar to a nested subprocess error, where the
-            # causing error is shown first, followed by the build error.
-            logger.info(textwrap.dedent(stream.getvalue()))
-            logger.error("%s", exc, extra={"rich": True})
-            logger.info("")
-            raise BuildDependencyInstallError(
-                for_req, requirements, cause=exc, log_lines=None
-            )
-
-        except Exception as exc:
-            logs: list[str] | None = textwrap.dedent(stream.getvalue()).splitlines()
-            if not capture_logs:
-                # If logs aren't being captured, then display the error inline
-                # with the rest of the logs.
-                logs = None
-                if isinstance(exc, PipError):
-                    logger.error("%s", exc)
-                else:
-                    logger.exception("pip crashed unexpectedly")
-            raise BuildDependencyInstallError(
-                for_req, requirements, cause=exc, log_lines=logs
-            )
-
-        finally:
-            self._level -= 1
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #63 · random · `editable`
-
-- **位置**：`site-packages/pip/_internal/cli/cmdoptions.py:575`（13 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **本函数调用**：`Option`
-
-**源码**：
-
-```python
-def editable() -> Option:
-    return Option(
-        "-e",
-        "--editable",
-        dest="editables",
-        action="append",
-        default=[],
-        metavar="path/url",
-        help=(
-            "Install a project in editable mode (i.e. setuptools "
-            '"develop mode") from a local project path or a VCS url.'
-        ),
-    )
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #64 · zero_cover · `LinkEvaluator.get_version_sort_key`
-
-- **位置**：`site-packages/pip/_internal/index/package_finder.py:283`（2 行）
+- **位置**：`unittest/case.py:214`（28 行）
 - **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`LinkEvaluator.evaluate_link`（跨文件调用者未扫描）
+- **同文件调用者**：`TestCase.assertRaises`, `TestCase.assertWarns`, `TestCase._assertNotWarns`, `TestCase.assertRaisesRegex`, `TestCase.assertWarnsRegex`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-                def get_version_sort_key(v: str) -> tuple[int, ...]:
-                    return tuple(int(s) for s in v.split(".") if s.isdigit())
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #65 · zero_cover · `Link.path`
-
-- **位置**：`site-packages/pip/_internal/models/link.py:455`（2 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`_clean_file_url_path`, `_clean_url_path`, `_ensure_quoted_url`, `Link.file_path`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def path(self) -> str:
-        return self._path
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #66 · confluence · `build_wheel_pep517`
-
-- **位置**：`site-packages/pip/_internal/operations/build/wheel.py:13`（26 行）
-- **层**：confluence ｜ 曲率汇合点 forman=-371
-- **结构量**：Forman=-371 ｜ 池：（不在任何池内）
-- **本函数调用**：`build_wheel`, `debug`, `error`, `join`, `runner_with_spinner_message`, `subprocess_runner`
-
-**源码**：
-
-```python
-def build_wheel_pep517(
-    name: str,
-    backend: BuildBackendHookCaller,
-    metadata_directory: str,
-    wheel_directory: str,
-) -> str | None:
-    """Build one InstallRequirement using the PEP 517 build process.
-
-    Returns path to wheel if successfully built. Otherwise, returns None.
-    """
-    assert metadata_directory is not None
-    try:
-        logger.debug("Destination directory: %s", wheel_directory)
-
-        runner = runner_with_spinner_message(
-            f"Building wheel for {name} (pyproject.toml)"
-        )
-        with backend.subprocess_runner(runner):
-            wheel_name = backend.build_wheel(
-                wheel_directory=wheel_directory,
-                metadata_directory=metadata_directory,
-            )
-    except Exception:
-        logger.error("Failed building wheel for %s", name)
-        return None
-    return os.path.join(wheel_directory, wheel_name)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #67 · confluence · `parse_editable`
-
-- **位置**：`site-packages/pip/_internal/req/constructors.py:148`（32 行）
-- **层**：confluence ｜ 曲率汇合点 forman=-366
-- **结构量**：Forman=-366 ｜ 池：（不在任何池内）
-- **本函数调用**：`InstallationError`, `Link`, `_parse_direct_url_editable`, `_parse_pip_syntax_editable`, `join`, `startswith`
-- **同文件调用者**：`parse_req_from_editable`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def parse_editable(editable_req: str) -> tuple[str | None, str, set[str]]:
-    """Parses an editable requirement into:
-        - a requirement name with environment markers
-        - an URL
-        - extras
-    Accepted requirements:
-        - svn+http://blahblah@rev#egg=Foobar[baz]&subdirectory=version_subdir
-        - local_path[some_extra]
-        - Foobar[extra] @ svn+http://blahblah@rev#subdirectory=subdir ; markers
-    """
-    try:
-        package_name, url, extras = _parse_direct_url_editable(editable_req)
-    except ValueError:
-        package_name, url, extras = _parse_pip_syntax_editable(editable_req)
-
-    link = Link(url)
-
-    if not link.is_vcs and not link.url.startswith("file:"):
-        backends = ", ".join(vcs.all_schemes)
-        raise InstallationError(
-            f"{editable_req} is not a valid editable requirement. "
-            f"It should either be a path to a local project or a VCS URL "
-            f"(beginning with {backends})."
-        )
-
-    # The project name can be inferred from local file URIs easily.
-    if not package_name and not link.url.startswith("file:"):
-        raise InstallationError(
-            f"Could not detect requirement name for '{editable_req}', "
-            "please specify one with your_package_name @ URL"
-        )
-    return package_name, url, extras
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #68 · random · `deduce_helpful_msg`
-
-- **位置**：`site-packages/pip/_internal/req/constructors.py:210`（23 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=-45 ｜ 池：（不在任何池内）
-- **本函数调用**：`check_first_requirement_in_file`, `debug`, `exists`
-- **同文件调用者**：`parse_req_from_line`, `_parse_req_string`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def deduce_helpful_msg(req: str) -> str:
-    """Returns helpful msg in case requirements file does not exist,
-    or cannot be parsed.
-
-    :params req: Requirements file path
-    """
-    if not os.path.exists(req):
-        return f" File '{req}' does not exist."
-    msg = " The path does exist. "
-    # Try to parse and check if it is a requirements file.
-    try:
-        check_first_requirement_in_file(req)
-    except InvalidRequirement:
-        logger.debug("Cannot parse '%s' as requirements file", req)
-    else:
-        msg += (
-            f"The argument you provided "
-            f"({req}) appears to be a"
-            f" requirements file. If that is the"
-            f" case, use the '-r' flag to install"
-            f" the packages specified within it."
-        )
-    return msg
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #69 · confluence · `handle_requirement_line`
-
-- **位置**：`site-packages/pip/_internal/req/req_file.py:175`（32 行）
-- **层**：confluence ｜ 曲率汇合点 forman=-144
-- **结构量**：Forman=-144 ｜ 池：（不在任何池内）
-- **本函数调用**：`ParsedRequirement`, `format`
-- **同文件调用者**：`handle_line`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def handle_requirement_line(
-    line: ParsedLine,
-    options: optparse.Values | None = None,
-) -> ParsedRequirement:
-    # preserve for the nested code path
-    line_comes_from = "{} {} (line {})".format(
-        "-c" if line.constraint else "-r",
-        line.filename,
-        line.lineno,
-    )
-
-    assert line.requirement is not None
-
-    # get the options that apply to requirements
-    if line.is_editable:
-        supported_dest = SUPPORTED_OPTIONS_EDITABLE_REQ_DEST
-    else:
-        supported_dest = SUPPORTED_OPTIONS_REQ_DEST
-    req_options = {}
-    for dest in supported_dest:
-        if dest in line.opts.__dict__ and line.opts.__dict__[dest]:
-            req_options[dest] = line.opts.__dict__[dest]
-
-    line_source = f"line {line.lineno} of {line.filename}"
-    return ParsedRequirement(
-        requirement=line.requirement,
-        is_editable=line.is_editable,
-        comes_from=line_comes_from,
-        constraint=line.constraint,
-        options=req_options,
-        line_source=line_source,
-    )
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #70 · random · `glibc_version_string`
-
-- **位置**：`site-packages/pip/_internal/utils/glibc.py:7`（3 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=-1 ｜ 池：（不在任何池内）
-- **本函数调用**：`glibc_version_string_confstr`, `glibc_version_string_ctypes`
-- **同文件调用者**：`libc_ver`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def glibc_version_string() -> str | None:
-    "Returns glibc version string, or None if not using glibc."
-    return glibc_version_string_confstr() or glibc_version_string_ctypes()
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #71 · confluence · `is_installable_dir`
-
-- **位置**：`site-packages/pip/_internal/utils/misc.py:287`（15 行）
-- **层**：confluence ｜ 曲率汇合点 forman=-366
-- **结构量**：Forman=-366 ｜ 池：（不在任何池内）
-- **本函数调用**：`isdir`, `isfile`, `join`
-
-**源码**：
-
-```python
-def is_installable_dir(path: str) -> bool:
-    """Is path is a directory containing pyproject.toml or setup.py?
-
-    If pyproject.toml exists, this is a PEP 517 project. Otherwise we look for
-    a legacy setuptools layout by identifying setup.py. We don't check for the
-    setup.cfg because using it without setup.py is only available for PEP 517
-    projects, which are already covered by the pyproject.toml check.
-    """
-    if not os.path.isdir(path):
-        return False
-    if os.path.isfile(os.path.join(path, "pyproject.toml")):
-        return True
-    if os.path.isfile(os.path.join(path, "setup.py")):
-        return True
-    return False
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #72 · random · `TempDirectoryTypeRegistry.set_delete`
-
-- **位置**：`site-packages/pip/_internal/utils/temp_dir.py:54`（5 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=0 ｜ 池：（不在任何池内）
-
-**源码**：
-
-```python
-    def set_delete(self, kind: str, value: bool) -> None:
-        """Indicate whether a TempDirectory of the given kind should be
-        auto-deleted.
+    def handle(self, name, args, kwargs):
         """
-        self._should_delete[kind] = value
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #73 · random · `Serializer.dumps`
-
-- **位置**：`site-packages/pip/_vendor/cachecontrol/serialize.py:20`（41 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`Serializer.serialize`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def dumps(
-        self,
-        request: PreparedRequest,
-        response: HTTPResponse,
-        body: bytes | None = None,
-    ) -> bytes:
-        response_headers: CaseInsensitiveDict[str] = CaseInsensitiveDict(
-            response.headers
-        )
-
-        if body is None:
-            # When a body isn't passed in, we'll read the response. We
-            # also update the response with a new file handler to be
-            # sure it acts as though it was never read.
-            body = response.read(decode_content=False)
-            response._fp = io.BytesIO(body)  # type: ignore[assignment]
-            response.length_remaining = len(body)
-
-        data = {
-            "response": {
-                "body": body,  # Empty bytestring if body is stored separately
-                "headers": {str(k): str(v) for k, v in response.headers.items()},
-                "status": response.status,
-                "version": response.version,
-                "reason": str(response.reason),
-                "decode_content": response.decode_content,
-            }
-        }
-
-        # Construct our vary headers
-        data["vary"] = {}
-        if "vary" in response_headers:
-            varied_headers = response_headers["vary"].split(",")
-            for header in varied_headers:
-                header = str(header).strip()
-                header_value = request.headers.get(header, None)
-                if header_value is not None:
-                    header_value = str(header_value)
-                data["vary"][header] = header_value
-
-        return b",".join([f"cc={self.serde_version}".encode(), self.serialize(data)])
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #74 · random · `proceed`
-
-- **位置**：`site-packages/pip/_vendor/distlib/util.py:322`（14 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=-100 ｜ 池：（不在任何池内）
-- **本函数调用**：`lower`, `raw_input`
-
-**源码**：
-
-```python
-def proceed(prompt, allowed_chars, error_prompt=None, default=None):
-    p = prompt
-    while True:
-        s = raw_input(p)
-        p = prompt
-        if not s and default:
-            s = default
-        if s:
-            c = s[0].lower()
-            if c in allowed_chars:
-                break
-            if error_prompt:
-                p = '%c: %s\n%s' % (c, error_prompt, prompt)
-    return c
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #75 · anchor · `LinuxDistribution._lsb_release_info`
-
-- **位置**：`site-packages/pip/_vendor/distro/distro.py:1154`（17 行）
-- **层**：anchor ｜ 锚点命中 import:import_subprocess
-- **结构量**：Forman=None ｜ 池：p_anchor_breadth
-- **锚点命中行**：
-  - L12 `stdout = subprocess.check_output(cmd, stderr=subprocess.DEVNULL)` → import:import_subprocess
-  - L14 `except (OSError, subprocess.CalledProcessError):` → import:import_subprocess
-
-**源码**：
-
-```python
-    def _lsb_release_info(self) -> Dict[str, str]:
-        """
-        Get the information items from the lsb_release command output.
-
-        Returns:
-            A dictionary containing all information items.
-        """
-        if not self.include_lsb:
-            return {}
-        try:
-            cmd = ("lsb_release", "-a")
-            stdout = subprocess.check_output(cmd, stderr=subprocess.DEVNULL)
-        # Command not found or lsb_release returned error
-        except (OSError, subprocess.CalledProcessError):
-            return {}
-        content = self._to_str(stdout).splitlines()
-        return self._parse_lsb_release_content(content)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #76 · anchor · `LinuxDistribution._oslevel_info`
-
-- **位置**：`site-packages/pip/_vendor/distro/distro.py:1209`（8 行）
-- **层**：anchor ｜ 锚点命中 import:import_subprocess
-- **结构量**：Forman=None ｜ 池：p_anchor_breadth
-- **锚点命中行**：
-  - L5 `stdout = subprocess.check_output("oslevel", stderr=subprocess.DEVNULL)` → import:import_subprocess
-  - L6 `except (OSError, subprocess.CalledProcessError):` → import:import_subprocess
-
-**源码**：
-
-```python
-    def _oslevel_info(self) -> str:
-        if not self.include_oslevel:
-            return ""
-        try:
-            stdout = subprocess.check_output("oslevel", stderr=subprocess.DEVNULL)
-        except (OSError, subprocess.CalledProcessError):
-            return ""
-        return self._to_str(stdout).strip()
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #77 · confluence · `check_bidi`
-
-- **位置**：`site-packages/pip/_vendor/idna/core.py:70`（68 行）
-- **层**：confluence ｜ 曲率汇合点 forman=-146
-- **结构量**：Forman=-146 ｜ 池：（不在任何池内）
-- **本函数调用**：`IDNABidiError`, `bidirectional`, `enumerate`, `format`, `repr`
-- **同文件调用者**：`check_label`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def check_bidi(label: str, check_ltr: bool = False) -> bool:
-    # Bidi rules should only be applied if string contains RTL characters
-    bidi_label = False
-    for idx, cp in enumerate(label, 1):
-        direction = unicodedata.bidirectional(cp)
-        if direction == "":
-            # String likely comes from a newer version of Unicode
-            raise IDNABidiError("Unknown directionality in label {} at position {}".format(repr(label), idx))
-        if direction in ["R", "AL", "AN"]:
-            bidi_label = True
-    if not bidi_label and not check_ltr:
-        return True
-
-    # Bidi rule 1
-    direction = unicodedata.bidirectional(label[0])
-    if direction in ["R", "AL"]:
-        rtl = True
-    elif direction == "L":
-        rtl = False
-    else:
-        raise IDNABidiError("First codepoint in label {} must be directionality L, R or AL".format(repr(label)))
-
-    valid_ending = False
-    number_type: Optional[str] = None
-    for idx, cp in enumerate(label, 1):
-        direction = unicodedata.bidirectional(cp)
-
-        if rtl:
-            # Bidi rule 2
-            if direction not in [
-                "R",
-                "AL",
-                "AN",
-                "EN",
-                "ES",
-                "CS",
-                "ET",
-                "ON",
-                "BN",
-                "NSM",
-            ]:
-                raise IDNABidiError("Invalid direction for codepoint at position {} in a right-to-left label".format(idx))
-            # Bidi rule 3
-            if direction in ["R", "AL", "EN", "AN"]:
-                valid_ending = True
-            elif direction != "NSM":
-                valid_ending = False
-            # Bidi rule 4
-            if direction in ["AN", "EN"]:
-                if not number_type:
-                    number_type = direction
-                else:
-                    if number_type != direction:
-                        raise IDNABidiError("Can not mix numeral types in a right-to-left label")
-        else:
-            # Bidi rule 5
-            if direction not in ["L", "EN", "ES", "CS", "ET", "ON", "BN", "NSM"]:
-                raise IDNABidiError("Invalid direction for codepoint at position {} in a left-to-right label".format(idx))
-            # Bidi rule 6
-            if direction in ["L", "EN"]:
-```
-
-> 已截断（共 68 行），完整见 `site-packages/pip/_vendor/idna/core.py:70`
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #78 · zero_cover · `is_valid_pylock_path`
-
-- **位置**：`site-packages/pip/_vendor/packaging/pylock.py:73`（3 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=-80 ｜ 池：（不在任何池内）
-- **本函数调用**：`bool`, `match`
-
-**源码**：
-
-```python
-def is_valid_pylock_path(path: Path) -> bool:
-    """Check if the given path is a valid pylock file path."""
-    return path.name == "pylock.toml" or bool(_PYLOCK_FILE_NAME_RE.match(path.name))
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #79 · random · `_UpperBound.__lt__`
-
-- **位置**：`site-packages/pip/_vendor/packaging/specifiers.py:213`（12 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`_BoundaryVersion.__lt__`, `_LowerBound.__lt__`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def __lt__(self, other: _UpperBound) -> bool:
-        if not isinstance(other, _UpperBound):  # pragma: no cover
-            return NotImplemented
-        # Nothing < +inf (except +inf itself).
-        if self.version is None:
-            return False
-        if other.version is None:
-            return True
-        if self.version != other.version:
-            return self.version < other.version
-        # v) < v]: exclusive ends earlier.
-        return not self.inclusive and other.inclusive
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #80 · zero_cover · `Specifier._require_spec_version`
-
-- **位置**：`site-packages/pip/_vendor/packaging/specifiers.py:623`（9 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`Specifier._wildcard_ranges`, `Specifier._standard_ranges`, `Specifier._canonical_spec`, `Specifier._compare_equal`, `Specifier._compare_less_than_equal`, `Specifier._compare_greater_than_equal`, `Specifier._compare_less_than`, `Specifier._compare_greater_than`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def _require_spec_version(self, version: str) -> Version:
-        """Get spec version, asserting it's valid (not for === operator).
-
-        This method should only be called for operators where version
-        strings are guaranteed to be valid PEP 440 versions (not ===).
-        """
-        spec_version = self._get_spec_version(version)
-        assert spec_version is not None
-        return spec_version
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #81 · zero_cover · `Distribution._dep_map`
-
-- **位置**：`site-packages/pip/_vendor/pkg_resources/__init__.py:3029`（10 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`Distribution._build_dep_map`, `DistInfoDistribution._dep_map`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def _dep_map(self):
-        """
-        A map of extra to its list of (direct) requirements
-        for this distribution, including the null extra.
+        If args is empty, assertRaises/Warns is being used as a
+        context manager, so check for a 'msg' kwarg and return self.
+        If args is not empty, call a callable passing positional and keyword
+        arguments.
         """
         try:
-            return self.__dep_map
-        except AttributeError:
-            self.__dep_map = self._filter_extras(self._build_dep_map())
-        return self.__dep_map
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #82 · confluence · `get_win_folder_from_env_vars`
-
-- **位置**：`site-packages/pip/_vendor/platformdirs/windows.py:143`（19 行）
-- **层**：confluence ｜ 曲率汇合点 forman=-216
-- **结构量**：Forman=-216 ｜ 池：（不在任何池内）
-- **本函数调用**：`ValueError`, `get`, `get_win_folder_if_csidl_name_not_env_var`
-
-**源码**：
-
-```python
-def get_win_folder_from_env_vars(csidl_name: str) -> str:
-    """Get folder from environment variables."""
-    result = get_win_folder_if_csidl_name_not_env_var(csidl_name)
-    if result is not None:
-        return result
-
-    env_var_name = {
-        "CSIDL_APPDATA": "APPDATA",
-        "CSIDL_COMMON_APPDATA": "ALLUSERSPROFILE",
-        "CSIDL_LOCAL_APPDATA": "LOCALAPPDATA",
-    }.get(csidl_name)
-    if env_var_name is None:
-        msg = f"Unknown CSIDL name: {csidl_name}"
-        raise ValueError(msg)
-    result = os.environ.get(env_var_name)
-    if result is None:
-        msg = f"Unset environment variable: {env_var_name}"
-        raise ValueError(msg)
-    return result
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #83 · confluence · `guess_lexer`
-
-- **位置**：`site-packages/pip/_vendor/pygments/lexers/__init__.py:304`（37 行）
-- **层**：confluence ｜ 曲率汇合点 forman=-222
-- **结构量**：Forman=-222 ｜ 池：（不在任何池内）
-- **本函数调用**：`ClassNotFound`, `_iter_lexerclasses`, `analyse_text`, `decode`, `get`, `get_filetype_from_buffer`, `get_lexer_by_name`, `guess_decode`, `isinstance`, `lexer`
-- **同文件调用者**：`guess_lexer_for_filename`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def guess_lexer(_text, **options):
-    """
-    Return a `Lexer` subclass instance that's guessed from the text in
-    `text`. For that, the :meth:`.analyse_text()` method of every known lexer
-    class is called with the text as argument, and the lexer which returned the
-    highest value will be instantiated and returned.
-
-    :exc:`pygments.util.ClassNotFound` is raised if no lexer thinks it can
-    handle the content.
-    """
-
-    if not isinstance(_text, str):
-        inencoding = options.get('inencoding', options.get('encoding'))
-        if inencoding:
-            _text = _text.decode(inencoding or 'utf8')
-        else:
-            _text, _ = guess_decode(_text)
-
-    # try to get a vim modeline first
-    ft = get_filetype_from_buffer(_text)
-
-    if ft is not None:
-        try:
-            return get_lexer_by_name(ft, **options)
-        except ClassNotFound:
-            pass
-
-    best_lexer = [0.0, None]
-    for lexer in _iter_lexerclasses():
-        rv = lexer.analyse_text(_text)
-        if rv == 1.0:
-            return lexer(**options)
-        if rv > best_lexer[0]:
-            best_lexer[:] = (rv, lexer)
-    if not best_lexer[0] or best_lexer[1] is None:
-        raise ClassNotFound('no lexer matching the text found')
-    return best_lexer[1](**options)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #84 · confluence · `_combine_regex`
-
-- **位置**：`site-packages/pip/_vendor/rich/highlighter.py:8`（7 行）
-- **层**：confluence ｜ 曲率汇合点 forman=-362
-- **结构量**：Forman=-362 ｜ 池：（不在任何池内）
-- **本函数调用**：`join`
-
-**源码**：
-
-```python
-def _combine_regex(*regexes: str) -> str:
-    """Combine a number of regexes in to a single regex.
-
-    Returns:
-        str: New regex with all regexes ORed together.
-    """
-    return "|".join(regexes)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #85 · zero_cover · `SetConsoleCursorPosition`
-
-- **位置**：`site-packages/pip/_vendor/rich/_win32_console.py:252`（13 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **本函数调用**：`_SetConsoleCursorPosition`, `bool`
-- **同文件调用者**：`LegacyWindowsTerm.move_cursor_to`, `LegacyWindowsTerm.move_cursor_up`, `LegacyWindowsTerm.move_cursor_down`, `LegacyWindowsTerm.move_cursor_forward`, `LegacyWindowsTerm.move_cursor_to_column`, `LegacyWindowsTerm.move_cursor_backward`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def SetConsoleCursorPosition(
-    std_handle: wintypes.HANDLE, coords: WindowsCoordinates
-) -> bool:
-    """Set the position of the cursor in the console screen
-
-    Args:
-        std_handle (wintypes.HANDLE): A handle to the console input buffer or the console screen buffer.
-        coords (WindowsCoordinates): The coordinates to move the cursor to.
-
-    Returns:
-        bool: True if the function succeeds, otherwise False.
-    """
-    return bool(_SetConsoleCursorPosition(std_handle, coords))
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #86 · zero_cover · `BaseHTTPConnection.connect`
-
-- **位置**：`site-packages/pip/_vendor/urllib3/_base_connection.py:75`（1 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-
-**源码**：
-
-```python
-        def connect(self) -> None: ...
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #87 · zero_cover · `BaseHTTPConnection.close`
-
-- **位置**：`site-packages/pip/_vendor/urllib3/_base_connection.py:95`（1 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-
-**源码**：
-
-```python
-        def close(self) -> None: ...
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #88 · zero_cover · `HTTPHeaderDictItemView.__contains__`
-
-- **位置**：`site-packages/pip/_vendor/urllib3/_collections.py:196`（6 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`HTTPHeaderDict.__contains__`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def __contains__(self, item: object) -> bool:
-        if isinstance(item, tuple) and len(item) == 2:
-            passed_key, passed_val = item
-            if isinstance(passed_key, str) and isinstance(passed_val, str):
-                return self._headers._has_value_for_header(passed_key, passed_val)
-        return False
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #89 · zero_cover · `HTTP2Connection.set_tunnel`
-
-- **位置**：`site-packages/pip/_vendor/urllib3/http2/connection.py:215`（10 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-
-**源码**：
-
-```python
-    def set_tunnel(
-        self,
-        host: str,
-        port: int | None = None,
-        headers: typing.Mapping[str, str] | None = None,
-        scheme: str = "http",
-    ) -> None:
-        raise NotImplementedError(
-            "HTTP/2 does not support setting up a tunnel through a proxy"
-        )
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #90 · confluence · `create_connection`
-
-- **位置**：`site-packages/pip/_vendor/urllib3/util/connection.py:27`（64 行）
-- **层**：confluence ｜ 曲率汇合点 forman=-219
-- **结构量**：Forman=-219 ｜ 池：（不在任何池内）
-- **本函数调用**：`LocationParseError`, `OSError`, `_set_socket_options`, `allowed_gai_family`, `bind`, `close`, `connect`, `encode`, `getaddrinfo`, `settimeout`, `socket`, `startswith`
-
-**源码**：
-
-```python
-def create_connection(
-    address: tuple[str, int],
-    timeout: _TYPE_TIMEOUT = _DEFAULT_TIMEOUT,
-    source_address: tuple[str, int] | None = None,
-    socket_options: _TYPE_SOCKET_OPTIONS | None = None,
-) -> socket.socket:
-    """Connect to *address* and return the socket object.
-
-    Convenience function.  Connect to *address* (a 2-tuple ``(host,
-    port)``) and return the socket object.  Passing the optional
-    *timeout* parameter will set the timeout on the socket instance
-    before attempting to connect.  If no *timeout* is supplied, the
-    global default timeout setting returned by :func:`socket.getdefaulttimeout`
-    is used.  If *source_address* is set it must be a tuple of (host, port)
-    for the socket to bind as a source address before making the connection.
-    An host of '' or port 0 tells the OS to use the default.
-    """
-
-    host, port = address
-    if host.startswith("["):
-        host = host.strip("[]")
-    err = None
-
-    # Using the value from allowed_gai_family() in the context of getaddrinfo lets
-    # us select whether to work with IPv4 DNS records, IPv6 records, or both.
-    # The original create_connection function always returns all records.
-    family = allowed_gai_family()
-
-    try:
-        host.encode("idna")
-    except UnicodeError:
-        raise LocationParseError(f"'{host}', label empty or too long") from None
-
-    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
-        af, socktype, proto, canonname, sa = res
-        sock = None
-        try:
-            sock = socket.socket(af, socktype, proto)
-
-            # If provided, set socket level options before connecting.
-            _set_socket_options(sock, socket_options)
-
-            if timeout is not _DEFAULT_TIMEOUT:
-                sock.settimeout(timeout)
-            if source_address:
-                sock.bind(source_address)
-            sock.connect(sa)
-            # Break explicitly a reference cycle
-            err = None
-            return sock
-
-        except OSError as _:
-            err = _
-            if sock is not None:
-                sock.close()
-
-    if err is not None:
-        try:
-            raise err
-        finally:
-```
-
-> 已截断（共 64 行），完整见 `site-packages/pip/_vendor/urllib3/util/connection.py:27`
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #91 · zero_cover · `make_safe_parse_float`
-
-- **位置**：`tomllib/_parser.py:685`（19 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=-12 ｜ 池：（不在任何池内）
-- **本函数调用**：`ValueError`, `isinstance`, `parse_float`
-- **同文件调用者**：`loads`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def make_safe_parse_float(parse_float: ParseFloat) -> ParseFloat:
-    """A decorator to make `parse_float` safe.
-
-    `parse_float` must not return dicts or lists, because these types
-    would be mixed with parsed TOML tables and arrays, thus confusing
-    the parser. The returned decorated callable raises `ValueError`
-    instead of returning illegal types.
-    """
-    # The default `float` callable never returns illegal types. Optimize it.
-    if parse_float is float:
-        return float
-
-    def safe_parse_float(float_str: str) -> Any:
-        float_value = parse_float(float_str)
-        if isinstance(float_value, (dict, list)):
-            raise ValueError("parse_float must not return dicts or lists")
-        return float_value
-
-    return safe_parse_float
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #92 · anchor · `DOMBuilder.parse`
-
-- **位置**：`xml/dom/xmlbuilder.py:187`（9 行）
-- **层**：anchor ｜ 锚点命中 sink:urllib_urlopen
-- **结构量**：Forman=None ｜ 池：p_anchor_breadth
-- **同文件调用者**：`DOMBuilder.parseURI`, `DOMEntityResolver.resolveEntity`（跨文件调用者未扫描）
-- **锚点命中行**：
-  - L8 `fp = urllib.request.urlopen(input.systemId)` → sink:urllib_urlopen
-
-**源码**：
-
-```python
-    def parse(self, input):
-        options = copy.copy(self._options)
-        options.filter = self.filter
-        options.errorHandler = self.errorHandler
-        fp = input.byteStream
-        if fp is None and input.systemId:
-            import urllib.request
-            fp = urllib.request.urlopen(input.systemId)
-        return self._parse_bytestream(fp, options)
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #93 · random · `findall`
-
-- **位置**：`xml/etree/ElementPath.py:410`（2 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=-149 ｜ 池：（不在任何池内）
-- **本函数调用**：`iterfind`, `list`
-- **同文件调用者**：`xpath_tokenizer`, `prepare_predicate`, `select`, `select`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-def findall(elem, path, namespaces=None):
-    return list(iterfind(elem, path, namespaces))
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #94 · random · `IncrementalParser.parse`
-
-- **位置**：`xml/sax/xmlreader.py:115`（11 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`XMLReader.parse`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def parse(self, source):
-        from . import saxutils
-        source = saxutils.prepare_input_source(source)
-
-        self.prepareParser(source)
-        file = source.getCharacterStream()
-        if file is None:
-            file = source.getByteStream()
-        while buffer := file.read(self._bufsize):
-            self.feed(buffer)
-        self.close()
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #95 · zero_cover · `ZipFile.read`
-
-- **位置**：`zipfile/__init__.py:1618`（5 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`_EndRecData64`, `_EndRecData`, `_SharedFile.read`, `ZipExtFile._init_decrypter`, `ZipExtFile.peek`, `ZipExtFile.read`, `ZipExtFile.read1`, `ZipExtFile._read1`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def read(self, name, pwd=None):
-        """Return file bytes for name. 'pwd' is the password to decrypt
-        encrypted files."""
-        with self.open(name, "r", pwd) as fp:
-            return fp.read()
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #96 · random · `ZoneInfo.dst`
-
-- **位置**：`zoneinfo/_zoneinfo.py:112`（2 行）
-- **层**：random ｜ 随机层（无偏基线）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`ZoneInfo._load_file`, `ZoneInfo._utcoff_to_dstoff`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def dst(self, dt):
-        return self._find_trans(dt).dstoff
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #97 · anchor · `ZoneInfo._file_reduce`
-
-- **位置**：`zoneinfo/_zoneinfo.py:212`（6 行）
-- **层**：anchor ｜ 锚点命中 import:import_pickle
-- **结构量**：Forman=None ｜ 池：p_anchor_breadth
-- **锚点命中行**：
-  - L2 `import pickle` → import:import_pickle
-  - L4 `raise pickle.PicklingError(` → import:import_pickle
-  - L5 `"Cannot pickle a ZoneInfo file created from a file stream."` → import:import_pickle
-
-**源码**：
-
-```python
-    def _file_reduce(self):
-        import pickle
-
-        raise pickle.PicklingError(
-            "Cannot pickle a ZoneInfo file created from a file stream."
-        )
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #98 · zero_cover · `isearch_end.do`
-
-- **位置**：`_pyrepl/historical_reader.py:205`（6 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
-- **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`next_history.do`, `previous_history.do`, `history_search_backward.do`, `history_search_forward.do`, `restore_history.do`, `first_history.do`, `last_history.do`, `operate_and_get_next.do`（跨文件调用者未扫描）
-
-**源码**：
-
-```python
-    def do(self) -> None:
-        r = self.reader
-        r.isearch_direction = ISEARCH_DIRECTION_NONE
-        r.console.forgetinput()
-        r.pop_input_trans()
-        r.dirty = True
-```
-
-**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
-
----
-
-## #99 · anchor · `pipe_pager`
-
-- **位置**：`_pyrepl/pager.py:127`（36 行）
-- **层**：anchor ｜ 锚点命中 import:import_subprocess
-- **结构量**：Forman=-148 ｜ 池：p_anchor_breadth
-- **本函数调用**：`Popen`, `copy`, `escape_less`, `format`, `wait`, `write`
-- **同文件调用者**：`get_pager`（跨文件调用者未扫描）
-- **锚点命中行**：
-  - L3 `import subprocess` → import:import_subprocess
-  - L16 `proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,` → import:import_subprocess
-
-**源码**：
-
-```python
-def pipe_pager(text: str, cmd: str, title: str = '') -> None:
-    """Page through text by feeding it to another program."""
-    import subprocess
-    env = os.environ.copy()
-    if title:
-        title += ' '
-    esc_title = escape_less(title)
-    prompt_string = (
-        f' {esc_title}' +
-        '?ltline %lt?L/%L.'
-        ':byte %bB?s/%s.'
-        '.'
-        '?e (END):?pB %pB\\%..'
-        ' (press h for help or q to quit)')
-    env['LESS'] = '-RmPm{0}$PM{0}$'.format(prompt_string)
-    proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
-                            errors='backslashreplace', env=env)
-    assert proc.stdin is not None
-    try:
-        with proc.stdin as pipe:
+            if not _is_subtype(self.expected, self._base_type):
+                raise TypeError('%s() arg 1 must be %s' %
+                                (name, self._base_type_str))
+            if not args:
+                self.msg = kwargs.pop('msg', None)
+                if kwargs:
+                    raise TypeError('%r is an invalid keyword argument for '
+                                    'this function' % (next(iter(kwargs)),))
+                return self
+
+            callable_obj, *args = args
             try:
-                pipe.write(text)
-            except KeyboardInterrupt:
-                # We've hereby abandoned whatever text hasn't been written,
-                # but the pager is still in control of the terminal.
-                pass
-    except OSError:
-        pass # Ignore broken pipes caused by quitting the pager program.
-    while True:
-        try:
-            proc.wait()
-            break
-        except KeyboardInterrupt:
-            # Ignore ctl-c like the pager itself does.  Otherwise the pager is
-            # left running and the terminal is in raw mode and unusable.
-            pass
+                self.obj_name = callable_obj.__name__
+            except AttributeError:
+                self.obj_name = str(callable_obj)
+            with self:
+                callable_obj(*args, **kwargs)
+        finally:
+            # bpo-23890: manually break a reference cycle
+            self = None
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
 
 ---
 
-## #100 · zero_cover · `Reader.update_cursor`
+## #83 · random · `MagicMixin._mock_set_magics`
 
-- **位置**：`_pyrepl/reader.py:567`（4 行）
-- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **位置**：`unittest/mock.py:2179`（21 行）
+- **层**：random ｜ 随机层（无偏基线）
 - **结构量**：Forman=None ｜ 池：（不在任何池内）
-- **同文件调用者**：`Reader.do_cmd`（跨文件调用者未扫描）
+- **同文件调用者**：`MagicMixin.__init__`, `NonCallableMagicMock.mock_add_spec`, `MagicMock.mock_add_spec`（跨文件调用者未扫描）
 
 **源码**：
 
 ```python
-    def update_cursor(self) -> None:
-        """Move the cursor to reflect changes in self.pos"""
-        self.cxy = self.pos2xy()
-        self.console.move_cursor(*self.cxy)
+    def _mock_set_magics(self):
+        orig_magics = _magics | _async_method_magics
+        these_magics = orig_magics
+
+        if getattr(self, "_mock_methods", None) is not None:
+            these_magics = orig_magics.intersection(self._mock_methods)
+
+            remove_magics = set()
+            remove_magics = orig_magics - these_magics
+
+            for entry in remove_magics:
+                if entry in type(self).__dict__:
+                    # remove unneeded magic methods
+                    delattr(self, entry)
+
+        # don't overwrite existing attributes if called a second time
+        these_magics = these_magics - set(type(self).__dict__)
+
+        _type = type(self)
+        for entry in these_magics:
+            setattr(_type, entry, MagicProxy(entry, self))
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #84 · zero_cover · `MagicProxy.__init__`
+
+- **位置**：`unittest/mock.py:2253`（3 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`_SentinelObject.__init__`, `_Sentinel.__init__`, `_MockIter.__init__`, `Base.__init__`, `NonCallableMock.__init__`, `CallableMixin.__init__`, `_patch.__init__`, `_patch_dict.__init__`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def __init__(self, name, parent):
+        self.name = name
+        self.parent = parent
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #85 · zero_cover · `_exit_side_effect`
+
+- **位置**：`unittest/mock.py:2994`（2 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`mock_open`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def _exit_side_effect(exctype, excinst, exctb):
+        handle.close()
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #86 · zero_cover · `ThreadingMixin._get_child_mock`
+
+- **位置**：`unittest/mock.py:3062`（6 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`NonCallableMock.__get_return_value`, `NonCallableMock.__getattr__`, `NonCallableMock._get_child_mock`, `MagicProxy.create_mock`, `PropertyMock._get_child_mock`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def _get_child_mock(self, /, **kw):
+        if isinstance(kw.get("parent"), ThreadingMixin):
+            kw["timeout"] = kw["parent"]._mock_wait_timeout
+        elif isinstance(kw.get("_new_parent"), ThreadingMixin):
+            kw["timeout"] = kw["_new_parent"]._mock_wait_timeout
+        return super()._get_child_mock(**kw)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #87 · random · `TestResult._setupStdout`
+
+- **位置**：`unittest/result.py:65`（7 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`TestResult.startTest`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def _setupStdout(self):
+        if self.buffer:
+            if self._stderr_buffer is None:
+                self._stderr_buffer = io.StringIO()
+                self._stdout_buffer = io.StringIO()
+            sys.stdout = self._stdout_buffer
+            sys.stderr = self._stderr_buffer
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #88 · zero_cover · `_NetlocResultMixinStr._hostinfo`
+
+- **位置**：`urllib/parse.py:206`（12 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`_check_bracketed_netloc`, `_NetlocResultMixinBytes._hostinfo`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def _hostinfo(self):
+        netloc = self.netloc
+        _, _, hostinfo = netloc.rpartition('@')
+        _, have_open_br, bracketed = hostinfo.partition('[')
+        if have_open_br:
+            hostname, _, port = bracketed.partition(']')
+            _, _, port = port.partition(':')
+        else:
+            hostname, _, port = hostinfo.partition(':')
+        if not port:
+            port = None
+        return hostname, port
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #89 · confluence · `read_environ`
+
+- **位置**：`wsgiref/handlers.py:34`（58 行）
+- **层**：confluence ｜ 曲率汇合点 forman=-214
+- **结构量**：Forman=-214 ｜ 池：（不在任何池内）
+- **本函数调用**：`_needs_transcode`, `decode`, `encode`, `get`, `getfilesystemencoding`, `items`, `lower`, `startswith`
+- **同文件调用者**：`CGIHandler.__init__`, `IISCGIHandler.__init__`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+def read_environ():
+    """Read environment, fixing HTTP variables"""
+    enc = sys.getfilesystemencoding()
+    esc = 'surrogateescape'
+    try:
+        ''.encode('utf-8', esc)
+    except LookupError:
+        esc = 'replace'
+    environ = {}
+
+    # Take the basic environment from native-unicode os.environ. Attempt to
+    # fix up the variables that come from the HTTP request to compensate for
+    # the bytes->unicode decoding step that will already have taken place.
+    for k, v in os.environ.items():
+        if _needs_transcode(k):
+
+            # On win32, the os.environ is natively Unicode. Different servers
+            # decode the request bytes using different encodings.
+            if sys.platform == 'win32':
+                software = os.environ.get('SERVER_SOFTWARE', '').lower()
+
+                # On IIS, the HTTP request will be decoded as UTF-8 as long
+                # as the input is a valid UTF-8 sequence. Otherwise it is
+                # decoded using the system code page (mbcs), with no way to
+                # detect this has happened. Because UTF-8 is the more likely
+                # encoding, and mbcs is inherently unreliable (an mbcs string
+                # that happens to be valid UTF-8 will not be decoded as mbcs)
+                # always recreate the original bytes as UTF-8.
+                if software.startswith('microsoft-iis/'):
+                    v = v.encode('utf-8').decode('iso-8859-1')
+
+                # Apache mod_cgi writes bytes-as-unicode (as if ISO-8859-1) direct
+                # to the Unicode environ. No modification needed.
+                elif software.startswith('apache/'):
+                    pass
+
+                # Python 3's http.server.CGIHTTPRequestHandler decodes
+                # using the urllib.unquote default of UTF-8, amongst other
+                # issues.
+                elif (
+                    software.startswith('simplehttp/')
+                    and 'python/3' in software
+                ):
+                    v = v.encode('utf-8').decode('iso-8859-1')
+
+                # For other servers, guess that they have written bytes to
+                # the environ using stdio byte-oriented interfaces, ending up
+                # with the system code page.
+                else:
+                    v = v.encode(enc, 'replace').decode('iso-8859-1')
+
+            # Recover bytes from unicode environ, using surrogate escapes
+            # where available (Python 3.1+).
+            else:
+                v = v.encode(enc, esc).decode('iso-8859-1')
+
+        environ[k] = v
+    return environ
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #90 · confluence · `_parse_ns_name`
+
+- **位置**：`xml/dom/expatbuilder.py:114`（17 行）
+- **层**：confluence ｜ 曲率汇合点 forman=-221
+- **结构量**：Forman=-221 ｜ 池：（不在任何池内）
+- **本函数调用**：`ValueError`, `intern`, `len`, `split`
+- **同文件调用者**：`Namespaces.start_element_handler`, `Namespaces.end_element_handler`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+def _parse_ns_name(builder, name):
+    assert ' ' in name
+    parts = name.split(' ')
+    intern = builder._intern_setdefault
+    if len(parts) == 3:
+        uri, localname, prefix = parts
+        prefix = intern(prefix, prefix)
+        qname = "%s:%s" % (prefix, localname)
+        qname = intern(qname, qname)
+        localname = intern(localname, localname)
+    elif len(parts) == 2:
+        uri, localname = parts
+        prefix = EMPTY_PREFIX
+        qname = localname = intern(localname, localname)
+    else:
+        raise ValueError("Unsupported syntax: spaces in URIs not supported: %r" % name)
+    return intern(uri, uri), localname, prefix, qname
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #91 · random · `Node._get_lastChild`
+
+- **位置**：`xml/dom/minidom.py:78`（3 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`Childless._get_lastChild`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def _get_lastChild(self):
+        if self.childNodes:
+            return self.childNodes[-1]
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #92 · anchor · `DOMBuilder._parse_bytestream`
+
+- **位置**：`xml/dom/xmlbuilder.py:202`（4 行）
+- **层**：anchor ｜ 锚点命中 import:import_xml_expat
+- **结构量**：Forman=None ｜ 池：p_anchor_breadth
+- **同文件调用者**：`DOMBuilder.parse`（跨文件调用者未扫描）
+- **锚点命中行**：
+  - L2 `import xml.dom.expatbuilder` → import:import_xml_expat
+  - L3 `builder = xml.dom.expatbuilder.makeBuilder(options)` → import:import_xml_expat
+
+**源码**：
+
+```python
+    def _parse_bytestream(self, stream, options):
+        import xml.dom.expatbuilder
+        builder = xml.dom.expatbuilder.makeBuilder(options)
+        return builder.parseFile(stream)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #93 · confluence · `_include`
+
+- **位置**：`xml/etree/ElementInclude.py:132`（55 行）
+- **层**：confluence ｜ 曲率汇合点 forman=-220
+- **结构量**：Forman=-220 ｜ 池：（不在任何池内）
+- **本函数调用**：`FatalIncludeError`, `LimitedRecursiveIncludeError`, `_include`, `add`, `copy`, `get`, `len`, `loader`, `remove`, `urljoin`
+- **同文件调用者**：`include`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+def _include(elem, loader, base_url, max_depth, _parent_hrefs):
+    # look for xinclude elements
+    i = 0
+    while i < len(elem):
+        e = elem[i]
+        if e.tag == XINCLUDE_INCLUDE:
+            # process xinclude directive
+            href = e.get("href")
+            if base_url:
+                href = urljoin(base_url, href)
+            parse = e.get("parse", "xml")
+            if parse == "xml":
+                if href in _parent_hrefs:
+                    raise FatalIncludeError("recursive include of %s" % href)
+                if max_depth == 0:
+                    raise LimitedRecursiveIncludeError(
+                        "maximum xinclude depth reached when including file %s" % href)
+                _parent_hrefs.add(href)
+                node = loader(href, parse)
+                if node is None:
+                    raise FatalIncludeError(
+                        "cannot load %r as %r" % (href, parse)
+                        )
+                node = copy.copy(node)  # FIXME: this makes little sense with recursive includes
+                _include(node, loader, href, max_depth - 1, _parent_hrefs)
+                _parent_hrefs.remove(href)
+                if e.tail:
+                    node.tail = (node.tail or "") + e.tail
+                elem[i] = node
+            elif parse == "text":
+                text = loader(href, parse, e.get("encoding"))
+                if text is None:
+                    raise FatalIncludeError(
+                        "cannot load %r as %r" % (href, parse)
+                        )
+                if e.tail:
+                    text += e.tail
+                if i:
+                    node = elem[i-1]
+                    node.tail = (node.tail or "") + text
+                else:
+                    elem.text = (elem.text or "") + text
+                del elem[i]
+                continue
+            else:
+                raise FatalIncludeError(
+                    "unknown parse type in xi:include tag (%r)" % parse
+                )
+        elif e.tag == XINCLUDE_FALLBACK:
+            raise FatalIncludeError(
+                "xi:fallback tag must be child of xi:include (%r)" % e.tag
+                )
+        else:
+            _include(e, loader, base_url, max_depth, _parent_hrefs)
+        i += 1
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #94 · random · `Unmarshaller.end_value`
+
+- **位置**：`xmlrpc/client.py:782`（5 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+
+**源码**：
+
+```python
+    def end_value(self, data):
+        # if we stumble upon a value element with no internal
+        # elements, treat it as a string element
+        if self._value:
+            self.end_string(data)
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #95 · anchor · `SimpleXMLRPCDispatcher.register_introspection_functions`
+
+- **位置**：`xmlrpc/server.py:225`（10 行）
+- **层**：anchor ｜ 锚点命中 import:import_xmlrpclib
+- **结构量**：Forman=None ｜ 池：p_anchor_breadth
+- **锚点命中行**：
+  - L5 `see http://xmlrpc.usefulinc.com/doc/reserved.html` → import:import_xmlrpclib
+
+**源码**：
+
+```python
+    def register_introspection_functions(self):
+        """Registers the XML-RPC introspection methods in the system
+        namespace.
+
+        see http://xmlrpc.usefulinc.com/doc/reserved.html
+        """
+
+        self.funcs.update({'system.listMethods' : self.system_listMethods,
+                      'system.methodSignature' : self.system_methodSignature,
+                      'system.methodHelp' : self.system_methodHelp})
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #96 · confluence · `main`
+
+- **位置**：`zipfile/__init__.py:2316`（68 行）
+- **层**：confluence ｜ 曲率汇合点 forman=-381
+- **结构量**：Forman=-381 ｜ 池：（不在任何池内）
+- **本函数调用**：`ArgumentParser`, `ZipFile`, `addToZip`, `add_argument`, `add_mutually_exclusive_group`, `basename`, `dirname`, `exit`, `extractall`, `format`, `isdir`, `isfile`
+
+**源码**：
+
+```python
+def main(args=None):
+    import argparse
+
+    description = 'A simple command-line interface for zipfile module.'
+    parser = argparse.ArgumentParser(description=description)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-l', '--list', metavar='<zipfile>',
+                       help='Show listing of a zipfile')
+    group.add_argument('-e', '--extract', nargs=2,
+                       metavar=('<zipfile>', '<output_dir>'),
+                       help='Extract zipfile into target dir')
+    group.add_argument('-c', '--create', nargs='+',
+                       metavar=('<name>', '<file>'),
+                       help='Create zipfile from sources')
+    group.add_argument('-t', '--test', metavar='<zipfile>',
+                       help='Test if a zipfile is valid')
+    parser.add_argument('--metadata-encoding', metavar='<encoding>',
+                        help='Specify encoding of member names for -l, -e and -t')
+    args = parser.parse_args(args)
+
+    encoding = args.metadata_encoding
+
+    if args.test is not None:
+        src = args.test
+        with ZipFile(src, 'r', metadata_encoding=encoding) as zf:
+            badfile = zf.testzip()
+        if badfile:
+            print("The following enclosed file is corrupted: {!r}".format(badfile))
+        print("Done testing")
+
+    elif args.list is not None:
+        src = args.list
+        with ZipFile(src, 'r', metadata_encoding=encoding) as zf:
+            zf.printdir()
+
+    elif args.extract is not None:
+        src, curdir = args.extract
+        with ZipFile(src, 'r', metadata_encoding=encoding) as zf:
+            zf.extractall(curdir)
+
+    elif args.create is not None:
+        if encoding:
+            print("Non-conforming encodings not supported with -c.",
+                  file=sys.stderr)
+            sys.exit(1)
+
+        zip_name = args.create.pop(0)
+        files = args.create
+
+        def addToZip(zf, path, zippath):
+            if os.path.isfile(path):
+                zf.write(path, zippath, ZIP_DEFLATED)
+            elif os.path.isdir(path):
+                if zippath:
+                    zf.write(path, zippath)
+                for nm in sorted(os.listdir(path)):
+                    addToZip(zf,
+                             os.path.join(path, nm), os.path.join(zippath, nm))
+            # else: ignore
+
+```
+
+> 已截断（共 68 行），完整见 `zipfile/__init__.py:2316`
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #97 · random · `Translator.restrict_rglob`
+
+- **位置**：`zipfile/_path/glob.py:77`（13 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+- **同文件调用者**：`Translator.translate_core`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+    def restrict_rglob(self, pattern):
+        """
+        Raise ValueError if ** appears in anything but a full path segment.
+
+        >>> Translator().translate('**foo')
+        Traceback (most recent call last):
+        ...
+        ValueError: ** must appear alone in a path segment
+        """
+        seps_pattern = rf'[{re.escape(self.seps)}]+'
+        segments = re.split(seps_pattern, pattern)
+        if any('**' in segment and segment != '**' for segment in segments):
+            raise ValueError("** must appear alone in a path segment")
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #98 · confluence · `_validate_tzfile_path`
+
+- **位置**：`zoneinfo/_tzpath.py:92`（21 行）
+- **层**：confluence ｜ 曲率汇合点 forman=-366
+- **结构量**：Forman=-366 ｜ 池：（不在任何池内）
+- **本函数调用**：`ValueError`, `isabs`, `join`, `len`, `normpath`, `startswith`
+- **同文件调用者**：`find_tzfile`（跨文件调用者未扫描）
+
+**源码**：
+
+```python
+def _validate_tzfile_path(path, _base=_TEST_PATH):
+    if os.path.isabs(path):
+        raise ValueError(
+            f"ZoneInfo keys may not be absolute paths, got: {path}"
+        )
+
+    # We only care about the kinds of path normalizations that would change the
+    # length of the key - e.g. a/../b -> a/b, or a/b/ -> a/b. On Windows,
+    # normpath will also change from a/b to a\b, but that would still preserve
+    # the length.
+    new_path = os.path.normpath(path)
+    if len(new_path) != len(path):
+        raise ValueError(
+            f"ZoneInfo keys must be normalized relative paths, got: {path}"
+        )
+
+    resolved = os.path.normpath(os.path.join(_base, new_path))
+    if not resolved.startswith(_base):
+        raise ValueError(
+            f"ZoneInfo keys must refer to subdirectories of TZPATH, got: {path}"
+        )
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #99 · random · `_TZStr._get_trans_info`
+
+- **位置**：`zoneinfo/_zoneinfo.py:465`（23 行）
+- **层**：random ｜ 随机层（无偏基线）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+
+**源码**：
+
+```python
+    def _get_trans_info(self, ts, year, fold):
+        """Get the information about the current transition - tti"""
+        start, end = self.transitions(year)
+
+        # With fold = 0, the period (denominated in local time) with the
+        # smaller offset starts at the end of the gap and ends at the end of
+        # the fold; with fold = 1, it runs from the start of the gap to the
+        # beginning of the fold.
+        #
+        # So in order to determine the DST boundaries we need to know both
+        # the fold and whether DST is positive or negative (rare), and it
+        # turns out that this boils down to fold XOR is_positive.
+        if fold == (self.dst_diff >= 0):
+            end -= self.dst_diff
+        else:
+            start += self.dst_diff
+
+        if start < end:
+            isdst = start <= ts < end
+        else:
+            isdst = not (end <= ts < start)
+
+        return self.dst if isdst else self.std
+```
+
+**判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
+
+---
+
+## #100 · zero_cover · `UnixConsole.__move_x_hpa`
+
+- **位置**：`_pyrepl/unix_console.py:759`（3 行）
+- **层**：zero_cover ｜ 零覆盖：不在任何池内（盲区核查）
+- **结构量**：Forman=None ｜ 池：（不在任何池内）
+
+**源码**：
+
+```python
+    def __move_x_hpa(self, x: int) -> None:
+        if x != self.posxy[0]:
+            self.__write_code(self._hpa, x)
 ```
 
 **判定**：truth = `___`（1 有缺陷 / 0 无缺陷 / **None 判不出来就填 None**） ｜ defect_type = `___` ｜ 备注 = `___`
