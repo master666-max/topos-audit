@@ -82,16 +82,28 @@ flowchart LR
 
 ## B2 批 · M1 标定
 
-### W8 · 标定层
+### W8 · 标定层（**v2 降负方案**，2026-10-09 用户裁决"改"）
+
+> **裁决记录**：v1 的"金标 300–500 全人工自标"作废。依据：Devign 花 600 人时、4 名专家、
+> 两轮交叉标注，PrimeVul 复测正确率仍只有 **24%**——人工堆量既不可行也不保质。
+> v2 = **五层真值套件**，人工只留 100 个仲裁单元（约 1 个周末，裁决已有证据而非盲标）。
+
+| 层 | 真值来源 | 人工 | 作用 | 诚实条款 |
+|---|---|---|---|---|
+| L1 | **执行正样本库**：BugsInPy / SWE-bench patch 提取 + 测试执行验证（bug 版 FAIL_TO_PASS、修复版复绿） | 0 | 高质量正样本（数百） | 负样本 = "未标注"，非"确认干净"（PU learning 语义） |
+| L2 | **变异注入召回下界**：≥5 类变异算子植入已知缺陷（NASA seeded-defect 血统，gen_repo 扩展） | 0 | 检测器召回**下界** | seeded 缺陷偏典型会高估 Se——只报下界 |
+| L3 | **SVEN 锚定集**：Python 386 漏洞函数（94% 精度，CCS'23） | 0 | 金标种子层 | 只覆盖 9 个 CWE，域窄 |
+| L4 | **折扣系数仲裁**：自标 100 单元（按池分层、零覆盖强制入样）；LLM 独立预标 3 遍 + **人只仲裁分歧样本**（带执行证据） | ~8h | 实测公开集在本域一致率（打折系数） | LLM 预标同源偏见（Ising W 假共识），**仲裁才是真值** |
+| L5 | **Hui–Walter 潜类估计**：两个独立信号源 × 两个群体 | 0 | 无金标 Se/Sp 估计的数学兜底 | 需独立性假设；假共识用 Ising W 建模 |
 
 | 项 | 内容 |
 |---|---|
-| **目标** | `calib/`：金标管理 + Se/Sp 估计（带 CI）+ crowd-kit 胶水 + 温度缩放 |
-| **搬/接** | **E4 crowd-kit**：`DawidSkene` / `OneCoinDawidSkene`（签名已核：`fit(pd.DataFrame task/worker/label)` → `labels_` / `probas_`；依赖 pandas/attrs/sklearn 全在 venv）。加载走**包壳 shim**（INTERFACE-CHECK §2.4），失败则按源码自写精简 EM（~100 行，此为已批准的降级路线） |
-| **新写** | ① 金标 CSV 管理器（unit_id, truth, 标注人, 日期；append-only）；② **Hui–Walter 两源两群体估计**（crowd-kit 不给混淆矩阵置信区间——这个 Gap 自补，bootstrap 95% CI）；③ 温度/Platt 缩放（解码分数 → 校准概率）；④ 噪声地板声明：报告模板固定引用 PrimeVul 25%/Devign 24% 口径 |
-| **预注册** | `PREREG/B2.md`：金标 300–500 单元的抽样规则（按池分层抽样，保证零覆盖单元入样）；判据 = Se/Sp 的 CI 半宽 < 0.15 视为可标定 |
-| **验收** | ① 合成实验：已知 Se/Sp 的两源数据，Hui–Walter 估计落真值 CI 内；② 金标管理器：重复 unit_id 拒绝写入；③ 输出报告含噪声地板声明 |
-| **禁止** | 在金标 <100 单元时对外报任何"真实精度"——只许报"仪器灵敏度" |
+| **目标** | `calib/`：L1–L5 五层 + crowd-kit 胶水（E4）+ 温度/Platt 缩放 + 报告模板固化噪声地板声明 |
+| **搬/接** | crowd-kit `DawidSkene` / `OneCoinDawidSkene`（签名已核：`fit(pd.DataFrame task/worker/label)` → `labels_` / `probas_`；依赖 pandas/attrs/sklearn 全在 venv）。加载走**包壳 shim**（INTERFACE-CHECK §2.4），失败则按源码自写精简 EM（~100 行，已批准降级路线） |
+| **新写** | ① patch 提取器（diff hunk → 函数定位，判据 E-B2-2）；② 变异注入器（5 算子，判据 E-B2-3）；③ 金标 CSV 管理器（append-only、重复拒绝）；④ Hui–Walter（crowd-kit 不给混淆矩阵 CI——自补 bootstrap 95%）；⑤ 温度/Platt 缩放 |
+| **预注册** | `PREREG/B2.md`（判据先于实现：E-B2-1..5 全部量化；修正案逐版披露，第 4 版停手） |
+| **验收（全过才算完）** | ① E-B2-1 Hui–Walter 合成估计落真值 CI；② E-B2-2 patch 管线 ≥100 正样本 + 手工抽查全对；③ E-B2-3 变异注入 mutation score 可算且干净版不误杀；④ E-B2-4 折扣系数读数 CI 半宽 <0.15；⑤ 报告含噪声地板声明（BigVul 25% / Devign 24%） |
+| **禁止** | 锚定 <100 单元时对外报"真实精度"（只许"仪器灵敏度"）；LLM 预标不经验证直接入金标；任何层冒充另一层（下界冒充召回、未标注冒充阴性） |
 
 ---
 
