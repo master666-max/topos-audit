@@ -11,7 +11,11 @@ def discover_units(root):
     """walk 目录 → 每个函数/方法一个 Unit{id,file,name,lineno,end_lineno,loc,src}。"""
     units = []
     for dirpath, _dirs, files in os.walk(root):
-        if any(seg in dirpath for seg in (".git", "__pycache__", ".workbuddy")):
+        # 只按**相对 root** 的路径段过滤，不能匹配绝对路径段——
+        # 否则目标仓位于含 .workbuddy/.git 的父目录下时会整体返回 0 单元（E-B2-4 抽样时踩到）
+        rel_dir = os.path.relpath(dirpath, root).replace("\\", "/")
+        if any(seg in (".git", "__pycache__", ".workbuddy")
+               for seg in rel_dir.split("/")):
             continue
         for fn in files:
             if not fn.endswith(".py"):

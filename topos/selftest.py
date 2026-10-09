@@ -236,6 +236,23 @@ def c12_observe_degenerate(w):
     assert res == [("p1", 1), ("p2", 0)], res
 
 
+def c13_path_not_skipped(w):
+    """回归防护：目标仓位于含 .workbuddy/.git 的**父路径**下时必须仍能发现单元
+    （E-B2-4 抽样踩到的 bug：用绝对路径段过滤 → 整仓返回 0 单元）。"""
+    base = os.path.join(w, ".workbuddy", "binaries", "python", "proj")
+    os.makedirs(base)
+    with open(os.path.join(base, "a.py"), "w", encoding="utf-8") as f:
+        f.write("def f(x):\n    return x + 1\n")
+    units = discover_units(base)
+    assert len(units) == 1, "父路径含 .workbuddy 时单元数 %d != 1" % len(units)
+    # 仓**内部**的 .git / __pycache__ 仍应被跳过
+    os.makedirs(os.path.join(base, "__pycache__"))
+    with open(os.path.join(base, "__pycache__", "b.py"), "w", encoding="utf-8") as f:
+        f.write("def g(x):\n    return x\n")
+    units2 = discover_units(base)
+    assert len(units2) == 1, "仓内 __pycache__ 未被跳过: %d" % len(units2)
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -249,6 +266,7 @@ CHECKS = [
     ("c10 sheaf H⁰（合成版，真实语义=B5）", c10_sheaf),
     ("c11 缺 git → None（ADR-A12）", c11_no_git),
     ("c12 观测退化 Se=Sp=1", c12_observe_degenerate),
+    ("c13 父路径含 .workbuddy 仍可发现单元", c13_path_not_skipped),
 ]
 
 

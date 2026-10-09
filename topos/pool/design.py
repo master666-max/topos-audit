@@ -13,6 +13,11 @@ def build_design(pool_pairs, n, constraints=None):
     """[(name, set)] → (rows, warnings)。constraints: {max_width, max_pools, min_pool_size}。"""
     c = constraints or {}
     max_width = c.get("max_width")
+    # 相对宽度（真仓必需）：三分位切片宽度随 N 线性增长，绝对 max_width 在大仓上
+    # 会把所有切片砍光（stdlib N=18198 实测：默认清单产出 0 池、零覆盖 100%）
+    if c.get("max_width_pct") is not None:
+        pct_w = max(1, int(n * float(c["max_width_pct"])))
+        max_width = pct_w if max_width is None else min(max_width, pct_w)
     max_pools = c.get("max_pools")
     min_size = c.get("min_pool_size", 1)
     warnings = []

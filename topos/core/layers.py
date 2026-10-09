@@ -73,7 +73,10 @@ def _module_level_names(root):
     """每文件模块级变量名（vardep 候选）。"""
     mod_names = {}
     for dirpath, _d, files in os.walk(root):
-        if any(s in dirpath for s in (".git", "__pycache__", ".workbuddy")):
+        # 同 units.discover_units：只按相对 root 的路径段过滤
+        rel_dir = os.path.relpath(dirpath, root).replace("\\", "/")
+        if any(s in (".git", "__pycache__", ".workbuddy")
+               for s in rel_dir.split("/")):
             continue
         for fn in files:
             if not fn.endswith(".py"):
