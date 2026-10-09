@@ -1,0 +1,32 @@
+[
+ {
+  "name": "A/karate Forman 边曲率",
+  "pass": true,
+  "detail": "78/78 边对比, max|Δ|=0.00e+00; 样例(mine vs GC): (0,1) -21 vs -21.0; (0,2) -22 vs -22.0; (0,3) -18 vs -18.0; (0,4) -15 vs -15.0; (0,5) -16 vs -16.0"
+ },
+ {
+  "name": "B/karate matvec≡L",
+  "pass": true,
+  "detail": "max|Δ|=0.00e+00"
+ },
+ {
+  "name": "C/karate λ2 两路一致",
+  "pass": true,
+  "detail": "dense=0.468525 operator=0.468525 Δ=3.22e-15"
+ },
+ {
+  "name": "A/mini-lab Forman 边曲率",
+  "pass": true,
+  "detail": "76/76 边对比, max|Δ|=0.00e+00; 样例(mine vs GC): (0,48) -10 vs -10.0; (0,41) -10 vs -10.0; (0,19) -11 vs -11.0; (0,36) -5 vs -5.0; (1,48) -10 vs -10.0"
+ },
+ {
+  "name": "B/mini-lab matvec≡L",
+  "pass": true,
+  "detail": "max|Δ|=0.00e+00"
+ },
+ {
+  "name": "C/mini-lab λ2 两路一致",
+  "pass": true,
+  "detail": "dense=0.000000 operator=-0.000000 Δ=9.23e-16"
+ }
+]

@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "layers": {"call": 1.0, "data": 1.0, "control": 1.0, "return": 1.0, "vardep": 1.0},
+  "fields": [
+    {"name": "anchor",    "layer": "L", "method": "regex", "params": {"patterns_file": "reference/anchors-bandit.json"}},
+    {"name": "churn",     "layer": "T", "method": "git",   "params": {"metric": "commits"}},
+    {"name": "age",       "layer": "T", "method": "git",   "params": {"metric": "age_days"}},
+    {"name": "loc",       "layer": "L", "method": "ast",   "params": {"metric": "lines"}},
+    {"name": "forman",    "layer": "G", "method": "graph", "params": {"formula": "forman_unweighted"}},
+    {"name": "diffusion", "layer": "G", "method": "graph", "params": {"k": 3}}
+  ],
+  "slicers": [
+    {"name": "anchor:*",          "field": "anchor",  "op": "expand"},
+    {"name": "churn:top",         "field": "churn",   "op": "quantile_gt", "q": 0.67},
+    {"name": "churn:mid",         "field": "churn",   "op": "between_q",   "q_lo": 0.33, "q_hi": 0.67},
+    {"name": "age:old",           "field": "age",     "op": "quantile_gt", "q": 0.67},
+    {"name": "big",               "field": "loc",     "op": "gt",          "value": 60},
+    {"name": "forman:confluence", "field": "forman",  "op": "quantile_le", "q": 0.33}
+  ],
+  "pools": [
+    {"name": "p_anchor_breadth", "expr": "anchor:*"},
+    {"name": "p_hot",            "expr": {"any": ["churn:top", "forman:confluence"]}},
+    {"name": "p_stale_big",      "expr": {"all": ["age:old", "big"]}},
+    {"name": "p_wide_demo",      "expr": {"not": "churn:mid"}}
+  ],
+  "constraints": {"max_width": 60, "max_pools": 64, "min_pool_size": 3}
+}

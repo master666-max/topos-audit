@@ -1,0 +1,12 @@
+# 参考件（外部开源，只读参考，不进运行时、不进发布）
+# 语法注意：必须忽略目录"内容"（reference/*）而非目录本身（reference/），
+# 否则 Git 不允许用 ! 重新包含其下文件（父目录被排除则子文件无法 re-include）。
+reference/*
+!reference/INTERFACE-CHECK.md
+!reference/anchors-bandit.json
+!reference/crosscheck-result.json
+!reference/_crosscheck.py
+!reference/_make_anchors_bandit.py
+
+# 实验产物
+exp-out/
