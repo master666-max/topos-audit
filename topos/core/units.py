@@ -37,9 +37,10 @@ def discover_units(root):
                             cls_of[item.lineno] = node.name
             for node in ast.walk(tree):
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    qual = cls_of.get(node.lineno, node.name)
-                    if qual == node.name and node.lineno in cls_of:
-                        qual = cls_of[node.lineno] + "." + node.name
+                    # 类内方法 → "Class.method"。原 v1 逻辑写反（qual==node.name 恒不成立），
+                    # 会把方法名吃掉只留类名——仲裁工作簿里表现为"标题与源码不符"。
+                    qual = ("%s.%s" % (cls_of[node.lineno], node.name)
+                            if node.lineno in cls_of else node.name)
                     seg = "\n".join(lines[node.lineno - 1: node.end_lineno])
                     units.append({
                         "id": "%s::%s:%d" % (rel, qual, node.lineno),

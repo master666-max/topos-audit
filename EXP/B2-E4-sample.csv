@@ -1,101 +1,101 @@
-unit_id,file,name,loc,stratum,in_pools,anchor_tags,forman,evidence_hint,truth,defect_type,annotator,date,source_layer
-ast.py::_dims_setter:681,ast.py,_dims_setter,2,random,,,,随机层,,,,,L4-arbitration
-codecs.py::StreamReaderWriter:712,codecs.py,StreamReaderWriter,3,random,,,,随机层,,,,,L4-arbitration
-compileall.py::_walk_dir:25,compileall.py,_walk_dir,22,confluence,,,-365,曲率汇合点 forman=-365,,,,,L4-arbitration
-dis.py::_get_code_array:209,dis.py,_get_code_array,22,confluence,,,-364,曲率汇合点 forman=-364,,,,,L4-arbitration
-doctest.py::_TestClass:2802,doctest.py,_TestClass,9,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-fractions.py::_round_to_figures:103,fractions.py,_round_to_figures,37,random,,,-166,随机层,,,,,L4-arbitration
-locale.py::currency:250,locale.py,currency,46,confluence,,,-133,曲率汇合点 forman=-133,,,,,L4-arbitration
-locale.py::_getdefaultlocale:552,locale.py,_getdefaultlocale,28,confluence,,,-259,曲率汇合点 forman=-259,,,,,L4-arbitration
-operator.py::itruediv:402,operator.py,itruediv,4,random,,,,随机层,,,,,L4-arbitration
-os.py::spawnl:961,os.py,spawnl,8,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-arbitration
-pdb.py::Pdb:565,pdb.py,Pdb,35,random,,,,随机层,,,,,L4-arbitration
-pdb.py::Pdb:2277,pdb.py,Pdb,9,random,,,,随机层,,,,,L4-arbitration
-pickle.py::_Pickler:511,pickle.py,_Pickler,10,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-pickle.py::_Unpickler:1608,pickle.py,_Unpickler,13,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-arbitration
-pickletools.py::read_uint8:294,pickletools.py,read_uint8,13,confluence,,,-100,曲率汇合点 forman=-100,,,,,L4-arbitration
-pickletools.py::OpcodeInfo:1124,pickletools.py,OpcodeInfo,27,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-arbitration
-profile.py::Profile:480,profile.py,Profile,10,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-pydoc.py::TextRepr:1235,pydoc.py,TextRepr,5,random,,,,随机层,,,,,L4-arbitration
-socketserver.py::_SocketWriter:838,socketserver.py,_SocketWriter,2,random,,,,随机层,,,,,L4-arbitration
-subprocess.py::check_output:423,subprocess.py,check_output,51,anchor,p_anchor_breadth,import:import_subprocess,-265,锚点命中 import:import_subprocess,,,,,L4-arbitration
-tempfile.py::gettempdir:310,tempfile.py,gettempdir,3,confluence,,,-365,曲率汇合点 forman=-365,,,,,L4-arbitration
-threading.py::_MainThread:1353,threading.py,_MainThread,9,random,,,-6,随机层,,,,,L4-arbitration
-traceback.py::FrameSummary:292,traceback.py,FrameSummary,25,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-webbrowser.py::register_standard_browsers:491,webbrowser.py,register_standard_browsers,87,anchor,p_anchor_breadth|p_hot|p_deep_conf,import:import_subprocess,-372,锚点命中 import:import_subprocess,,,,,L4-arbitration
-webbrowser.py::GenericBrowser:188,webbrowser.py,GenericBrowser,13,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-arbitration
-webbrowser.py::Konqueror:369,webbrowser.py,Konqueror,45,anchor,p_anchor_breadth,import:import_subprocess,-3,锚点命中 import:import_subprocess,,,,,L4-arbitration
-_aix_support.py::_aix_bos_rte:42,_aix_support.py,_aix_bos_rte,19,anchor,p_anchor_breadth,import:import_subprocess,-225,锚点命中 import:import_subprocess,,,,,L4-arbitration
-_pydatetime.py::timezone:2347,_pydatetime.py,timezone,5,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-arbitration
-_pydecimal.py::Overflow:279,_pydecimal.py,Overflow,14,random,,,,随机层,,,,,L4-arbitration
-asyncio/base_events.py::BaseEventLoop:1736,asyncio/base_events.py,BaseEventLoop,12,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-arbitration
-asyncio/events.py::AbstractEventLoop:542,asyncio/events.py,AbstractEventLoop,6,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-arbitration
-asyncio/events.py::BaseDefaultEventLoopPolicy:731,asyncio/events.py,BaseDefaultEventLoopPolicy,7,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-asyncio/mixins.py::_LoopBoundMixin:12,asyncio/mixins.py,_LoopBoundMixin,10,random,,,,随机层,,,,,L4-arbitration
-asyncio/selector_events.py::BaseSelectorEventLoop:431,asyncio/selector_events.py,BaseSelectorEventLoop,16,random,,,,随机层,,,,,L4-arbitration
-asyncio/selector_events.py::BaseSelectorEventLoop:448,asyncio/selector_events.py,BaseSelectorEventLoop,22,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-asyncio/sslproto.py::_SSLProtocolTransport:100,asyncio/sslproto.py,_SSLProtocolTransport,2,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-asyncio/transports.py::SubprocessTransport:241,asyncio/transports.py,SubprocessTransport,10,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-arbitration
-collections/__init__.py::namedtuple:358,collections/__init__.py,namedtuple,173,anchor,p_anchor_breadth|p_hot|p_big1|p_deep_conf,sink:eval|import:import_pickle,-368,"锚点命中 sink:eval,import:import_pickle",,,,,L4-arbitration
-ctypes/util.py::test:347,ctypes/util.py,test,39,random,,,-106,随机层,,,,,L4-arbitration
-ctypes/util.py::_findLib_gcc:114,ctypes/util.py,_findLib_gcc,48,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-arbitration
-curses/ascii.py::isctrl:68,curses/ascii.py,isctrl,1,random,,,-13,随机层,,,,,L4-arbitration
-email/encoders.py::encode_quopri:36,email/encoders.py,encode_quopri,9,random,,,1,随机层,,,,,L4-arbitration
-email/generator.py::Generator:245,email/generator.py,Generator,20,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-encodings/hex_codec.py::getregentry:45,encodings/hex_codec.py,getregentry,11,confluence,,,-119,曲率汇合点 forman=-119,,,,,L4-arbitration
-encodings/punycode.py::punycode_decode:188,encodings/punycode.py,punycode_decode,23,zero_cover,,,-166,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-encodings/utf_8.py::decode:15,encodings/utf_8.py,decode,2,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-ensurepip/__init__.py::_run_pip:65,ensurepip/__init__.py,_run_pip,24,anchor,p_anchor_breadth,import:import_subprocess,-19,锚点命中 import:import_subprocess,,,,,L4-arbitration
-importlib/_bootstrap_external.py::_unpack_uint16:94,importlib/_bootstrap_external.py,_unpack_uint16,4,confluence,,,-99,曲率汇合点 forman=-99,,,,,L4-arbitration
-importlib/_bootstrap_external.py::_compile_bytecode:779,importlib/_bootstrap_external.py,_compile_bytecode,11,anchor,p_anchor_breadth,sink:marshal,-17,锚点命中 sink:marshal,,,,,L4-arbitration
-importlib/_bootstrap_external.py::FileLoader:1195,importlib/_bootstrap_external.py,FileLoader,10,random,,,,随机层,,,,,L4-arbitration
-logging/handlers.py::SocketHandler:649,logging/handlers.py,SocketHandler,21,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-arbitration
-logging/handlers.py::QueueListener:1559,logging/handlers.py,QueueListener,9,random,,,,随机层,,,,,L4-arbitration
-logging/__init__.py::Logger:1721,logging/__init__.py,Logger,29,random,,,,随机层,,,,,L4-arbitration
-multiprocessing/connection.py::answer_challenge:975,multiprocessing/connection.py,answer_challenge,16,confluence,,,-166,曲率汇合点 forman=-166,,,,,L4-arbitration
-multiprocessing/connection.py::_ConnectionBase:258,multiprocessing/connection.py,_ConnectionBase,5,random,,,,随机层,,,,,L4-arbitration
-multiprocessing/connection.py::XmlListener:1019,multiprocessing/connection.py,XmlListener,5,anchor,p_anchor_breadth,import:import_xmlrpclib,,锚点命中 import:import_xmlrpclib,,,,,L4-arbitration
-multiprocessing/managers.py::IteratorProxy:1052,multiprocessing/managers.py,IteratorProxy,2,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-multiprocessing/spawn.py::get_preparation_data:160,multiprocessing/spawn.py,get_preparation_data,45,anchor,p_anchor_breadth,import:import_subprocess,-366,锚点命中 import:import_subprocess,,,,,L4-arbitration
-multiprocessing/synchronize.py::Condition:236,multiprocessing/synchronize.py,Condition,2,random,,,,随机层,,,,,L4-arbitration
-multiprocessing/util.py::get_temp_dir:211,multiprocessing/util.py,get_temp_dir,14,confluence,,,-260,曲率汇合点 forman=-260,,,,,L4-arbitration
-site-packages/pip/_internal/build_env.py::InprocessBuildEnvironmentInstaller:320,site-packages/pip/_internal/build_env.py,InprocessBuildEnvironmentInstaller,51,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-arbitration
-site-packages/pip/_internal/self_outdated_check.py::_get_current_remote_pip_version:157,site-packages/pip/_internal/self_outdated_check.py,_get_current_remote_pip_version,26,confluence,,,-169,曲率汇合点 forman=-169,,,,,L4-arbitration
-site-packages/pip/_internal/cli/cmdoptions.py::editable:575,site-packages/pip/_internal/cli/cmdoptions.py,editable,13,random,,,-13,随机层,,,,,L4-arbitration
-site-packages/pip/_internal/index/package_finder.py::PackageFinder:771,site-packages/pip/_internal/index/package_finder.py,PackageFinder,13,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_internal/models/link.py::Link:391,site-packages/pip/_internal/models/link.py,Link,9,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_internal/req/constructors.py::parse_editable:148,site-packages/pip/_internal/req/constructors.py,parse_editable,32,random,,,-364,随机层,,,,,L4-arbitration
-site-packages/pip/_internal/utils/filesystem.py::subdirs_without_files:192,site-packages/pip/_internal/utils/filesystem.py,subdirs_without_files,3,random,,,-4,随机层,,,,,L4-arbitration
-site-packages/pip/_internal/utils/misc.py::is_installable_dir:287,site-packages/pip/_internal/utils/misc.py,is_installable_dir,15,confluence,,,-364,曲率汇合点 forman=-364,,,,,L4-arbitration
-site-packages/pip/_internal/utils/temp_dir.py::global_tempdir_manager:38,site-packages/pip/_internal/utils/temp_dir.py,global_tempdir_manager,8,random,,,-1,随机层,,,,,L4-arbitration
-site-packages/pip/_internal/utils/unpacking.py::untar_file:155,site-packages/pip/_internal/utils/unpacking.py,untar_file,94,confluence,,,-175,曲率汇合点 forman=-175,,,,,L4-arbitration
-site-packages/pip/_vendor/cachecontrol/heuristics.py::LastModified:124,site-packages/pip/_vendor/cachecontrol/heuristics.py,LastModified,31,random,,,,随机层,,,,,L4-arbitration
-site-packages/pip/_vendor/cachecontrol/_cmd.py::get_session:28,site-packages/pip/_vendor/cachecontrol/_cmd.py,get_session,10,confluence,,,-259,曲率汇合点 forman=-259,,,,,L4-arbitration
-site-packages/pip/_vendor/distlib/util.py::get_executable:304,site-packages/pip/_vendor/distlib/util.py,get_executable,16,random,,,-16,随机层,,,,,L4-arbitration
-site-packages/pip/_vendor/distro/distro.py::LinuxDistribution:1154,site-packages/pip/_vendor/distro/distro.py,LinuxDistribution,17,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-arbitration
-site-packages/pip/_vendor/distro/distro.py::LinuxDistribution:1209,site-packages/pip/_vendor/distro/distro.py,LinuxDistribution,8,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-arbitration
-site-packages/pip/_vendor/packaging/markers.py::_eval_op:216,site-packages/pip/_vendor/packaging/markers.py,_eval_op,15,confluence,,,-258,曲率汇合点 forman=-258,,,,,L4-arbitration
-site-packages/pip/_vendor/packaging/pylock.py::__dir__:54,site-packages/pip/_vendor/packaging/pylock.py,__dir__,2,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_vendor/packaging/specifiers.py::_UpperBound:208,site-packages/pip/_vendor/packaging/specifiers.py,_UpperBound,4,random,,,,随机层,,,,,L4-arbitration
-site-packages/pip/_vendor/packaging/specifiers.py::Specifier:611,site-packages/pip/_vendor/packaging/specifiers.py,Specifier,11,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_vendor/pkg_resources/__init__.py::_normalize_cached:2623,site-packages/pip/_vendor/pkg_resources/__init__.py,_normalize_cached,1,confluence,p_hot|p_deep_conf,,-368,曲率汇合点 forman=-368,,,,,L4-arbitration
-site-packages/pip/_vendor/pkg_resources/__init__.py::Distribution:3014,site-packages/pip/_vendor/pkg_resources/__init__.py,Distribution,13,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_vendor/rich/_win32_console.py::SetConsoleCursorPosition:252,site-packages/pip/_vendor/rich/_win32_console.py,SetConsoleCursorPosition,13,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_vendor/tomli/_parser.py::parse_inline_table:538,site-packages/pip/_vendor/tomli/_parser.py,parse_inline_table,32,confluence,,,-126,曲率汇合点 forman=-126,,,,,L4-arbitration
-site-packages/pip/_vendor/urllib3/_base_connection.py::BaseHTTPConnection:75,site-packages/pip/_vendor/urllib3/_base_connection.py,BaseHTTPConnection,1,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_vendor/urllib3/_base_connection.py::BaseHTTPConnection:95,site-packages/pip/_vendor/urllib3/_base_connection.py,BaseHTTPConnection,1,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_vendor/urllib3/_collections.py::HTTPHeaderDictItemView:196,site-packages/pip/_vendor/urllib3/_collections.py,HTTPHeaderDictItemView,6,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_vendor/urllib3/http2/connection.py::HTTP2Connection:215,site-packages/pip/_vendor/urllib3/http2/connection.py,HTTP2Connection,10,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-site-packages/pip/_vendor/urllib3/util/ssl_.py::create_urllib3_context:225,site-packages/pip/_vendor/urllib3/util/ssl_.py,create_urllib3_context,150,confluence,p_big1,,-261,曲率汇合点 forman=-261,,,,,L4-arbitration
-tomllib/_parser.py::Flags:164,tomllib/_parser.py,Flags,7,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-unittest/mock.py::seal:3150,unittest/mock.py,seal,22,confluence,,,-255,曲率汇合点 forman=-255,,,,,L4-arbitration
-xml/dom/xmlbuilder.py::DOMBuilder:187,xml/dom/xmlbuilder.py,DOMBuilder,9,anchor,p_anchor_breadth,sink:urllib_urlopen,,锚点命中 sink:urllib_urlopen,,,,,L4-arbitration
-xml/etree/ElementInclude.py::default_loader:87,xml/etree/ElementInclude.py,default_loader,10,confluence,,,-130,曲率汇合点 forman=-130,,,,,L4-arbitration
-xml/etree/ElementPath.py::findall:410,xml/etree/ElementPath.py,findall,2,random,,,-7,随机层,,,,,L4-arbitration
-xml/sax/xmlreader.py::IncrementalParser:115,xml/sax/xmlreader.py,IncrementalParser,11,random,,,,随机层,,,,,L4-arbitration
-zipfile/__init__.py::ZipFile:1824,zipfile/__init__.py,ZipFile,58,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-zoneinfo/_zoneinfo.py::ZoneInfo:112,zoneinfo/_zoneinfo.py,ZoneInfo,2,random,,,,随机层,,,,,L4-arbitration
-zoneinfo/_zoneinfo.py::ZoneInfo:212,zoneinfo/_zoneinfo.py,ZoneInfo,6,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-arbitration
-_pyrepl/historical_reader.py::HistoricalReader:297,_pyrepl/historical_reader.py,HistoricalReader,7,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
-_pyrepl/pager.py::pipe_pager:127,_pyrepl/pager.py,pipe_pager,36,anchor,p_anchor_breadth,import:import_subprocess,-168,锚点命中 import:import_subprocess,,,,,L4-arbitration
-_pyrepl/reader.py::Reader:625,_pyrepl/reader.py,Reader,4,zero_cover,,,,零覆盖：不在任何池内，盲区核查,,,,,L4-arbitration
+seq,unit_id,file,name,lineno,loc,stratum,in_pools,anchor_tags,forman,evidence_hint,truth,defect_type,annotator,date,source_layer
+1,ast.py::_dims_setter:681,ast.py,_dims_setter,681,2,random,,,,随机层（无偏基线）,,,,,L4-reference
+2,codecs.py::StreamReaderWriter.readline:712,codecs.py,StreamReaderWriter.readline,712,3,random,,,,随机层（无偏基线）,,,,,L4-reference
+3,codeop.py::_maybe_compile:50,codeop.py,_maybe_compile,50,26,confluence,,,-224,曲率汇合点 forman=-224,,,,,L4-reference
+4,dataclasses.py::_update_func_cell_for__class__:1222,dataclasses.py,_update_func_cell_for__class__,1222,27,confluence,,,-183,曲率汇合点 forman=-183,,,,,L4-reference
+5,enum.py::_is_internal_class:69,enum.py,_is_internal_class,69,8,zero_cover,,,-94,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+6,fractions.py::_round_to_figures:103,fractions.py,_round_to_figures,103,37,random,,,-171,随机层（无偏基线）,,,,,L4-reference
+7,inspect.py::getfile:923,inspect.py,getfile,923,27,confluence,,,-239,曲率汇合点 forman=-239,,,,,L4-reference
+8,inspect.py::getfullargspec:1340,inspect.py,getfullargspec,1340,91,confluence,,,-381,曲率汇合点 forman=-381,,,,,L4-reference
+9,locale.py::normalize:381,locale.py,normalize,381,82,confluence,p_hot|p_deep_conf,,-393,曲率汇合点 forman=-393,,,,,L4-reference
+10,operator.py::ixor:407,operator.py,ixor,407,4,random,,,,随机层（无偏基线）,,,,,L4-reference
+11,os.py::spawnl:961,os.py,spawnl,961,8,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+12,pdb.py::Pdb._hold_exceptions:602,pdb.py,Pdb._hold_exceptions,602,19,random,,,,随机层（无偏基线）,,,,,L4-reference
+13,pdb.py::Pdb._help_message_from_doc:2287,pdb.py,Pdb._help_message_from_doc,2287,21,random,,,,随机层（无偏基线）,,,,,L4-reference
+14,pickle.py::_Unframer.load_frame:307,pickle.py,_Unframer.load_frame,307,5,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+15,pickle.py::_Unpickler.find_class:1608,pickle.py,_Unpickler.find_class,1608,13,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-reference
+16,pickletools.py::OpcodeInfo.__init__:1124,pickletools.py,OpcodeInfo.__init__,1124,27,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-reference
+17,profile.py::Profile.create_stats:399,profile.py,Profile.create_stats,399,3,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+18,pydoc.py::TextRepr.__init__:1235,pydoc.py,TextRepr.__init__,1235,5,random,,,,随机层（无偏基线）,,,,,L4-reference
+19,shutil.py::_rmtree_unsafe:608,shutil.py,_rmtree_unsafe,608,28,confluence,,,-367,曲率汇合点 forman=-367,,,,,L4-reference
+20,socketserver.py::_SocketWriter.writable:841,socketserver.py,_SocketWriter.writable,841,2,random,,,,随机层（无偏基线）,,,,,L4-reference
+21,subprocess.py::check_output:423,subprocess.py,check_output,423,51,anchor,p_anchor_breadth,import:import_subprocess,-217,锚点命中 import:import_subprocess,,,,,L4-reference
+22,threading.py::_MainThread.__init__:1353,threading.py,_MainThread.__init__,1353,9,random,,,,随机层（无偏基线）,,,,,L4-reference
+23,traceback.py::print_stack:230,traceback.py,print_stack,230,10,zero_cover,,,-3,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+24,webbrowser.py::register_standard_browsers:491,webbrowser.py,register_standard_browsers,491,87,anchor,p_anchor_breadth,import:import_subprocess,-372,锚点命中 import:import_subprocess,,,,,L4-reference
+25,webbrowser.py::GenericBrowser.open:188,webbrowser.py,GenericBrowser.open,188,13,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+26,webbrowser.py::Konqueror.open:369,webbrowser.py,Konqueror.open,369,45,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+27,_aix_support.py::_aix_bos_rte:42,_aix_support.py,_aix_bos_rte,42,19,anchor,p_anchor_breadth,import:import_subprocess,-226,锚点命中 import:import_subprocess,,,,,L4-reference
+28,_pydatetime.py::timezone.__getinitargs__:2347,_pydatetime.py,timezone.__getinitargs__,2347,5,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-reference
+29,_pydecimal.py::Overflow.handle:279,_pydecimal.py,Overflow.handle,279,14,random,,,,随机层（无偏基线）,,,,,L4-reference
+30,asyncio/base_events.py::BaseEventLoop._log_subprocess:1736,asyncio/base_events.py,BaseEventLoop._log_subprocess,1736,12,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+31,asyncio/events.py::AbstractEventLoop.subprocess_exec:542,asyncio/events.py,AbstractEventLoop.subprocess_exec,542,6,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+32,asyncio/events.py::AbstractEventLoop.set_exception_handler:617,asyncio/events.py,AbstractEventLoop.set_exception_handler,617,2,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+33,asyncio/mixins.py::_LoopBoundMixin._get_loop:12,asyncio/mixins.py,_LoopBoundMixin._get_loop,12,10,random,,,,随机层（无偏基线）,,,,,L4-reference
+34,asyncio/selector_events.py::BaseSelectorEventLoop._add_reader:278,asyncio/selector_events.py,BaseSelectorEventLoop._add_reader,278,14,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+35,asyncio/selector_events.py::BaseSelectorEventLoop.sock_recvfrom:448,asyncio/selector_events.py,BaseSelectorEventLoop.sock_recvfrom,448,22,random,,,,随机层（无偏基线）,,,,,L4-reference
+36,asyncio/selector_events.py::_SelectorSocketTransport._make_empty_waiter:1206,asyncio/selector_events.py,_SelectorSocketTransport._make_empty_waiter,1206,7,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+37,asyncio/transports.py::SubprocessTransport.kill:241,asyncio/transports.py,SubprocessTransport.kill,241,10,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+38,collections/__init__.py::namedtuple:358,collections/__init__.py,namedtuple,358,173,anchor,p_anchor_breadth|p_big1,sink:eval|import:import_pickle,-222,"锚点命中 sink:eval, import:import_pickle",,,,,L4-reference
+39,ctypes/util.py::test:347,ctypes/util.py,test,347,39,random,,,-213,随机层（无偏基线）,,,,,L4-reference
+40,ctypes/util.py::_findLib_gcc:114,ctypes/util.py,_findLib_gcc,114,48,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+41,curses/ascii.py::isctrl:68,curses/ascii.py,isctrl,68,1,random,,,-13,随机层（无偏基线）,,,,,L4-reference
+42,email/contentmanager.py::_encode_base64:136,email/contentmanager.py,_encode_base64,136,7,confluence,,,-380,曲率汇合点 forman=-380,,,,,L4-reference
+43,email/encoders.py::encode_7or8bit:47,email/encoders.py,encode_7or8bit,47,15,random,,,-82,随机层（无偏基线）,,,,,L4-reference
+44,email/generator.py::Generator.__init__:38,email/generator.py,Generator.__init__,38,31,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+45,email/mime/audio.py::_au:84,email/mime/audio.py,_au,84,5,confluence,,,-209,曲率汇合点 forman=-209,,,,,L4-reference
+46,encodings/raw_unicode_escape.py::StreamReader.decode:32,encodings/raw_unicode_escape.py,StreamReader.decode,32,2,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+47,encodings/utf_8_sig.py::StreamWriter.reset:86,encodings/utf_8_sig.py,StreamWriter.reset,86,6,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+48,ensurepip/__init__.py::_run_pip:65,ensurepip/__init__.py,_run_pip,65,24,anchor,p_anchor_breadth,import:import_subprocess,-29,锚点命中 import:import_subprocess,,,,,L4-reference
+49,http/server.py::_url_collapse_path:922,http/server.py,_url_collapse_path,922,45,confluence,,,-380,曲率汇合点 forman=-380,,,,,L4-reference
+50,importlib/_bootstrap.py::_install:1546,importlib/_bootstrap.py,_install,1546,6,confluence,,,-377,曲率汇合点 forman=-377,,,,,L4-reference
+51,importlib/_bootstrap_external.py::_compile_bytecode:779,importlib/_bootstrap_external.py,_compile_bytecode,779,11,anchor,p_anchor_breadth,sink:marshal,-19,锚点命中 sink:marshal,,,,,L4-reference
+52,importlib/_bootstrap_external.py::FileLoader.get_data:1211,importlib/_bootstrap_external.py,FileLoader.get_data,1211,8,random,,,,随机层（无偏基线）,,,,,L4-reference
+53,logging/config.py::_strip_spaces:108,logging/config.py,_strip_spaces,108,2,confluence,,,-227,曲率汇合点 forman=-227,,,,,L4-reference
+54,logging/handlers.py::SocketHandler.makePickle:649,logging/handlers.py,SocketHandler.makePickle,649,21,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-reference
+55,logging/handlers.py::QueueListener.enqueue_sentinel:1608,logging/handlers.py,QueueListener.enqueue_sentinel,1608,9,random,,,,随机层（无偏基线）,,,,,L4-reference
+56,logging/__init__.py::Logger.getChild:1784,logging/__init__.py,Logger.getChild,1784,18,random,,,,随机层（无偏基线）,,,,,L4-reference
+57,multiprocessing/connection.py::_ConnectionBase.__exit__:267,multiprocessing/connection.py,_ConnectionBase.__exit__,267,2,random,,,,随机层（无偏基线）,,,,,L4-reference
+58,multiprocessing/connection.py::XmlListener.accept:1019,multiprocessing/connection.py,XmlListener.accept,1019,5,anchor,p_anchor_breadth,import:import_xmlrpclib,,锚点命中 import:import_xmlrpclib,,,,,L4-reference
+59,multiprocessing/managers.py::BarrierProxy.abort:1116,multiprocessing/managers.py,BarrierProxy.abort,1116,2,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+60,multiprocessing/spawn.py::get_preparation_data:160,multiprocessing/spawn.py,get_preparation_data,160,45,anchor,p_anchor_breadth,import:import_subprocess,-370,锚点命中 import:import_subprocess,,,,,L4-reference
+61,multiprocessing/synchronize.py::Condition._make_methods:242,multiprocessing/synchronize.py,Condition._make_methods,242,3,random,,,,随机层（无偏基线）,,,,,L4-reference
+62,site-packages/pip/_internal/build_env.py::InprocessBuildEnvironmentInstaller.install:320,site-packages/pip/_internal/build_env.py,InprocessBuildEnvironmentInstaller.install,320,51,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+63,site-packages/pip/_internal/cli/cmdoptions.py::editable:575,site-packages/pip/_internal/cli/cmdoptions.py,editable,575,13,random,,,,随机层（无偏基线）,,,,,L4-reference
+64,site-packages/pip/_internal/index/package_finder.py::LinkEvaluator.get_version_sort_key:283,site-packages/pip/_internal/index/package_finder.py,LinkEvaluator.get_version_sort_key,283,2,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+65,site-packages/pip/_internal/models/link.py::Link.path:455,site-packages/pip/_internal/models/link.py,Link.path,455,2,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+66,site-packages/pip/_internal/operations/build/wheel.py::build_wheel_pep517:13,site-packages/pip/_internal/operations/build/wheel.py,build_wheel_pep517,13,26,confluence,,,-371,曲率汇合点 forman=-371,,,,,L4-reference
+67,site-packages/pip/_internal/req/constructors.py::parse_editable:148,site-packages/pip/_internal/req/constructors.py,parse_editable,148,32,confluence,,,-366,曲率汇合点 forman=-366,,,,,L4-reference
+68,site-packages/pip/_internal/req/constructors.py::deduce_helpful_msg:210,site-packages/pip/_internal/req/constructors.py,deduce_helpful_msg,210,23,random,,,-45,随机层（无偏基线）,,,,,L4-reference
+69,site-packages/pip/_internal/req/req_file.py::handle_requirement_line:175,site-packages/pip/_internal/req/req_file.py,handle_requirement_line,175,32,confluence,,,-144,曲率汇合点 forman=-144,,,,,L4-reference
+70,site-packages/pip/_internal/utils/glibc.py::glibc_version_string:7,site-packages/pip/_internal/utils/glibc.py,glibc_version_string,7,3,random,,,-1,随机层（无偏基线）,,,,,L4-reference
+71,site-packages/pip/_internal/utils/misc.py::is_installable_dir:287,site-packages/pip/_internal/utils/misc.py,is_installable_dir,287,15,confluence,,,-366,曲率汇合点 forman=-366,,,,,L4-reference
+72,site-packages/pip/_internal/utils/temp_dir.py::TempDirectoryTypeRegistry.set_delete:54,site-packages/pip/_internal/utils/temp_dir.py,TempDirectoryTypeRegistry.set_delete,54,5,random,,,0,随机层（无偏基线）,,,,,L4-reference
+73,site-packages/pip/_vendor/cachecontrol/serialize.py::Serializer.dumps:20,site-packages/pip/_vendor/cachecontrol/serialize.py,Serializer.dumps,20,41,random,,,,随机层（无偏基线）,,,,,L4-reference
+74,site-packages/pip/_vendor/distlib/util.py::proceed:322,site-packages/pip/_vendor/distlib/util.py,proceed,322,14,random,,,-100,随机层（无偏基线）,,,,,L4-reference
+75,site-packages/pip/_vendor/distro/distro.py::LinuxDistribution._lsb_release_info:1154,site-packages/pip/_vendor/distro/distro.py,LinuxDistribution._lsb_release_info,1154,17,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+76,site-packages/pip/_vendor/distro/distro.py::LinuxDistribution._oslevel_info:1209,site-packages/pip/_vendor/distro/distro.py,LinuxDistribution._oslevel_info,1209,8,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,,,,,L4-reference
+77,site-packages/pip/_vendor/idna/core.py::check_bidi:70,site-packages/pip/_vendor/idna/core.py,check_bidi,70,68,confluence,,,-146,曲率汇合点 forman=-146,,,,,L4-reference
+78,site-packages/pip/_vendor/packaging/pylock.py::is_valid_pylock_path:73,site-packages/pip/_vendor/packaging/pylock.py,is_valid_pylock_path,73,3,zero_cover,,,-80,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+79,site-packages/pip/_vendor/packaging/specifiers.py::_UpperBound.__lt__:213,site-packages/pip/_vendor/packaging/specifiers.py,_UpperBound.__lt__,213,12,random,,,,随机层（无偏基线）,,,,,L4-reference
+80,site-packages/pip/_vendor/packaging/specifiers.py::Specifier._require_spec_version:623,site-packages/pip/_vendor/packaging/specifiers.py,Specifier._require_spec_version,623,9,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+81,site-packages/pip/_vendor/pkg_resources/__init__.py::Distribution._dep_map:3029,site-packages/pip/_vendor/pkg_resources/__init__.py,Distribution._dep_map,3029,10,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+82,site-packages/pip/_vendor/platformdirs/windows.py::get_win_folder_from_env_vars:143,site-packages/pip/_vendor/platformdirs/windows.py,get_win_folder_from_env_vars,143,19,confluence,,,-216,曲率汇合点 forman=-216,,,,,L4-reference
+83,site-packages/pip/_vendor/pygments/lexers/__init__.py::guess_lexer:304,site-packages/pip/_vendor/pygments/lexers/__init__.py,guess_lexer,304,37,confluence,,,-222,曲率汇合点 forman=-222,,,,,L4-reference
+84,site-packages/pip/_vendor/rich/highlighter.py::_combine_regex:8,site-packages/pip/_vendor/rich/highlighter.py,_combine_regex,8,7,confluence,,,-362,曲率汇合点 forman=-362,,,,,L4-reference
+85,site-packages/pip/_vendor/rich/_win32_console.py::SetConsoleCursorPosition:252,site-packages/pip/_vendor/rich/_win32_console.py,SetConsoleCursorPosition,252,13,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+86,site-packages/pip/_vendor/urllib3/_base_connection.py::BaseHTTPConnection.connect:75,site-packages/pip/_vendor/urllib3/_base_connection.py,BaseHTTPConnection.connect,75,1,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+87,site-packages/pip/_vendor/urllib3/_base_connection.py::BaseHTTPConnection.close:95,site-packages/pip/_vendor/urllib3/_base_connection.py,BaseHTTPConnection.close,95,1,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+88,site-packages/pip/_vendor/urllib3/_collections.py::HTTPHeaderDictItemView.__contains__:196,site-packages/pip/_vendor/urllib3/_collections.py,HTTPHeaderDictItemView.__contains__,196,6,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+89,site-packages/pip/_vendor/urllib3/http2/connection.py::HTTP2Connection.set_tunnel:215,site-packages/pip/_vendor/urllib3/http2/connection.py,HTTP2Connection.set_tunnel,215,10,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+90,site-packages/pip/_vendor/urllib3/util/connection.py::create_connection:27,site-packages/pip/_vendor/urllib3/util/connection.py,create_connection,27,64,confluence,,,-219,曲率汇合点 forman=-219,,,,,L4-reference
+91,tomllib/_parser.py::make_safe_parse_float:685,tomllib/_parser.py,make_safe_parse_float,685,19,zero_cover,,,-12,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+92,xml/dom/xmlbuilder.py::DOMBuilder.parse:187,xml/dom/xmlbuilder.py,DOMBuilder.parse,187,9,anchor,p_anchor_breadth,sink:urllib_urlopen,,锚点命中 sink:urllib_urlopen,,,,,L4-reference
+93,xml/etree/ElementPath.py::findall:410,xml/etree/ElementPath.py,findall,410,2,random,,,-149,随机层（无偏基线）,,,,,L4-reference
+94,xml/sax/xmlreader.py::IncrementalParser.parse:115,xml/sax/xmlreader.py,IncrementalParser.parse,115,11,random,,,,随机层（无偏基线）,,,,,L4-reference
+95,zipfile/__init__.py::ZipFile.read:1618,zipfile/__init__.py,ZipFile.read,1618,5,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+96,zoneinfo/_zoneinfo.py::ZoneInfo.dst:112,zoneinfo/_zoneinfo.py,ZoneInfo.dst,112,2,random,,,,随机层（无偏基线）,,,,,L4-reference
+97,zoneinfo/_zoneinfo.py::ZoneInfo._file_reduce:212,zoneinfo/_zoneinfo.py,ZoneInfo._file_reduce,212,6,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,,,,,L4-reference
+98,_pyrepl/historical_reader.py::isearch_end.do:205,_pyrepl/historical_reader.py,isearch_end.do,205,6,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference
+99,_pyrepl/pager.py::pipe_pager:127,_pyrepl/pager.py,pipe_pager,127,36,anchor,p_anchor_breadth,import:import_subprocess,-148,锚点命中 import:import_subprocess,,,,,L4-reference
+100,_pyrepl/reader.py::Reader.update_cursor:567,_pyrepl/reader.py,Reader.update_cursor,567,4,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,,,,,L4-reference

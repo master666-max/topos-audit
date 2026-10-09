@@ -253,6 +253,16 @@ def c13_path_not_skipped(w):
     assert len(units2) == 1, "仓内 __pycache__ 未被跳过: %d" % len(units2)
 
 
+def c14_qualified_name(w):
+    """类内方法的 unit name 必须是 "Class.method"（v1 逻辑写反会只留类名）。"""
+    d = os.path.join(w, "qual")
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, "c.py"), "w", encoding="utf-8") as f:
+        f.write("class A:\n    def m(self):\n        return 1\n\ndef free():\n    return 2\n")
+    names = sorted(u["name"] for u in discover_units(d))
+    assert names == ["A.m", "free"], "类内方法名错误: %r" % names
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -267,6 +277,7 @@ CHECKS = [
     ("c11 缺 git → None（ADR-A12）", c11_no_git),
     ("c12 观测退化 Se=Sp=1", c12_observe_degenerate),
     ("c13 父路径含 .workbuddy 仍可发现单元", c13_path_not_skipped),
+    ("c14 类内方法名 Class.method", c14_qualified_name),
 ]
 
 
