@@ -1,0 +1,160 @@
+{
+ "version": 3,
+ "layers": {
+  "call": 1.0,
+  "data": 0.5,
+  "control": 0.3,
+  "return": 0.3,
+  "vardep": 0.5
+ },
+ "fields": [
+  {
+   "name": "loc",
+   "layer": "L",
+   "method": "ast",
+   "params": {
+    "metric": "lines"
+   }
+  },
+  {
+   "name": "forman",
+   "layer": "L",
+   "method": "graph",
+   "params": {
+    "formula": "forman_unweighted"
+   }
+  }
+ ],
+ "slicers": [
+  {
+   "name": "loc:lo",
+   "field": "loc",
+   "op": "quantile_le",
+   "q": 0.34
+  },
+  {
+   "name": "loc:mid",
+   "field": "loc",
+   "op": "between_q",
+   "q_lo": 0.34,
+   "q_hi": 0.67
+  },
+  {
+   "name": "loc:hi",
+   "field": "loc",
+   "op": "quantile_gt",
+   "q": 0.67
+  },
+  {
+   "name": "curv:lo",
+   "field": "forman",
+   "op": "quantile_le",
+   "q": 0.25
+  },
+  {
+   "name": "curv:hi",
+   "field": "forman",
+   "op": "quantile_gt",
+   "q": 0.75
+  },
+  {
+   "name": "loc:notlo",
+   "field": "loc",
+   "op": "quantile_gt",
+   "q": 0.2
+  }
+ ],
+ "pools": [
+  {
+   "name": "p_lo",
+   "expr": "loc:lo"
+  },
+  {
+   "name": "p_mid",
+   "expr": "loc:mid"
+  },
+  {
+   "name": "p_hi",
+   "expr": "loc:hi"
+  },
+  {
+   "name": "p_curv_lo",
+   "expr": "curv:lo"
+  },
+  {
+   "name": "p_curv_hi",
+   "expr": "curv:hi"
+  },
+  {
+   "name": "p_hi_curvlo",
+   "expr": {
+    "all": [
+     "loc:hi",
+     "curv:lo"
+    ]
+   }
+  },
+  {
+   "name": "p_mid_curvhi",
+   "expr": {
+    "all": [
+     "loc:mid",
+     "curv:hi"
+    ]
+   }
+  },
+  {
+   "name": "p_lo_curvlo",
+   "expr": {
+    "all": [
+     "loc:lo",
+     "curv:lo"
+    ]
+   }
+  },
+  {
+   "name": "p_notlo",
+   "expr": "loc:notlo"
+  },
+  {
+   "name": "p_notlo_curvlo",
+   "expr": {
+    "all": [
+     "loc:notlo",
+     "curv:lo"
+    ]
+   }
+  },
+  {
+   "name": "p_hi_or_curvlo",
+   "expr": {
+    "any": [
+     "loc:hi",
+     "curv:lo"
+    ]
+   }
+  },
+  {
+   "name": "p_mid_or_lo",
+   "expr": {
+    "any": [
+     "loc:mid",
+     "loc:lo"
+    ]
+   }
+  },
+  {
+   "name": "p_hi_or_mid",
+   "expr": {
+    "any": [
+     "loc:hi",
+     "loc:mid"
+    ]
+   }
+  }
+ ],
+ "constraints": {
+  "max_pool_pct": 0.6,
+  "min_pool_size": 2
+ }
+}

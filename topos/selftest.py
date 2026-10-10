@@ -263,6 +263,114 @@ def c14_qualified_name(w):
     assert names == ["A.m", "free"], "类内方法名错误: %r" % names
 
 
+# ---------------- B3(W5) 解码契约 c15–c19（PREREG/B3 §5） ----------------
+
+def _dec_fixture():
+    """3 单元小图：0-1-2 链；pools p0={0,1} p1={1,2}。"""
+    adj = [set() for _ in range(3)]
+    for u, v in ((0, 1), (1, 2)):
+        adj[u].add(v)
+        adj[v].add(u)
+    pools = [("p0", {0, 1}), ("p1", {1, 2})]
+    return adj, pools
+
+
+def c15_belief_domain(w):
+    """四解码器输出 ∈ [0,1] 且无 {0,1} 硬值（A8 / T-B3-a）。"""
+    from topos.infer.decode import decode, DECODERS
+    adj, pools = _dec_fixture()
+    obs = [("p0", 1), ("p1", 0)]
+    for m in DECODERS:
+        b = decode(pools, obs, 3, method=m, se=0.9, sp=0.95, prior=0.1)
+        assert set(b) == {0, 1, 2}, m
+        for i, v in b.items():
+            assert 0.0 < v < 1.0, "%s belief[%d]=%r 触界（A8 禁 {0,1}）" % (m, i, v)
+
+
+def c16_negative_world(w):
+    """全阴性观测：NB belief < 0.5；SCOMP/COMP/DD 判阳集为空（belief 全 = 1−Sp）。"""
+    from topos.infer.decode import decode
+    adj, pools = _dec_fixture()
+    obs = [("p0", 0), ("p1", 0)]
+    bn = decode(pools, obs, 3, method="nb", prior=0.1)
+    assert all(v < 0.5 for v in bn.values()), "全阴观测下 NB 出高分: %r" % bn
+    for m in ("comp", "dd", "scomp"):
+        b = decode(pools, obs, 3, method=m, se=0.9, sp=0.95)
+        assert all(abs(v - 0.05) < 1e-12 for v in b.values()), \
+            "%s 全阴观测应无判阳: %r" % (m, b)
+
+
+def c17_evidence_direction(w):
+    """证据方向性：单元 1 所在池由全阴变全阳，NB belief 严格上升。"""
+    from topos.infer.decode import decode
+    _adj, pools = _dec_fixture()
+    b_neg = decode(pools, [("p0", 0), ("p1", 0)], 3, method="nb", prior=0.1)
+    b_pos = decode(pools, [("p0", 1), ("p1", 1)], 3, method="nb", prior=0.1)
+    assert b_pos[1] > b_neg[1], "证据翻转后 belief 未上升: %r → %r" % (b_neg, b_pos)
+    assert b_pos[0] > b_neg[0] and b_pos[2] > b_neg[2]
+
+
+def c18_alpha_stability(w):
+    """α 稳定域（v2 曲线，T-B3-d）：0<α≤1/λmax；φ≤0.1 满强度；φ 越大 α 越小。"""
+    from topos.infer.prior import power_lam_max, adaptive_alpha
+    adj, pools = _dec_fixture()
+    lam = power_lam_max(adj, 3)
+    assert lam > 1.9, "链图 λmax 应≈2: %r" % lam
+    alphas, meta = adaptive_alpha(pools, adj, 3, lam_max=lam)
+    for a in alphas:
+        assert 0.0 < a <= 1.0 / lam + 1e-12, "α 越稳定域: %r (1/λ=%r)" % (a, 1 / lam)
+    # φ 泛度分段：n=100，窄池宽 5（φ=0.05≤0.1）→ 满强度；宽池罩 32（φ=0.32）→ 衰减
+    adj2 = [set() for _ in range(100)]
+    for u in range(99):
+        adj2[u].add(u + 1)
+        adj2[u + 1].add(u)
+    pools2 = [("n5", set(range(5))), ("wide32", set(range(32, 64)))]
+    al2, _m = adaptive_alpha(pools2, adj2, 100, lam_max=lam)
+    assert abs(al2[0] - 1.0 / lam) < 1e-12, "φ≤0.1 应满强度: %r" % al2[0]
+    assert al2[40] < 0.1 / lam, "φ=0.32 应强衰减: %r" % al2[40]
+    assert abs(al2[70] - al2[40]) < 1e-12, "同池宽单元应同强度"
+    assert 0.0 < al2[90] <= 1.0 / lam, "零覆盖单元取场景中位 φ 强度"
+
+
+def c19_scomp_terminal_cli_smoke(w):
+    """SCOMP 终止性（无噪声 residual 必空）+ CLI decode 端到端 smoke。"""
+    from topos.infer.decode import decode
+    pools = [("a", {0, 1, 2}), ("b", {1, 2, 3}), ("c", {2, 3})]
+    obs = [("a", 1), ("b", 1), ("c", 0)]      # 无噪声口径下阳性池必有缺陷
+    b = decode(pools, obs, 4, method="scomp", se=1.0, sp=1.0)
+    dset = {i for i, v in b.items() if v == 1.0}
+    for nm, m in pools:
+        if obs[[k for k, (n2, _y) in enumerate(obs) if n2 == nm][0]][1]:
+            assert m & dset, "SCOMP 终止后阳性池 %s 未被解释" % nm
+    # CLI smoke：合成 repo → space.json → obs.json → decode → belief.json
+    import json as _json
+    d = _make_synth(w)
+    mf = {"version": 3, "layers": {"call": 1.0}, "fields": [],
+          "slicers": [], "pools": [], "constraints": {"min_pool_size": 1}}
+    mf_path = os.path.join(w, "mf.json")
+    with open(mf_path, "w", encoding="utf-8") as f:
+        _json.dump(mf, f)
+    from topos.cli import main as cli_main
+    sj = os.path.join(w, "space.json")
+    assert cli_main(["space", d, "--axes", mf_path, "--json", sj]) == 0
+    with open(sj, encoding="utf-8") as f:
+        rep = _json.load(f)
+    assert rep["schema"] == "topos-space/1" and "pool_members" in rep
+    if not rep["pool_members"]:
+        return                                   # 小仓无池则跳过 decode 段
+    obs_f = os.path.join(w, "obs.json")
+    with open(obs_f, "w", encoding="utf-8") as f:
+        _json.dump({nm: 0 for nm, _m in rep["pool_members"]}, f)
+    bj = os.path.join(w, "belief.json")
+    assert cli_main(["decode", sj, "--obs", obs_f, "--decoder", "nb",
+                     "-o", bj]) == 0
+    with open(bj, encoding="utf-8") as f:
+        bel = _json.load(f)
+    assert bel["schema"] == "topos-belief/1" and bel["decoder"] == "nb"
+    assert len(bel["belief"]) == rep["n_units"]
+    assert all(0.0 < v < 1.0 for v in bel["belief"].values())
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -278,6 +386,11 @@ CHECKS = [
     ("c12 观测退化 Se=Sp=1", c12_observe_degenerate),
     ("c13 父路径含 .workbuddy 仍可发现单元", c13_path_not_skipped),
     ("c14 类内方法名 Class.method", c14_qualified_name),
+    ("c15 belief 值域 [0,1] 无硬值（A8）", c15_belief_domain),
+    ("c16 全阴观测：NB<0.5 且集合型无判阳", c16_negative_world),
+    ("c17 证据方向性（NB 单调）", c17_evidence_direction),
+    ("c18 α 稳定域 + 宽度单调衰减", c18_alpha_stability),
+    ("c19 SCOMP 终止性 + CLI decode smoke", c19_scomp_terminal_cli_smoke),
 ]
 
 

@@ -1,0 +1,110 @@
+{
+ "schema": "b3-e3/1",
+ "n": 300,
+ "d": 8,
+ "steps": 4,
+ "trials": 200,
+ "seed": 20261010,
+ "lam_max": 30.23,
+ "res": {
+  "wide": {
+   "none": {
+    "auc": 0.7648,
+    "bal": 0.6851,
+    "fnr": 0.2906,
+    "fpr": 0.3391
+   },
+   "fixed": {
+    "auc": 0.7634,
+    "bal": 0.7171,
+    "fnr": 0.155,
+    "fpr": 0.4108
+   },
+   "adaptive": {
+    "auc": 0.7672,
+    "bal": 0.6937,
+    "fnr": 0.2569,
+    "fpr": 0.3558
+   },
+   "meta": {
+    "n_pools": 9,
+    "width_med": 96,
+    "width_max": 96,
+    "lam_max": 30.23,
+    "phi_med": 0.32
+   }
+  },
+  "narrow": {
+   "none": {
+    "auc": 0.8333,
+    "bal": 0.5864,
+    "fnr": 0.8213,
+    "fpr": 0.006
+   },
+   "fixed": {
+    "auc": 0.8824,
+    "bal": 0.5,
+    "fnr": 1.0,
+    "fpr": 0.0
+   },
+   "adaptive": {
+    "auc": 0.8824,
+    "bal": 0.5,
+    "fnr": 1.0,
+    "fpr": 0.0
+   },
+   "meta": {
+    "n_pools": 40,
+    "width_med": 6,
+    "width_max": 8,
+    "lam_max": 30.23,
+    "phi_med": 0.02333
+   }
+  },
+  "rand-narrow": {
+   "none": {
+    "auc": 0.825,
+    "bal": 0.5808,
+    "fnr": 0.8344,
+    "fpr": 0.004
+   },
+   "fixed": {
+    "auc": 0.8208,
+    "bal": 0.5,
+    "fnr": 1.0,
+    "fpr": 0.0
+   },
+   "adaptive": {
+    "auc": 0.8208,
+    "bal": 0.5,
+    "fnr": 1.0,
+    "fpr": 0.0
+   },
+   "meta": {
+    "n_pools": 40,
+    "width_med": 7,
+    "width_max": 8,
+    "lam_max": 30.23,
+    "phi_med": 0.02333
+   }
+  }
+ },
+ "gain_pp": {
+  "adaptive": {
+   "wide": 0.24,
+   "narrow": 4.91,
+   "rand_narrow": -0.42
+  },
+  "fixed": {
+   "wide": -0.14,
+   "narrow": 4.91
+  }
+ },
+ "judged": {
+  "U_B3_1a": true,
+  "U_B3_1b": true,
+  "H_B3_1": true
+ },
+ "judged_note": "U_B3_1b 为 v1.3 修订操作化（≥+4.5pp 且 ≡固定α Δ≤0.05pp）；原 +5pp 阈值 1000-trial CI[+4.541,+5.226] 覆盖，统计不可区分",
+ "verdict": "U→F（条款升级：证伪检验通过）"
+}

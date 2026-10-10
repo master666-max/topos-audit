@@ -26,6 +26,10 @@ def build_report(space):
         "coverage": s["coverage"],
         "fields_nonnull": s["fields_nonnull"],
         "pools": space.pool_overview(),
+        # B3(W5) 解码输入依赖：池成员 + 单元元数据（unit_id 按 Space 契约稳定编号）
+        "pool_members": [[nm, sorted(m)] for nm, m in space.rows],
+        "units": [u["id"] if isinstance(u, dict) else str(u)
+                  for u in space.units],
         "design_warnings": s["design_warnings"],
     }
     cov = report["coverage"]
