@@ -1,0 +1,25 @@
+unit_id,truth,defect_type,evidence,annotator,date,source_layer
+dsh-launcher@1885de1/dsh-accept.py::run_py:22,0,,RUN1 开池审查：良性（TOOLS 常量路径）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-fallback-heal.py::kill_node:87,0,,RUN1 开池审查：正面：PID 复用防误杀双复核,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-fallback-heal.py::heal_profile:118,0,,RUN1 开池审查：正面：cmd_arg_safe 元字符闸,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-fallback-heal.py::clean_pnpm_leftovers:226,0,,RUN1 开池审查：良性（守卫到位）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-fallback-heal.py::scan:240,0,,RUN1 开池审查：良性（守卫到位）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-launcher.py::kill_leftover:163,0,,RUN1 开池审查：正面：同款双复核,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-launcher.py::run_heal:193,0,,RUN1 开池审查：良性（TOOLS 常量）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-launcher.py::_spawn_bg_and_wait:467,0,,RUN1 开池审查：信任边界注记（config 驱动，设计功能）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-launcher.py::run_plugins:654,0,,RUN1 开池审查：良性（TOOLS 常量）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-launcher.py::action_check:746,0,,RUN1 开池审查：良性（600s 超时守卫）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-plugins.py::run_heal:741,0,,RUN1 开池审查：良性（TOOLS 常量）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_env.py::_run:66,0,,RUN1 开池审查：良性（永不抛封装，设计正面）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_env.py::image_names:251,0,,RUN1 开池审查：良性,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_env.py::pid_alive:288,0,,RUN1 开池审查：良性,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_env.py::port_excluded:862,0,,RUN1 开池审查：良性,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_tests.py::expect:58,0,,RUN1 开池审查：测试代码（forman 深点，无生产影响）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_tests.py::t_run_heal:536,0,,RUN1 开池审查：测试代码,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_tests.py::_load_launcher:851,0,,RUN1 开池审查：测试代码,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_tests.py::t_safemode_roundtrip:1200,0,,RUN1 开池审查：测试代码,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_tests.py::t_safemode_guards:1237,0,,RUN1 开池审查：测试代码,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_tests.py::t_update_cli_update:1722,0,,RUN1 开池审查：测试代码,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-launcher.py::_action_start_impl:251,0,,RUN1 开池审查：可维护性注记（170 行编排）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh-plugins.py::main:837,0,,RUN1 开池审查：可维护性注记（185 行 CLI 分发）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool
+dsh-launcher@1885de1/dsh_env.py::discover_start_cmds:903,0,,RUN1 开池审查：信任链节点（discover→Popen）,AI 预审+用户督导（RUN1 会话）,,RUN1-pool

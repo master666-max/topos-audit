@@ -204,7 +204,7 @@ flowchart LR
 | O2 骨架 | ✅（落位偏差已修） | 骨架在位；`tests/test_contract.py` shim 补上；`PREREG/B1.md` 补追认版 |
 | O3 GitHub | ✅（本次恢复同步） | push 后 ls-remote 回读一致 |
 | W1/W2/W6/W7（B1） | ✅ 出口过 | e1b15d4；selftest 12/12 → **29/29**；`reference/crosscheck-result.json` 6/6 |
-| W8 标定层（B2） | ◐ E-B2-1/2/3/5 咬合；**E-B2-4 走「缺省层如实登记」支线** | B2-E1..E5 回执；**出口豁免登记于此**：PREREG/B2 v1.5/v1.6 修订披露，α=0.187 作废 L4-control，定向锚改由 L1 承担；**欠账 = L4 人工仲裁 100 单元**；另 L3 SVEN 锚定集未开工（无 E-B2-x 门，登记为实战前可选层） |
+| W8 标定层（B2） | ◐ E-B2-1/2/3/5 咬合；**E-B2-4 走「缺省层如实登记」支线** | B2-E1..E5 回执；**出口豁免登记于此**：PREREG/B2 v1.5/v1.6 修订披露，α=0.187 作废 L4-control，定向锚改由 L1 承担；**L4 已转为实战采集方案**（PREREG/L4-field v1.0，2026-10-10 用户发起）：每审计一批入库 gold_l4_field.csv（RUN1 24 单元已回填，dsh 靶信号 PPV=0/15 如实）+ 负域抽查 n=10 清单待裁；**原「100 单元仲裁」撤销**（SVEN 368 对第三方参照 + RUN1 本域 24 单元两证据支撑，且不触判据修订停手线）；L3 SVEN 已接入 ✅ |
 | W5 解码器（B3） | ✅（④ MD 渲染本次补做） | 27dcaa7 12.4×≥8；B3-E1/E2/E3；`report/md_out.py` + `report-md` CLI + c29 |
 | W4 停止（B4） | ✅ | ac051ce；B4-E1.md；c₀=0.05（v1.4） |
 | W3 sheaf（B5） | ✅ | 6841e44（Q3 降标采纳已登记于正文划线）；B5-E1/E2.md |
