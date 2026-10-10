@@ -30,9 +30,9 @@ def load(tag):
               encoding="utf-8", errors="replace") as f:
         for line in f:
             if line.startswith("EDGE\t"):
-                p = line.rstrip("\n").split("\t")
-                if len(p) == 7:
-                    edges.append((p[1], p[2], p[3], p[4], p[5], p[6]))
+                e = m._parse_edge(line)          # v2 八列（含调用点行），兼容旧七列
+                if e:
+                    edges.append(e[:6])
     return edges
 
 

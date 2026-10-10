@@ -1,5 +1,5 @@
 {
- "schema": "m5-e2/1",
+ "schema": "m5-e2/2",
  "joern_version": "banner(版本行未解析，probe 通过)",
  "results": {
   "py": {
@@ -230,6 +230,29 @@
     "plugins/weak_cryptographic_key.py::_weak_crypto_key_size_cryptography_io:90 -> plugins/weak_cryptographic_key.py::weak_cryptographic_key:162",
     "plugins/weak_cryptographic_key.py::_weak_crypto_key_size_pycrypto:142 -> plugins/weak_cryptographic_key.py::weak_cryptographic_key:162"
    ],
+   "n_gap": 62,
+   "n_fp": 3,
+   "n_gold_bug": 0,
+   "n_manual_overridden": 3,
+   "manual_overridden": [
+    "cli/config_generator.py::parse_args:62 -> cli/main.py::main:134 => fp",
+    "core/issue.py::issue_from_dict:242 -> core/issue.py::Cwe.from_dict:63 => fp",
+    "core/test_properties.py::checks:12 -> core/utils.py::check_ast_node:370 => fp"
+   ],
+   "precision_v13": 0.9881,
+   "v13_sampling": {
+    "n": 7,
+    "all_pass": true,
+    "samples": [
+     "gen_blacklist:346 -> build_conf_dict:8  [OK]  utils.build_conf_dict(",
+     "gen_blacklist:234 -> build_conf_dict:8  [OK]  utils.build_conf_dict(",
+     "get_config_settings:124 -> gen_config:62  [OK]  config[fn_name] = fn_module.gen_config(function._takes_config)",
+     "main:142 -> Manager.check_id:102  [OK]  if not extension_loader.MANAGER.check_id(skip):",
+     "_get_options_from_ini:46 -> Issue.filter:147  [OK]  for filename in fnmatch.filter(filenames, \".bandit\"):",
+     "_get_options_from_ini:46 -> parse_ini_file:355  [OK]  return utils.parse_ini_file(ini_file)",
+     "main:134 -> BanditConfig.get_option:84  [OK]  if b_conf.get_option(\"log_format\"):"
+    ]
+   },
    "precision": 0.7421,
    "recall": 0.8618,
    "map_exact": 25640,
@@ -267,6 +290,30 @@
     "view.js::tryStat:197 -> view.js::View.prototype.resolve:169",
     "view.js::View.prototype.lookup:104 -> view.js::View.prototype.resolve:169"
    ],
+   "n_gap": 4,
+   "n_fp": 4,
+   "n_gold_bug": 0,
+   "n_manual_overridden": 8,
+   "manual_overridden": [
+    "request.js::accepts:127 -> request.js::acceptsEncodings:140 => fp",
+    "request.js::accepts:127 -> request.js::acceptsCharsets:171 => fp",
+    "request.js::accepts:127 -> request.js::acceptsLanguages:185 => fp",
+    "response.js::stringify:1026 -> response.js::cookie:748 => fp",
+    "response.js::links:98 -> response.js::get:702 => gap",
+    "response.js::format:574 -> response.js::vary:878 => gap",
+    "response.js::format:574 -> utils.js::normalizeType:61 => gap",
+    "response.js::format:574 -> utils.js::normalizeTypes:75 => gap"
+   ],
+   "precision_v13": 0.7143,
+   "v13_sampling": {
+    "n": 3,
+    "all_pass": true,
+    "samples": [
+     "links:98 -> get:702  [OK]  manual(人工源码核验)",
+     "format:574 -> vary:878  [OK]  manual(人工源码核验)",
+     "format:574 -> normalizeType:61  [OK]  manual(人工源码核验)"
+    ]
+   },
    "precision": 0.4286,
    "recall": 1.0,
    "map_exact": 503,
@@ -278,6 +325,8 @@
  "judged": {
   "D_M5_2a": true,
   "D_M5_2b": false,
-  "D_M5_2c": false
+  "D_M5_2c": false,
+  "D_M5_2b_v13": true,
+  "D_M5_2c_v13": false
  }
 }

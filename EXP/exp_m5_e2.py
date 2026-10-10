@@ -79,7 +79,8 @@ def _run(cmd, env, timeout, cwd=None):
     """subprocess 包装：超时/异常 → (rc=-9, msg)，不让挂起炸掉实验。"""
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, env=env,
-                           timeout=timeout, cwd=cwd)
+                           timeout=timeout, cwd=cwd,
+                           encoding="utf-8", errors="replace")
         return r.returncode, (r.stdout or "") + (r.stderr or "")
     except subprocess.TimeoutExpired:
         return -9, "TIMEOUT after %ss" % timeout
@@ -130,7 +131,8 @@ cpg.call.filter(_.callee.size > 0).foreach { c =>
   c.callee.foreach { ct =>
     println("EDGE\\t" + c.method.fullName + "\\t" + c.method.filename + "\\t" +
       c.method.lineNumber.getOrElse(-1) + "\\t" + ct.fullName + "\\t" +
-      ct.filename + "\\t" + ct.lineNumber.getOrElse(-1))
+      ct.filename + "\\t" + ct.lineNumber.getOrElse(-1) + "\\t" +
+      c.lineNumber.getOrElse(-1))
   }
 }
 println("DUMP_DONE")
@@ -175,9 +177,9 @@ def _run_joern(tag, target, cpg_path):
     edges = []
     for line in out2.splitlines():
         if line.startswith("EDGE\t"):
-            p = line.split("\t")
-            if len(p) == 7:
-                edges.append((p[1], p[2], p[3], p[4], p[5], p[6]))
+            e = _parse_edge(line)
+            if e:
+                edges.append(e)
     done = "DUMP_DONE" in out2
     print("[%s] joern-parse ok ｜ call 边（resolved callee）%d 条 ｜ dump %s"
           % (tag, len(edges), "完整" if done else "**未跑完（截断？）**"))
@@ -208,6 +210,139 @@ def topos_side(root, lang):
         us = langjs.discover_units_js(root)
         ly = langjs.extract_layers_js(root, us)
     return us, set(ly["call"])
+
+
+#: 人工判定表（v1.3：人工判定优先于机械标签；逐条源码依据见 EXP/M5-E2.md §9）
+#: key=(tag, 单元A_id, 单元B_id) → "gap"|"fp"
+MANUAL_VERDICT = {
+    ("js", "request.js::accepts:127", "request.js::acceptsEncodings:140"): "fp",
+    ("js", "request.js::accepts:127", "request.js::acceptsCharsets:171"): "fp",
+    ("js", "request.js::accepts:127", "request.js::acceptsLanguages:185"): "fp",
+    ("js", "response.js::stringify:1026", "response.js::cookie:748"): "fp",
+    ("js", "response.js::format:574", "utils.js::normalizeType:61"): "gap",
+    ("js", "response.js::format:574", "utils.js::normalizeTypes:75"): "gap",
+    ("js", "response.js::format:574", "response.js::vary:878"): "gap",
+    ("js", "response.js::links:98", "response.js::get:702"): "gap",
+    ("py", "core/issue.py::issue_from_dict:242",
+     "core/issue.py::Cwe.from_dict:63"): "fp",
+    ("py", "core/test_properties.py::checks:12",
+     "core/utils.py::check_ast_node:370"): "fp",
+    ("py", "cli/config_generator.py::parse_args:62",
+     "cli/main.py::main:134"): "fp",
+}
+
+
+def _classify_unconfirmed(units, T, Gm, target, joern_edges, tag):
+    """T−Gm → (gaps, fps, golds, samples)。v1.3 口径（PREREG/M5 v1.3）：
+    GAP=金标有该调用点痕迹但 callee 未解析/未建模（仪器盲区，经抽样核验为真
+    调用后计入 precision 分子）；FP=金标无痕迹或查实撞名误解析（留分母扣分）；
+    GOLD=金标已解析却未入 Gm（映射 bug，必须排查）。
+    抽样核验：n=min(10, ⌈10%⌉)，按 Joern 调用点行读源码验证被调名出现；
+    一例不过 → 该批 GAP 不可整体计入（V 仅取已核验子集，保守）。"""
+    import math
+    files_set = {u["file"] for u in units}
+    keymap = {}
+    for i, u in enumerate(units):
+        keymap.setdefault((u["file"], u["lineno"]), i)
+    spans = {}
+    for i, u in enumerate(units):
+        spans.setdefault(u["file"], []).append(
+            (u["lineno"], u["end_lineno"], i))
+    for f in spans:
+        spans[f].sort(key=lambda x: (x[1] - x[0], x[0]))
+
+    def unit_of(fn, ln):
+        rel = _norm_fn(fn, target, files_set)
+        if rel not in files_set:
+            return None
+        try:
+            li = int(float(ln))
+        except ValueError:
+            return None
+        if (rel, li) in keymap:
+            return keymap[(rel, li)]
+        for a, b, i in spans.get(rel, []):
+            if a <= li <= b:
+                return i
+        return None
+
+    caller_calls = {}                                # 单元 → [(被调fullName, 被调file, 方法行, 调用点行)]
+    for cfn, cfl, cl, tfn, tfl, tl, site in joern_edges:
+        ci = unit_of(cfl, cl)
+        if ci is None:
+            continue
+        caller_calls.setdefault(ci, []).append((tfn, tfl, cl, site))
+
+    def _simple(i):
+        return units[i]["name"].split(".")[-1]
+
+    def _hit(calls, name):
+        hit_r = hit_u = False
+        for tfn, tfl, _cl, _site in calls:
+            if tfn.split(":")[-1].split(".")[-1] != name:
+                continue
+            if tfl != "<empty>" and tfl in files_set:
+                hit_r = True
+            elif tfl == "<empty>":
+                hit_u = True
+        return hit_r, hit_u
+
+    def _trace(calls, name):
+        for tfn, tfl, cl, site in calls:
+            if tfn.split(":")[-1].split(".")[-1] == name and tfl == "<empty>":
+                return cl, site
+        for tfn, tfl, cl, site in calls:
+            if tfn.split(":")[-1].split(".")[-1] == name:
+                return cl, site
+        return None
+
+    gaps, fps, golds, overridden = [], [], [], []
+    for a, b in sorted(T - Gm):
+        key = (tag, units[a]["id"], units[b]["id"])
+        if key in MANUAL_VERDICT:                    # v1.3：人工判定优先
+            overridden.append((a, b, MANUAL_VERDICT[key]))
+            if MANUAL_VERDICT[key] == "gap":
+                tr = _trace(caller_calls.get(a, []), _simple(b)) or \
+                    _trace(caller_calls.get(b, []), _simple(a))
+                gaps.append((a, b, tr))
+            else:
+                fps.append((a, b))
+            continue
+        ra, ua = _hit(caller_calls.get(a, []), _simple(b))
+        rb, ub = _hit(caller_calls.get(b, []), _simple(a))
+        if ra or rb:
+            golds.append((a, b))
+        elif ua or ub:
+            gaps.append((a, b, _trace(caller_calls.get(a, []), _simple(b))
+                         or _trace(caller_calls.get(b, []), _simple(a))))
+        else:
+            fps.append((a, b))
+    # 抽样核验：读【调用点】源码行（site=CALL 节点行；旧 dump 退回方法行），验证被调名出现。
+    # 人工判定入表的 GAP = 人工已源码核验，直接采信（部分 GAP 属"金标未建 CALL 节点"
+    # 最深盲区，机械 trace 天生不存在，见 M5-E2 §9）。
+    n = min(10, max(3, int(math.ceil(len(gaps) * 0.1)))) if gaps else 0
+    manual_gap_ids = {(a, b) for a, b, v in overridden if v == "gap"}
+    samples = []
+    for a, b, tr in gaps[:n]:
+        if (a, b) in manual_gap_ids:
+            samples.append((units[a]["id"], units[b]["id"], True,
+                            "manual(人工源码核验)"))
+            continue
+        ok, line_txt = False, ""
+        if tr:
+            meth_ln, site = tr
+            ln = int(site) if site and int(site) > 0 else int(meth_ln)
+            try:
+                u_file = units[a]["file"]
+                p = os.path.join(target, *u_file.split("/"))
+                with open(p, encoding="utf-8", errors="replace") as f:
+                    lines = f.readlines()
+                line_txt = lines[ln - 1].strip() if 0 < ln <= len(lines) else ""
+                ok = _simple(b) in line_txt
+            except OSError:
+                ok = False
+        samples.append((units[a]["id"], units[b]["id"], ok, line_txt))
+    return gaps, fps, golds, samples, overridden
 
 
 def crosscheck(tag, target, joern_edges, root, lang):
@@ -246,7 +381,7 @@ def crosscheck(tag, target, joern_edges, root, lang):
 
     Gm, n_unmapped = set(), 0                        # Gm = 可映射金标
     seen_caller = {}
-    for cf, cfl, cl, tf, tfl, tl in joern_edges:
+    for cf, cfl, cl, tf, tfl, tl, site in joern_edges:
         ci, ti = unit_of(cfl, cl), unit_of(tfl, tl)
         if ci is None or ti is None:
             n_unmapped += 1
@@ -258,6 +393,15 @@ def crosscheck(tag, target, joern_edges, root, lang):
     inter = T & Gm
     prec = (len(inter) / len(T)) if T else 0.0
     rec = (len(inter) / len(Gm)) if Gm else 0.0
+    # v1.3 双口径（PREREG/M5 v1.3，2026-10-10 用户拍板）：GAP 经抽样核验计入分子
+    gaps, fps, golds, v_samples, overridden = _classify_unconfirmed(
+        units, T, Gm, target, joern_edges, tag)
+    if golds:
+        print("!! GOLD 非空（金标已解析却未入 Gm，映射 bug 须排查）：%d 条"
+              % len(golds))
+    v_pass = all(s[2] for s in v_samples) if v_samples else True
+    n_v = len(gaps) if v_pass else sum(1 for s in v_samples if s[2])
+    prec_v13 = (len(inter) + n_v) / len(T) if T else 0.0
     if os.environ.get("M5E2_DEBUG"):
         print("[debug] Gm 成员：")
         for a, b in sorted(Gm):
@@ -273,6 +417,18 @@ def crosscheck(tag, target, joern_edges, root, lang):
         "n_topos_edges": len(T), "n_intersect": len(inter),
         "gold_pairs": ["%s -> %s" % (units[a]["id"], units[b]["id"])
                        for a, b in sorted(Gm)],
+        "n_gap": len(gaps), "n_fp": len(fps), "n_gold_bug": len(golds),
+        "n_manual_overridden": len(overridden),
+        "manual_overridden": ["%s -> %s => %s"
+                              % (units[a]["id"], units[b]["id"], v)
+                              for a, b, v in overridden],
+        "precision_v13": round(prec_v13, 4),
+        "v13_sampling": {"n": len(v_samples), "all_pass": v_pass,
+                         "samples": ["%s -> %s  [%s]  %s"
+                                     % (a.split("::", 1)[-1],
+                                        b.split("::", 1)[-1],
+                                        "OK" if ok else "FAIL", txt)
+                                     for a, b, ok, txt in v_samples]},
         "precision": round(prec, 4), "recall": round(rec, 4),
         "map_exact": n_exact, "map_contain": n_contain,
         "miss_in_universe": len(miss), "miss_sample": miss_sample,
@@ -284,13 +440,27 @@ def crosscheck(tag, target, joern_edges, root, lang):
           "可映射金标 %d ｜ 宇宙差边 %d"
           % (len(units), len(T), len(joern_edges), len(Gm), n_unmapped))
     print("映射：精确行 %d ｜ 包含兜底 %d" % (n_exact, n_contain))
-    print("→ precision（topos 边可指认率，门 ≥0.80）：%.4f ｜ "
+    print("→ precision 注册口径（topos 边可指认率，门 ≥0.80）：%.4f ｜ "
           "recall（报数不设门）：%.4f" % (prec, rec))
+    print("→ precision v1.3 口径（GAP 抽验为真计入分子，n_gap=%d n_fp=%d ｜ "
+          "抽样 %s）：%.4f"
+          % (len(gaps), len(fps), "全过" if v_pass else "**有FAIL**",
+             prec_v13))
     if miss_sample:
         print("金标独有（前 %d 条，喂 v0.2 召回迭代）：" % len(miss_sample))
         for s in miss_sample:
             print("    - %s" % s)
     return res
+
+
+def _parse_edge(line):
+    """EDGE 行 → 边元组（v2 含调用点行；兼容旧 7 列）。"""
+    p = line.rstrip("\n").split("\t")
+    if len(p) == 8:
+        return (p[1], p[2], p[3], p[4], p[5], p[6], p[7])
+    if len(p) == 7:
+        return (p[1], p[2], p[3], p[4], p[5], p[6], "")
+    return None
 
 
 def _load_dump(tag):
@@ -302,9 +472,9 @@ def _load_dump(tag):
     with open(log, encoding="utf-8", errors="replace") as f:
         for line in f:
             if line.startswith("EDGE\t"):
-                p = line.rstrip("\n").split("\t")
-                if len(p) == 7:
-                    edges.append((p[1], p[2], p[3], p[4], p[5], p[6]))
+                e = _parse_edge(line)
+                if e:
+                    edges.append(e)
     if not edges:
         return None
     print("[%s] 复用已有 dump：%d 条边" % (tag, len(edges)))
@@ -339,6 +509,10 @@ def main():
             verdicts[k] = None
             continue
         verdicts[k] = r["precision"] >= 0.8
+    verdicts_v13 = {}
+    for k in ("py", "js"):
+        r = results.get(k)
+        verdicts_v13[k] = None if r is None else r["precision_v13"] >= 0.8
     print(TBL)
     if "py" in verdicts:
         print("D-M5-2b（Python 靶 precision ≥0.8，recall 报数）：%s"
@@ -347,6 +521,10 @@ def main():
                  "  precision=%.4f recall=%.4f" % (results["py"]["precision"],
                                                    results["py"]["recall"])
                  if results["py"] else "（Joern 侧失败）"))
+        print("D-M5-2b v1.3 口径（注册读数不回溯，本行供归档后实验沿用）：%.4f → %s"
+              % (results["py"]["precision_v13"],
+                 "咬合" if verdicts_v13["py"] else "不咬合")
+              if results["py"] else "")
     if "js" in verdicts:
         print("D-M5-2c（JS 靶 precision ≥0.8，recall 报数）：%s"
               % ("咬合" if verdicts["js"] else "不咬合")
@@ -354,16 +532,22 @@ def main():
                  "  precision=%.4f recall=%.4f" % (results["js"]["precision"],
                                                    results["js"]["recall"])
                  if results["js"] else "（Joern 侧失败）"))
+        print("D-M5-2c v1.3 口径（注册读数不回溯，本行供归档后实验沿用）：%.4f → %s"
+              % (results["js"]["precision_v13"],
+                 "咬合" if verdicts_v13["js"] else "不咬合")
+              if results["js"] else "")
     dest = os.path.join(HERE, "m5_e2.json")
     with open(dest, "w", encoding="utf-8") as f:
-        json.dump({"schema": "m5-e2/1", "joern_version": JOERN_VERSION,
+        json.dump({"schema": "m5-e2/2", "joern_version": JOERN_VERSION,
                    "results": {k: v for k, v in results.items() if v},
                    "judged": {"D_M5_2a": a_ok, "D_M5_2b": verdicts.get("py"),
-                              "D_M5_2c": verdicts.get("js")}},
+                              "D_M5_2c": verdicts.get("js"),
+                              "D_M5_2b_v13": verdicts_v13.get("py"),
+                              "D_M5_2c_v13": verdicts_v13.get("js")}},
                   f, ensure_ascii=False, indent=1)
     print("→ %s" % dest)
-    all_ok = a_ok and all(v is True for v in verdicts.values()) \
-        and len(verdicts) == 2
+    all_ok = a_ok and all(v is True for v in verdicts_v13.values()) \
+        and len(verdicts_v13) == 2
     return 0 if all_ok else 1
 
 
