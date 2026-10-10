@@ -52,14 +52,40 @@ def git_churn(root, files):
     return out
 
 
+def _git_prefix(root):
+    """扫描根相对仓库根的路径前缀（'' 表示扫描根即仓库根）。
+
+    **B-1 bug 修复（2026-10-11）**：`git -C <子目录> log --name-only` 打印的路径是
+    **相对仓库根**的（如 `topos/cli.py`），而单元 file 是相对**扫描根**的（如 `cli.py`）
+    ⇒ 扫子目录时 `touched` 恒为空 ⇒ **T 族三场（authors/fix_coupling/stability）全灭**。
+    实测：扫 `topos/` 时三场 nonnull = 0.000，而同一仓库扫根时正常。
+    修法：把 git 路径剥掉前缀再比对（不改动 `files` 的口径）。
+    """
+    try:
+        r = subprocess.run(["git", "-C", root, "rev-parse", "--show-prefix"],
+                           capture_output=True, text=True, timeout=20)
+    except Exception:
+        return ""
+    if r.returncode != 0:
+        return ""
+    return (r.stdout or "").strip().replace("\\", "/").strip("/")
+
+
 def _all_commits(root):
-    """单次全仓 log 解析：[(ts, author, subject, [files])]；失败 → None。"""
+    """单次全仓 log 解析：[(ts, author, subject, [files])]；失败 → None。
+
+    路径已按 `_git_prefix` 归一化为**相对扫描根**（B-1）。
+    """
     try:
         r = subprocess.run(
             ["git", "-C", root, "log", "--pretty=%at|%an|%s", "--name-only"],
             capture_output=True, text=True, timeout=60)
     except Exception:
         return None
+    if r.returncode != 0:
+        return None
+    pre = _git_prefix(root)
+    pfx = (pre + "/") if pre else ""
     commits, cur = [], None
     for ln in r.stdout.splitlines():
         if not ln.strip():
@@ -69,7 +95,10 @@ def _all_commits(root):
             cur = (int(head[0]), head[1], head[2], [])
             commits.append(cur)
         elif cur is not None:
-            cur[3].append(ln.replace("\\", "/"))
+            p = ln.replace("\\", "/")
+            if pfx and p.startswith(pfx):
+                p = p[len(pfx):]
+            cur[3].append(p)
     return [c for c in commits if c[3]]
 
 

@@ -51,7 +51,9 @@ class Space:
         self.n = len(self.units)
         self.alpha = self.manifest.get("layers", {})
         self.fused = fuse(self.layers, self.alpha)
-        self.adj = to_adj(self.fused)
+        # A1：min_weight 让 α 活起来（缺省 None = 与解冻前逐字相同，不破基线）
+        self.min_weight = (self.manifest.get("fuse") or {}).get("min_weight")
+        self.adj = to_adj(self.fused, self.min_weight)
 
         # ② 图上懒构建（forman + diffusion 共享一次谱分解）
         self._graph_cache = {}
@@ -60,8 +62,10 @@ class Space:
 
         # ③ 场（引擎只认 method，不认场名）
         self.fields = {}
+        # A2：把多层结构暴露给场层——此前 self.layers 只被 summary() 的一个标量用过，
+        #     零个场读它 ⇒ "多层"从未进入可观测层（DEFERRED-REGISTRY 岗位三）
         ctx = {"root": self.root, "manifest_dir": manifest_dir,
-               "graph": self._graph_builder}
+               "graph": self._graph_builder, "layers": self.layers}
         for spec in self.manifest.get("fields", []):
             fn = FIELD_METHODS[spec["method"]]
             self.fields[spec["name"]] = fn(self.units, spec.get("params", {}), ctx)

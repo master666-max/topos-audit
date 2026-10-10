@@ -343,11 +343,28 @@ def _assign_var_callee(resolve, i, tree):
     return vc
 
 
-def to_adj(fused_edges):
+def to_adj(fused_edges, min_weight=None):
     """融合边 → 无向邻接表 {i: set(j)}。
-    保持 defaultdict 语义：孤立单元（无边）也必须可索引（_matvec_L 依赖）。"""
+
+    **A1（2026-10-11，解冻后第一批·修既有 bug）**：`fuse()` 早已算出 w(e)=Σα，
+    但旧实现 `for (u,v) in fused_edges` 只取**键**，权重从不读 ⇒ α 是死旋钮
+    （三档 α 对照下边集/曲率/池逐字相同，见 `EXP/_b6_s1_alpha_inert.py`），
+    且 33.6% 的层归属事实在此处蒸发（dsh 实测 670→445，见 `EXP/_multilayer_probe.py`）。
+
+    修法：**按权重阈值取边**——α 由此变为可调（α_t=0 的层整层消失，
+    α_t=100 的层淹过其他层），而不是自造一个加权 Forman 公式
+    （带权 Forman 的正确形式需引文献推导，登记为 [U] 待办，不硬编码）。
+
+    min_weight=None（缺省）⇒ 与旧行为**逐字相同**（默认不破基线，c38 断言）。
+    传入数值时只保留 w(e) ≥ min_weight 的边。
+    保持 defaultdict 语义：孤立单元（无边）也必须可索引（_matvec_L 依赖）。
+    """
     adj = defaultdict(set)
-    for (u, v) in fused_edges:
+    items = fused_edges.items() if isinstance(fused_edges, dict) else (
+        (e, 1.0) for e in fused_edges)
+    for (u, v), w in items:
+        if min_weight is not None and w < min_weight:
+            continue
         adj[u].add(v)
         adj[v].add(u)
     return adj

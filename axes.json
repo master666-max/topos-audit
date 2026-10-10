@@ -11,8 +11,11 @@
     {"name": "loc",       "layer": "L", "method": "ast",   "params": {"metric": "lines"}},
     {"name": "forman",    "layer": "G", "method": "graph", "params": {"formula": "forman_unweighted"}},
     {"name": "diffusion", "layer": "G", "method": "graph", "params": {"k": 3}},
-    {"name": "random",    "layer": "-", "method": "random","params": {"seed": 20261009}}
+    {"name": "random",    "layer": "-", "method": "random","params": {"seed": 20261009}},
+    {"name": "layer_span", "layer": "L", "method": "layer", "params": {"formula": "span"}},
+    {"name": "layer_gap", "layer": "L", "method": "layer", "params": {"formula": "gap"}}
   ],
+  "fuse": {"min_weight": null},
   "slicers": [
     {"name": "anchor:*",          "field": "anchor",  "op": "expand"},
     {"name": "churn:top",         "field": "churn",   "op": "quantile_gt", "q": 0.67},

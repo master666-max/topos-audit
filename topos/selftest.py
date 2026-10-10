@@ -823,6 +823,117 @@ def c34_axis_admission(workdir):
     assert r_part["dlogdet"] is not None and r_part["dlogdet"] > 0
 
 
+def c38_alpha_is_live(workdir):
+    """A1（解冻后第一批·修既有 bug）：α 不再是死旋钮。
+
+    旧行为：三档 α（全 1.0 / 全 0.0 / skew）下 `to_adj` 只取键 ⇒ 边集逐字相同
+    （EXP/_b6_s1_alpha_inert.py 实测 `edge sets identical? True`）。
+    修后：① min_weight 缺省 ⇒ 与旧行为逐字相同（不破基线）；
+          ② min_weight 生效 ⇒ α 必须能改变边集（α_t=0 的层整层消失）。
+    """
+    from topos.core.layers import to_adj, _extract_layers
+    from topos.core.fuse import fuse
+    from topos.core import units as units_mod
+    root = os.path.join(workdir, "alpha")
+    os.makedirs(root)
+    with open(os.path.join(root, "m.py"), "w", encoding="utf-8") as f:
+        f.write(
+            "G = {}\n"
+            "def setv(k, v):\n    G[k] = v\n\n"
+            "def getv(k):\n    return G.get(k)\n\n"
+            "def top():\n    setv('a', 1)\n    x = getv('a')\n    return x\n"
+        )
+    us = units_mod.discover_units(root)
+    L = _extract_layers(root, us)
+    assert len(L.get("call", ())) >= 2, "合成仓应至少 2 条 call 边"
+
+    def eset(adj):
+        return {frozenset((u, v)) for u in adj for v in adj[u]}
+
+    # ① 默认（min_weight=None）与旧行为逐字一致——不破基线
+    f_def = fuse(L, {"call": 1.0, "data": 1.0, "vardep": 1.0})
+    assert eset(to_adj(f_def)) == eset(to_adj(f_def, None))
+
+    # ② α 必须活：把 call 层 α 置 0，仅保留 w≥2 的边 ⇒ 纯 call 边（w=1）被裁掉
+    f_skew = fuse(L, {"call": 0.0, "data": 1.0, "vardep": 1.0})
+    e_all = eset(to_adj(f_skew))
+    e_w2 = eset(to_adj(f_skew, 2.0))
+    assert e_w2 <= e_all, "阈值裁剪必须是子集"
+    assert e_w2 != e_all or not e_all, \
+        "α 仍是死旋钮：阈值未改变边集（A1 未生效）"
+
+    # ③ 全零 α + 阈值 ⇒ 整图应被裁空（α_t=0 的层整层消失）
+    f_zero = fuse(L, {"call": 0.0, "data": 0.0, "vardep": 0.0})
+    assert eset(to_adj(f_zero, 1.0)) == set(), "α 全 0 时不应有任何边存活"
+
+
+def c39_layer_fields(workdir):
+    """A2（解冻后第一批）：多层进场层——逐层可观测量 + α 阈值在 Space 层生效。"""
+    import json as _json
+    from topos.axis.methods.layer_fields import layer_field
+    root = os.path.join(workdir, "lf")
+    os.makedirs(root)
+    with open(os.path.join(root, "m.py"), "w", encoding="utf-8") as f:
+        f.write(
+            "G = {}\n"
+            "def setv(k, v):\n    G[k] = v\n\n"
+            "def top():\n    setv('a', 1)\n    return G.get('a')\n"
+        )
+    from topos.core import units as units_mod
+    from topos.core.layers import _extract_layers
+    us = units_mod.discover_units(root)
+    L = _extract_layers(root, us)
+    n = len(us)
+    span = layer_field(us, {"formula": "span"}, {"layers": L})
+    gap = layer_field(us, {"formula": "gap"}, {"layers": L})
+    degc = layer_field(us, {"formula": "deg:call"}, {"layers": L})
+    assert set(span) == set(range(n)), "span 场必须覆盖全部单元"
+    assert all(0 <= v <= 5 for v in span.values()), "span ∈ [0,5]"
+    assert all(isinstance(v, int) for v in gap.values())
+    assert all(v >= 0 for v in degc.values()), "度非负"
+    try:
+        layer_field(us, {"formula": "deg:nope"}, {"layers": L})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("非法层名必须抛 ValueError（如实降级：不静默退化为 0）")
+
+
+def c40_git_prefix_subdir(workdir):
+    """B-1：扫 git 仓库的**子目录**时，T 族三场不得全灭。
+
+    `git -C <子目录> log --name-only` 打印仓库根相对路径（`topos/cli.py`），
+    而单元 file 是扫描根相对路径（`cli.py`）⇒ 修复前 authors/fix_coupling/stability
+    的 nonnull 恒为 0.000（实测扫 `topos/`：三场 0.000 → 修复后 0.991）。
+    本断言钉在"子目录扫描必须有非空 T 族"上，防回归。
+    """
+    import subprocess
+    from topos.axis.methods.git_history import _git_prefix, _all_commits
+    root = os.path.join(workdir, "gitsub")
+    sub = os.path.join(root, "pkg")
+    os.makedirs(sub)
+    with open(os.path.join(sub, "a.py"), "w", encoding="utf-8") as f:
+        f.write("def fa():\n    return 1\n")
+
+    def git(*args):
+        subprocess.run(["git"] + list(args), cwd=root,
+                       capture_output=True, text=True, timeout=30)
+
+    for a in (("config", "user.email", "t@t"), ("config", "user.name", "t")):
+        subprocess.run(["git"] + list(a), cwd=root, capture_output=True,
+                       text=True, timeout=30)
+    git("init", "-q")
+    git("add", "-A")
+    git("commit", "-q", "-m", "fix: initial")
+
+    assert _git_prefix(sub) == "pkg", "子目录前缀应为 pkg，实为 %r" % _git_prefix(sub)
+    assert _git_prefix(root) == "", "仓库根前缀应为空"
+    cs = _all_commits(sub)
+    assert cs, "子目录扫描必须解析到 commit"
+    assert any("a.py" in c[3] for c in cs), \
+        "commit 文件路径必须已归一化为扫描根相对（应为 a.py，实为 %r）" % cs[0][3]
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -858,6 +969,9 @@ CHECKS = [
     ("c32 T 族三场（authors/fix_coupling/stability）", c32_t_family),
     ("c33 random 对照场（同种子可复现）", c33_random_field),
     ("c34 轴准入三读数（Δcov/|ρ|/Δlogdet）", c34_axis_admission),
+    ("c38 α 活旋钮（min_weight 生效 + 默认不破基线）", c38_alpha_is_live),
+    ("c39 多层进场层（span/gap/deg 逐层可观测量）", c39_layer_fields),
+    ("c40 扫子目录 T 族不灭（git 路径前缀归一化）", c40_git_prefix_subdir),
 ]
 def run_all(verbose=True):
     workdir = tempfile.mkdtemp(prefix="topos-selftest-")

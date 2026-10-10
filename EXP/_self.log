@@ -1,0 +1,10 @@
+space 报告 —— .
+  单元 N=2477  耗时=1042.50s  嵌入维=3  λ1残差=4.0e-08
+  五类耦合边: {'call': 1291, 'data': 824, 'control': 80, 'return': 147, 'vardep': 324}
+  融合图边=1720（call 之外 +429 条 = 多维增量）
+  场非空率: {'anchor': 0.055, 'churn': 0.147, 'age': 0.147, 'authors': 0.136, 'fix_coupling': 0.136, 'stability': 0.136, 'loc': 1.0, 'forman': 0.467, 'diffusion': 1.0, 'random': 1.0}
+  设计矩阵: {'n_pools': 2, 'c_min': 0, 'c_mean': 0.02, 'zero_cover_rate': 0.9794, 'pool_sizes': [25, 30]}
+  [告警] 池超 max_width=74 已丢弃: p_anchor_breadth (137)
+  [告警] 池超 max_width=74 已丢弃: p_hot (116)
+  [告警] 空池已丢弃: p_stale_big
+  → EXP/_self.json
