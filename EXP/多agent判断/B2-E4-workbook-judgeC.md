@@ -3,7 +3,7 @@
 > ⚠️ **本文件是 `B2-E4-workbook.md` 的 judgeC 专属副本**（原仪器件**未被改动**）。
 > 100 处 `truth = ___ ｜ defect_type = ___ ｜ 备注 = ___` 空格已按 judgeC 的 **L4-control** 判定填入，
 > 并在行尾补 `rule` / `confidence` 两个可回溯字段（`RULE.md` 纪律#5 要求每条判定带规则码）。
-> **判定人**：`ai:dsh-deepseek-flash`（机器，非人工金标）｜ **冻结时刻**：2026-10-10 02:15:20 ｜ **来源树**：目录标签 3.13.12（解释器自报 3.13.14）
+> **判定人**：`ai:deepseek-v4.1-flash`（机器，非人工金标）｜ **冻结时刻**：2026-10-10 02:15:20 ｜ **来源树**：目录标签 3.13.12（解释器自报 3.13.14）
 > **真源**：`EXP/B2-E4-adjudication.src.jsonl`（判定源）／自足版 `EXP/B2-E4-adjudication-judgeC.jsonl`
 > **口径**：见 `EXP/B2-E4-adjudication-judgeC.md` §3（P1–P6）；None 率 0% 的成因见其 §2。
 > **本副本是「读数」，不是金标**；不得写入 `topos/calib/gold.py`。

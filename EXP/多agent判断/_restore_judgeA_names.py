@@ -83,7 +83,7 @@ def main():
         j = ja_by[int(r["seq"])]
         rec = {k: j.get(k, "") for k in ja_cols}
         rec["reconstructed_from"] = "EXP/B2-E4-adjudication.csv"
-        rec["reconstructed_by"] = "judgeC(ai:dsh-deepseek-flash)"
+        rec["reconstructed_by"] = "judgeC(ai:deepseek-v4.1-flash)"
         rec["original_overwritten"] = True
         lines.append(json.dumps(rec, ensure_ascii=False))
 

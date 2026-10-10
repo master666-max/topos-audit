@@ -24,7 +24,7 @@ REPO = os.path.dirname(HERE)
 DATE = "2026-10-10"
 # Identity convention in this workspace (see B2-E4-adjudication-PROVENANCE-NOTE.md §4):
 #   judgeA -> L4-control:Otto(single-rater,no-kappa)
-#   judgeC -> ai:dsh-deepseek-flash
+#   judgeC -> ai:deepseek-v4.1-flash
 # The FILENAME suffix stays `judgeB` because other producers reference these exact
 # paths (_xjudge_compare_judgeC.py, PROVENANCE-NOTE §1/§2/§4, judgeC-crosscheck).
 # The MODEL identity travels in `annotator`, which is where the other judges put it.

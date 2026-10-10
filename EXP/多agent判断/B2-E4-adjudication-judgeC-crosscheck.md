@@ -11,7 +11,7 @@
 |---|---|---|---|
 | judgeA | `L4-control:Otto(single-rater,no-kappa)` | CreationTime 02:12:58 / LastWrite 02:15:33 | `B2-E4-adjudication.{jsonl,csv,md}` + 填过的 `B2-E4-sample.csv` |
 | judgeB | `L4-control-judgeB-qoder` | 02:47:47 起（`_adj_batch*` 02:15:03 / 02:36:10） | `B2-E4-adjudication-judgeB.*` |
-| judgeC | `ai:dsh-deepseek-flash` | 判定冻结 02:15:20（`.src.jsonl`）；08:52:37 落盘 | `B2-E4-adjudication.{jsonl,md}` + `B2-E4-sample.csv` + 本组 `-judgeC.*` |
+| judgeC | `ai:deepseek-v4.1-flash` | 判定冻结 02:15:20（`.src.jsonl`）；08:52:37 落盘 | `B2-E4-adjudication.{jsonl,md}` + `B2-E4-sample.csv` + 本组 `-judgeC.*` |
 
 ⚠️ **judgeC 落盘时覆盖了 judgeA 的两个文件**：`B2-E4-adjudication.jsonl`（judgeA 版 48704 字节 → 现 62525）
 与 `B2-E4-adjudication.md`（judgeA 版 6116 → 现 10598）；两者 CreationTime 仍为 **02:12:58**，

@@ -8,7 +8,7 @@
             （CreationTime 02:12:58，LastWrite 02:15:33 = epoch 1791569733）
     judgeB  annotator = L4-control-judgeB-qoder
             产物 EXP/B2-E4-adjudication-judgeB.*（02:47:47 起）
-    judgeC  annotator = ai:dsh-deepseek-flash（本裁判）
+    judgeC  annotator = ai:deepseek-v4.1-flash（本裁判）
             产物 EXP/B2-E4-adjudication.{jsonl,md} + B2-E4-sample.csv
             （08:52:37 写入；判定本身冻结于 02:15:20 的 .src.jsonl）
 
@@ -27,7 +27,7 @@ import shutil
 import sys
 from collections import Counter
 
-JUDGEC_ANNOTATOR = "ai:dsh-deepseek-flash"
+JUDGEC_ANNOTATOR = "ai:deepseek-v4.1-flash"
 
 
 def load_jsonl(p):

@@ -9,7 +9,7 @@
 |---|---|---:|---:|---:|---|
 | judgeA | hy4-preview | 2 | 88 | 10 | 2.0% [0.6%, 7.0%] |
 | judgeB | qwen-3.8max | 11 | 75 | 14 | 11.0% [6.3%, 18.6%] |
-| judgeC | **ai:dsh-deepseek-flash** | 4 | 96 | 0 | 4.0% [1.6%, 9.8%] |
+| judgeC | **ai:deepseek-v4.1-flash** | 4 | 96 | 0 | 4.0% [1.6%, 9.8%] |
 
 ⚠️ **归属歧义（待用户确认）**：judgeC 的 `annotator` 写的是 **deepseek-flash**，不是 glm5.3。
 `B2-E4_预标_评估器A_v2_...-glm5.3.csv` 是**另一份**：列名是 `truth_guess` + `confidence`

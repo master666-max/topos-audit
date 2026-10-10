@@ -20,7 +20,7 @@ import sys
 
 SECTION = re.compile(r"^## #(\d+) · ")
 BLANK = "**判定**：truth = `___`"
-ANNOTATOR = "ai:dsh-deepseek-flash"
+ANNOTATOR = "ai:deepseek-v4.1-flash"
 FROZEN_AT = "2026-10-10 02:15:20"
 
 

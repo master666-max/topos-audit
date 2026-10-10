@@ -1,6 +1,6 @@
 # E-B2-4 落盘事故与交接说明（judgeC）
 
-> **一句话**：judgeC（本裁判，annotator `ai:dsh-deepseek-flash`）在 **2026-10-10 08:52:37** 落盘时，
+> **一句话**：judgeC（本裁判，annotator `ai:deepseek-v4.1-flash`）在 **2026-10-10 08:52:37** 落盘时，
 > **就地覆盖了 judgeA 的两个产物**，并覆盖了 judgeA 填过的 `B2-E4-sample.csv`。
 > **judgeA 的判定数据本身没有丢失**——其 `B2-E4-adjudication.csv` 未被触碰（100 条完整）。
 > 本文件给出可复核证据、我改过的每一个路径、以及恢复路径。**没有删改任何既有的他人文件。**
@@ -78,7 +78,7 @@ judgeB 的全部产物、judgeA 的 `B2-E4-adjudication.csv`、`topos/calib/gold
 |---|---|---|
 | judgeA | `L4-control:Otto(single-rater,no-kappa)` | `B2-E4-adjudication.csv`（**仅存此件**） |
 | judgeB | `L4-control-judgeB-qoder` | `B2-E4-adjudication-judgeB.{jsonl,csv,md,stats.json}`、`_adj_batch1/2.json`、`_build_judgeB.py`、`_audit_judgeB.py`/`.stdout`、`_verify_b2e4_*.py`、`_verify_pass*.stdout`、`_probe26.py`、`B2-E4.md` |
-| judgeC | `ai:dsh-deepseek-flash` | `B2-E4-adjudication.{src.jsonl,jsonl,md}`（通用名，**含 judgeA 覆盖事故**）、`B2-E4-adjudication-judgeC.*`、`B2-E4-sample.csv`（填版）、`make_b2_e4_adjudication.py`、`_xjudge_compare_judgeC.py`、`B2-E4-adjudication-judgeC-crosscheck.md`、本文件 |
+| judgeC | `ai:deepseek-v4.1-flash` | `B2-E4-adjudication.{src.jsonl,jsonl,md}`（通用名，**含 judgeA 覆盖事故**）、`B2-E4-adjudication-judgeC.*`、`B2-E4-sample.csv`（填版）、`make_b2_e4_adjudication.py`、`_xjudge_compare_judgeC.py`、`B2-E4-adjudication-judgeC-crosscheck.md`、本文件 |
 
 三条线的分布与两两一致率见 `B2-E4-adjudication-judgeC-crosscheck.md`（**明标 post-hoc**）：
 judgeA 0/1/None = 88/2/10，judgeB = 75/11/14，judgeC = 96/4/0；
@@ -99,3 +99,29 @@ judgeA 0/1/None = 88/2/10，judgeB = 75/11/14，judgeC = 96/4/0；
 
 judgeC 的判定本身**冻结于 02:15:20**（`B2-E4-adjudication-judgeC.src.jsonl` 的 mtime），
 本说明与 `-judgeC-crosscheck.md` 都是**冻结之后**才写的，未回改任何一条 truth / defect_type / rule / note。
+
+## 8. 更正与恢复记录（2026-10-10，维护者执行）
+
+1. **裁判身份更正**：judgeC 的实际判定模型为 **deepseek-v4.1 flash**。本文及全部相关产物中的
+   `ai:dsh-deepseek-flash`（dsh 宿主环境标签，非模型标识）已统一更正为 **`ai:deepseek-v4.1-flash`**，
+   共 414 处（judgeC jsonl/csv 各 100、judgeC sample 副本 100、judgeA 重建 jsonl 的
+   `reconstructed_by` 标记 100、其余回执/脚本/常量 14）。涉及文件：`B2-E4-adjudication-judgeC.{jsonl,csv,md}`、
+   `B2-E4-sample-judgeC.csv`、`B2-E4-workbook-judgeC.md`、本文件、`B2-E4-adjudication-judgeC-crosscheck.md`、
+   `B2-E4-adjudication-judgeB-qwen-3.8max.md`（引用处）、`EXP/B2-E4-agreement.md`、
+   `EXP/B2-E4-adjudication.jsonl`、`make_b2_e4_adjudication.py` / `make_b2_e4_judgeC_copies.py` /
+   `_xjudge_compare_judgeC.py` / `_restore_judgeA_names.py` / `_build_judgeB.py`。
+   **判定数据零改动**（truth / defect_type / rule / note / confidence 逐字段未动，仅身份字符串；
+   复算 `calc_b2_e4_agreement.py`（带种子）输出与更正前逐字节一致，见提交回执）。
+2. **通用名归还落地**（§0 的承诺执行完毕）：
+   - `EXP/多agent判断/B2-E4-sample.csv`（judgeA 填版重建）→ 移回 **`EXP/B2-E4-sample.csv`**；
+   - `EXP/多agent判断/B2-E4-adjudication.jsonl`（judgeA 同源重建）→ 移回 **`EXP/B2-E4-adjudication.jsonl`**；
+   - judgeA 重建版回执落位 **`EXP/B2-E4-adjudication.md`**（顶部明示重建 ≠ 原件）；
+   - 本包原墓碑改名 **`B2-E4-adjudication-覆盖事故墓碑.md`** 留档（内容未改，仅顶部加归位注记）。
+   本包此后**不再持有任何通用名** `B2-E4-adjudication.*` / `B2-E4-sample.csv`；
+   三裁判对照包内一律 `-<judge>` 后缀（§5 建议执行到位）。一致性计算的三份 judge 后缀 CSV
+   **保持原位未动**（`calc_b2_e4_agreement.py` 的输入路径依赖）。
+3. **有意保留旧标签的三处（不改写历史）**：
+   - 本 §8 引用旧值属于更正记录本身的需要；
+   - `EXP/_fix_foreign_ref.stdout`（09:45 操作日志）与 `EXP/_xjudge_compare_judgeC.py.judgeB-edit-backup`
+     （judgeB 编辑前的快照）为**历史留档**，其中的旧标签反映当时状态，不改写；
+   - 陈旧字节码缓存 `EXP/__pycache__/make_b2_e4_adjudication.cpython-313.pyc` 已删除（会自动再生）。

@@ -1,5 +1,9 @@
 # B2-E4-adjudication.md —— 覆盖事故墓碑与内容去向（judgeC 留）
 
+> **2026-10-10 归位注记（维护者）**：本墓碑原占用通用名路径；通用名现已全部归还 judgeA
+> （`EXP/B2-E4-adjudication.{jsonl,md}` + `EXP/B2-E4-sample.csv`），为免命名空间再被占用，
+> 本文件改名 `B2-E4-adjudication-覆盖事故墓碑.md` 留档，正文保持 judgeC 落笔原样。
+
 > **本文件原为 judgeA 的 L4-control 回执**（NTFS `CreationTime` = 2026-10-10 02:12:58，
 > 原大小 **6116 字节**），于 **2026-10-10 08:52:37** 被 judgeC 的派生脚本
 > `make_b2_e4_adjudication.py` 就地截断覆盖。judgeA 的原件**不可逐字恢复**

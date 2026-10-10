@@ -3,7 +3,7 @@
 > **这是什么**：按 `EXP/B2-E4-RULE.md` 产出的**机器对照层（L4-control）**读数，
 > 不是金标、不是真值。落点 `EXP/B2-E4-adjudication.*`，**未写入** `topos/calib/gold.py`
 > （`WORK-ORDERS.md:106` 禁止令的对象）。
-> **裁判**：`ai:dsh-deepseek-flash`（机器）｜ **日期**：`2026-10-10` ｜ **靶仓**：标准库树 `binaries\python\versions\3.13.12\Lib`（目录标签 3.13.12；同目录 `python.exe` 自报 3.13.14，见 §7）
+> **裁判**：`ai:deepseek-v4.1-flash`（机器）｜ **日期**：`2026-10-10` ｜ **靶仓**：标准库树 `binaries\python\versions\3.13.12\Lib`（目录标签 3.13.12；同目录 `python.exe` 自报 3.13.14，见 §7）
 > **规则先于判定**：判定口径全部来自 `B2-E4-RULE.md`（三值 + None 四形态），本回执不改规则。
 
 ## 1. 分布

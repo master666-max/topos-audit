@@ -21,7 +21,7 @@ import os
 import sys
 from collections import Counter
 
-ANNOTATOR = "ai:dsh-deepseek-flash"
+ANNOTATOR = "ai:deepseek-v4.1-flash"
 DATE = "2026-10-10"          # 与本材料包时钟一致（RULE.md 授权出处标注为 2026-10-10）
 SOURCE_LAYER_IN = "L4-reference"   # 生成器写入值（保留用于披露）
 SOURCE_LAYER_OUT = "L4-control"    # RULE.md 重新定性后的层名

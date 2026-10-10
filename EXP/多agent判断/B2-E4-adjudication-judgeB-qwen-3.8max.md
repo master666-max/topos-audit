@@ -361,7 +361,7 @@ py -X utf8 EXP/_build_judgeB.py               # 重建 jsonl/csv/stats（幂等�
 | 文件名 | `B2-E4-adjudication-judgeB-qwen-3.8max.{jsonl,csv,md}` ＋ `…-qwen-3.8max-stats.json` |
 | `annotator` | `ai:qwen-3.8max(L4-control,judgeB,single-rater,no-kappa)` |
 | 模型名出处 | **用户 2026-10-10 指定**；本 agent 不自证型号，故报告抬头与本节都注明是用户给的名字 |
-| 为什么保留 `judgeB` | 它是本工作区的裁判编号（judgeA=`Otto`、judgeC=`ai:dsh-deepseek-flash`），别的产出者按此编号引用本件；丢掉它会让引用无处对齐 |
+| 为什么保留 `judgeB` | 它是本工作区的裁判编号（judgeA=`Otto`、judgeC=`ai:deepseek-v4.1-flash`），别的产出者按此编号引用本件；丢掉它会让引用无处对齐 |
 | 为什么对齐 `ai:<model>` 前缀 | judgeC 已用该写法，统一后三裁判的 `annotator` 可机器解析 |
 
 `.jsonl` 的 100 条记录与 `.csv` 的 100 行**每一行都带** `annotator`，覆盖面大于文件名后缀本身。
@@ -416,7 +416,7 @@ py -X utf8 EXP/_build_judgeB.py               # 重建 jsonl/csv/stats（幂等�
   08:52:37 被 judgeC 就地覆盖了 `B2-E4-adjudication.jsonl`/`.md` 与其填过的 `B2-E4-sample.csv`；
   但 `B2-E4-adjudication.csv`（33927 B）始终未被动过，100 条判定可从中恢复。judgeC 已于 09:1x 同源重建并留墓碑。
 - **judgeB**（本件）：`75/11/14`。四件产物经 sha 复核全程未被动过。
-- **judgeC**（`ai:dsh-deepseek-flash`）：`96/4/0`。判定冻结于 02:15:20 的 `.src.jsonl`，落盘在 08:52:37。
+- **judgeC**（`ai:deepseek-v4.1-flash`）：`96/4/0`。判定冻结于 02:15:20 的 `.src.jsonl`，落盘在 08:52:37。
 - 另有 `EXP/多agent判断/`（`B2-E4_预标_评估器A_v2_*`，09:18）一条线，本会话未读其内容。
 - judgeC 事后算的两两一致率（其 `-crosscheck.md`，**明标 post-hoc**）：A-C 88%、A-B 77%、B-C 73%，31/100 单元有分歧。
   按用户裁决「不用管他，写你自己的，相互对照」，**本件不采信、不重算、不合并这些数字**，仅登记其存在。
