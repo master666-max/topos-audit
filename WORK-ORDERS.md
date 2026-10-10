@@ -149,6 +149,18 @@ flowchart LR
 
 ---
 
+## W9 · 多语言后端 + Joern 离线金标校验 ★M5（2026-10-10 开单）
+
+| 项 | 内容 |
+|---|---|
+| **目标** | 非 Python 仓跑通 M0–M4 链路；Joern 作**离线金标校验器**（架构书 §13 M5；SYNTHESIS Q2 裁决：不引 Joern 作主引擎） |
+| **搬** | —（mini-lab 无件） |
+| **新写** | ① `core/langjs.py`：JS 单元/调用边/require 边抽取（stdlib 正则级，**[U]**）+ JS seam 规则子集（R1 require=受控 conduit；R4 eval/exec 非字面量否决；R2/R3 JS 等价物缺机械信号，**诚实留白 v0.2**）；② 便携环境件（JRE21 + joern-cli Windows zip 落 `tools/`，gitignore，**不动系统 Java 1.8**）；③ `crosscheck` 扩展：Joern CPG 调用边 vs topos 抽取边的 **precision/recall 对拍报告** |
+| **验收** | E-M5-1：JS 真仓（express `lib/`）三 CLI 全链零退出 + JS 单元/边读数 + sheaf 无虚假 frustration；E-M5-2：Joern 自检跑通 + bandit（Python）与 express（JS）两仓对拍报告（precision ≥0.8 设门，recall 只报数不设门——我们的边可少不可假） |
+| **禁止** | Joern 主引擎化（Q2 裁决）；为 JS 上 tree-sitter/babel 重依赖（stdlib 正则 [U] 起步）；动系统 Java |
+
+---
+
 ## 附录 A · 契约自检 12 项 → 工单映射
 
 | # | 自检项 | 归属 |

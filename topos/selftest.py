@@ -564,6 +564,86 @@ def c26_seam_sheaf_end_to_end(w):
             "z≡+1 下 TV 应全盲（数值一致但语义矛盾）"
 
 
+_JS_FIXTURE = {
+    "app.js": (
+        "const helper = require('./util');\n"
+        "function run(x) {\n"
+        "  helper.compute(x);\n"
+        "  return eval(x);\n"
+        "}\n"
+        "const lit = eval('1+1');\n"
+        "function wrap(cb) {\n  return run(cb);\n}\n"
+    ),
+    "util.js": (
+        "function compute(x) {\n  return x + 1;\n}\n"
+        "class Cache {\n  get(k) {\n    return k;\n  }\n}\n"
+        "module.exports = { compute, Cache };\n"
+    ),
+}
+
+
+def _make_js_repo(w):
+    os.makedirs(w, exist_ok=True)
+    for name, body in _JS_FIXTURE.items():
+        with open(os.path.join(w, name), "w", encoding="utf-8") as f:
+            f.write(body)
+    return w
+
+
+def c27_js_extraction(w):
+    """c27 JS 抽取（PREREG/M5 §4）：单元发现 + require 边 + eval veto + 字面量豁免。"""
+    from topos.core import langjs
+    repo = os.path.join(w, "jsfix")
+    _make_js_repo(repo)
+    units = langjs.discover_units_js(repo)
+    names = {u["name"] for u in units}
+    assert "run" in names and "wrap" in names and "compute" in names, \
+        "JS 单元发现缺口: %s" % names
+    assert "Cache.get" in names, "class 方法未发现"
+    layers = langjs.extract_layers_js(repo, units)
+    idx = {u["name"].split(".")[-1]: i for i, u in enumerate(units)}
+    assert (min(idx["run"], idx["compute"]), max(idx["run"], idx["compute"])) \
+        in layers["call"], "require 跨文件属性调用边未命中"
+    assert (min(idx["wrap"], idx["run"]), max(idx["wrap"], idx["run"])) \
+        in layers["call"], "同文件调用边未命中"
+    seams_js, vetoes = langjs.extract_seams_js(repo, units)
+    assert any(a == "public_call" and s == 1 for _u, _v, a, s, _e in seams_js), \
+        "R1 require 边缺失"
+    assert len(vetoes) == 1 and vetoes[0][1] == "eval", \
+        "eval 应恰 1 条 veto（字面量 eval('1+1') 豁免）: %s" % vetoes
+
+
+def c28_js_chain(w):
+    """c28 JS 链微缩（PREREG/M5 §4）：discover→space→decode→next 全链零退出。"""
+    import json as _json
+    from topos.space import Space
+    repo = os.path.join(w, "jsfix2")
+    _make_js_repo(repo)
+    mf = {"version": 3, "layers": {"call": 1.0}, "fields": [],
+          "slicers": [], "pools": [], "constraints": {"min_pool_size": 1}}
+    mf_path = os.path.join(w, "mf_js.json")
+    with open(mf_path, "w", encoding="utf-8") as f:
+        _json.dump(mf, f)
+    sp = Space(repo, mf_path, lang="js")
+    if sp.n == 0:
+        raise AssertionError("JS 单元发现为 0")
+    from topos.report.json_out import build_report, write
+    sj = os.path.join(w, "space_js.json")
+    write(build_report(sp), sj)
+    with open(sj, encoding="utf-8") as f:
+        rep = _json.load(f)
+    if not rep["pool_members"]:
+        return                               # 微缩仓无池则跳过（与 c23 同款豁免）
+    bj = os.path.join(w, "belief_js.json")
+    with open(bj, "w", encoding="utf-8") as f:
+        _json.dump({"schema": "topos-belief/1", "decoder": "nb", "params": {},
+                    "n_units": rep["n_units"],
+                    "belief": {str(i): 0.3 for i in range(rep["n_units"])},
+                    "unit_ids": rep.get("units")}, f)
+    from topos.cli import main as cli_main
+    assert cli_main(["next", sj, bj]) == 0
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -591,6 +671,8 @@ CHECKS = [
     ("c24 接缝规则方向性（R1..R4）", c24_seam_rule_signs),
     ("c25 接缝抽取命中（R1/R2/R3/R4）", c25_seam_extraction),
     ("c26 接缝→sheaf 端到端（奇环 ker=0 / TV 盲）", c26_seam_sheaf_end_to_end),
+    ("c27 JS 抽取（单元/require 边/eval veto）", c27_js_extraction),
+    ("c28 JS 链微缩（space→next 零退出）", c28_js_chain),
 ]
 
 

@@ -18,7 +18,7 @@ def cmd_selftest(_args):
 
 
 def cmd_space(args):
-    sp = Space(args.dir, args.axes)
+    sp = Space(args.dir, args.axes, lang=getattr(args, "lang", "py"))
     s = sp.summary()
     print("space 报告 —— %s" % args.dir)
     print("  单元 N=%d  耗时=%.2fs  嵌入维=%d  λ1残差=%.1e"
@@ -201,6 +201,8 @@ def main(argv=None):
     sp = sub.add_parser("space", help="建空间")
     sp.add_argument("dir")
     sp.add_argument("--axes", default=None)
+    sp.add_argument("--lang", default="py", choices=["py", "js"],
+                    help="语言后端（js=正则级 [U]，PREREG/M5 D-A）")
     sp.add_argument("--json", default=None)
     sp.add_argument("--check", action="store_true",
                     help="覆盖诊断不达标（零覆盖>0）则退出码 2")

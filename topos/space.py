@@ -21,7 +21,7 @@ from topos.pool.design import build_design, coverage
 class Space:
     """一次建空间的完整快照。契约：units 编号在本次空间内稳定。"""
 
-    def __init__(self, root, manifest_path=None):
+    def __init__(self, root, manifest_path=None, lang="py"):
         t0 = time.time()
         self.root = os.path.abspath(root)
         if manifest_path is None:
@@ -31,10 +31,16 @@ class Space:
         self.manifest = load_manifest(self.manifest_path)
         manifest_dir = os.path.dirname(self.manifest_path)
 
-        # ① 底空间
-        self.units = units_mod.discover_units(self.root)
+        # ① 底空间（语言后端：py=AST 件 [M]；js=正则级 [U]，PREREG/M5 D-A）
+        self.lang = lang
+        if lang == "js":
+            from topos.core import langjs
+            self.units = langjs.discover_units_js(self.root)
+            self.layers = langjs.extract_layers_js(self.root, self.units)
+        else:
+            self.units = units_mod.discover_units(self.root)
+            self.layers = _extract_layers(self.root, self.units)
         self.n = len(self.units)
-        self.layers = _extract_layers(self.root, self.units)
         self.alpha = self.manifest.get("layers", {})
         self.fused = fuse(self.layers, self.alpha)
         self.adj = to_adj(self.fused)

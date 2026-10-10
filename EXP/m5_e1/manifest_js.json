@@ -1,0 +1,80 @@
+{
+ "version": 3,
+ "layers": {
+  "call": 1.0
+ },
+ "fields": [
+  {
+   "name": "forman",
+   "method": "graph",
+   "params": {
+    "formula": "forman_unweighted"
+   }
+  },
+  {
+   "name": "anchor",
+   "method": "regex",
+   "params": {
+    "patterns": [
+     [
+      "sink:eval",
+      "\\beval\\s*\\("
+     ],
+     [
+      "sink:newFunction",
+      "\\bnew\\s+Function\\s*\\("
+     ],
+     [
+      "sink:exec",
+      "\\bchild_process\\b|\\bexecSync\\s*\\(|\\bspawnSync\\s*\\("
+     ],
+     [
+      "sink:fsSyncWrite",
+      "\\bwriteFileSync\\s*\\(|\\bappendFileSync\\s*\\("
+     ],
+     [
+      "sink:weakHash",
+      "createHash\\s*\\(\\s*['\\\"]md5|sha1['\\\"]"
+     ]
+    ]
+   }
+  }
+ ],
+ "slicers": [
+  {
+   "name": "curv:lo",
+   "field": "forman",
+   "op": "quantile_le",
+   "q": 0.34
+  },
+  {
+   "name": "curv:hi",
+   "field": "forman",
+   "op": "quantile_gt",
+   "q": 0.5
+  },
+  {
+   "name": "anchor:any",
+   "field": "anchor",
+   "op": "notnull"
+  }
+ ],
+ "pools": [
+  {
+   "name": "p_curv_lo",
+   "expr": "curv:lo"
+  },
+  {
+   "name": "p_curv_hi",
+   "expr": "curv:hi"
+  },
+  {
+   "name": "p_anchor",
+   "expr": "anchor:any"
+  }
+ ],
+ "constraints": {
+  "max_pool_pct": 0.6,
+  "min_pool_size": 2
+ }
+}

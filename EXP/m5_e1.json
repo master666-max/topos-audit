@@ -1,0 +1,21 @@
+{
+ "schema": "m5-e1/1",
+ "target": "express lib/",
+ "n_files": 6,
+ "n_units": 84,
+ "n_call_edges": 27,
+ "n_require_edges": 6,
+ "n_vetoes": 0,
+ "anchor_hit_units": 0,
+ "obs": {
+  "p_curv_lo": 0,
+  "p_curv_hi": 0
+ },
+ "components": 1,
+ "frustrated": 0,
+ "judged": {
+  "D_M5_1a": true,
+  "D_M5_1b": true,
+  "D_M5_1c": true
+ }
+}
