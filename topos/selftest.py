@@ -6,6 +6,8 @@ topos.selftest —— 契约自检（工单 B1 出口判据：12 项全绿）。
   c06 切片算子  c07 布尔组合  c08 空池/constraints  c09 覆盖诊断  c10 sheaf H⁰（合成版）
   c11 缺 git → None（ADR-A12）  c12 观测退化（Se=Sp=1）
 （工单附录 A #11"解码输出契约"归 W5/B3，加入后套件变 13 项。）
+B3 起：c15–c19 解码器族（A8 值域/方向性/稳定性/终止性）；B4 起：c20–c23 σ 与预算回路；
+B5 起：c24–c26 接缝规则表 v0.1（R1–R4 方向性 / 抽取命中 / sheaf 端到端微缩）。
 全部跑在系统临时目录（不在任何 git 仓内，c11 的降级判定才真实）。
 """
 import copy
@@ -459,6 +461,109 @@ def c23_cli_next_smoke(w):
     assert cli_main(["next", sj, bj]) == 0   # 全员 0.3：σ 视池而定，出 NEXT 或 STOP 均合法
 
 
+_B5_FIXTURE = {
+    "m_a.py": (
+        "import m_b\nimport m_c\nimport m_d\nimport pickle\n"
+        "def go(x):\n"
+        "    m_b.{b_call}(x)\n"
+        "    m_c.pub(x)\n"
+        "    m_d.CACHE.append(x)\n"
+        "    m_d.REG[k] = 1\n"
+        "    eval(x)\n"
+        "    pickle.loads(b'z')\n"
+        "def go2(x):\n    return x\n"
+        "k = 'key'\n"
+    ),
+    "m_b.py": (
+        "import m_c\n"
+        "def _helper(x):\n    return x\n"
+        "def open_api(x):\n    return x\n"
+        "def bridge(x):\n    m_c.pub(x)\n"
+    ),
+    "m_c.py": "import m_a\ndef pub(x):\n    m_a.go2(x)\n",
+    "m_d.py": "CACHE = []\nREG = {}\n",
+}
+
+
+def _make_b5_repo(w, frustrated=True):
+    """B5 fixture：frustrated=True 时 a→b 为私有触碰（环积 −1）；False 为公开调用。"""
+    for name, tpl in _B5_FIXTURE.items():
+        with open(os.path.join(w, name), "w", encoding="utf-8") as f:
+            f.write(tpl.replace("{b_call}", "_helper" if frustrated else "open_api"))
+    return w
+
+
+def c24_seam_rule_signs(w):
+    """c24 规则方向性：R1→+1 / R2→−1 / R3→−1 / R4→VETO；字面量实参不 veto。"""
+    from topos.core import seams
+    assert seams.RULE_SIGN["public_call"] == 1
+    assert seams.RULE_SIGN["private_touch"] == -1
+    assert seams.RULE_SIGN["global_write"] == -1
+    assert seams.RULE_SIGN[seams.VETO] == "VETO"
+    import ast as _ast
+    # eval(字面量) 不 veto；eval(NAME) veto；subprocess.run 无 shell 不 veto、shell=True veto
+    mk = lambda src: _ast.parse(src).body[0].value          # noqa: E731
+    assert seams._veto_if(mk("eval('1+1')"), "eval") is None
+    assert seams._veto_if(mk("eval(x)"), "eval") is not None
+    assert seams._veto_if(mk("subprocess.run(cmd)"), "subprocess.run",
+                          need_shell=True) is None
+    assert seams._veto_if(mk("subprocess.run(cmd, shell=True)"),
+                          "subprocess.run", need_shell=True) is not None
+
+
+def c25_seam_extraction(w):
+    """c25 抽取器命中：R1/R2/R3 各 ≥1 + R4 veto + 证据 file:line 齐全。"""
+    from topos.core import seams
+    repo = os.path.join(w, "seam_fixture")
+    os.makedirs(repo, exist_ok=True)
+    _make_b5_repo(repo, frustrated=True)
+    modules, edges, vetoes = seams.extract(repo)
+    assert set(modules) == {"m_a", "m_b", "m_c", "m_d"}
+    acts = {(u, v, a) for u, v, a, s, ev in edges}
+    assert ("m_a", "m_b", "private_touch") in acts, "R2 私有触碰未命中"
+    assert ("m_a", "m_c", "public_call") in acts, "R1 契约调用未命中"
+    assert ("m_b", "m_c", "public_call") in acts, "R1 桥接未命中"
+    assert ("m_c", "m_a", "public_call") in acts, "R1 回环未命中"
+    gw = [ev for u, v, a, s, ev in edges
+          if (u, v, a) == ("m_a", "m_d", "global_write")]
+    assert gw and sum(len(e) for e in gw) >= 2, \
+        "R3 应同时命中 mutator 与 store 两形态"
+    for u, v, a, s, ev in edges:
+        assert seams.RULE_SIGN[a] == s
+        for path_line, detail in ev:
+            assert ".py:" in path_line
+    assert len(vetoes) == 1 and vetoes[0][1] == "eval", \
+        "R4 应恰 1 条 eval veto（字面量 pickle.loads 不报）"
+    assert "m_a.py" in vetoes[0][0]
+
+
+def c26_seam_sheaf_end_to_end(w):
+    """c26 端到端微缩：规则表 → sheaf：奇环 ker=0 / 平衡 ker=1 / TV 全盲。"""
+    from topos.core import seams
+    from topos.core import sheaf
+    for frustrated, want_h0 in ((True, 0), (False, 1)):
+        rw = os.path.join(w, "frus" if frustrated else "bal")
+        os.makedirs(rw, exist_ok=True)
+        _make_b5_repo(rw, frustrated=frustrated)
+        modules, edges, vetoes = seams.extract(rw)
+        idx = {m: i for i, m in enumerate(modules)}
+        e_ws = [(idx[u], idx[v], s) for u, v, a, s, ev in edges]
+        L = sheaf.sheaf_laplacian(len(modules), e_ws)
+        assert sheaf.h0_dimension(L) == want_h0, \
+            "H⁰ 读数错（frustrated=%s）" % frustrated
+        z = {i: 1.0 for i in range(len(modules))}     # v0.1 域声明全 +1
+        e_res, r_sheaf = sheaf.residuals(len(modules), e_ws, z)
+        if frustrated:
+            flip_nodes = {idx[u] for u, v, a, s, ev in edges if s == -1} | \
+                         {idx[v] for u, v, a, s, ev in edges if s == -1}
+            top = set(sorted(range(len(modules)),
+                             key=lambda i: -r_sheaf[i])[:2 * 3])
+            assert flip_nodes <= top, "翻转边端点未进 top-2f 残差"
+        r_tv = sheaf.tv_residuals({i: set() for i in range(len(modules))}, z)
+        assert all(v == 0.0 for v in r_tv.values()), \
+            "z≡+1 下 TV 应全盲（数值一致但语义矛盾）"
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -483,6 +588,9 @@ CHECKS = [
     ("c21 停止方向（全低 STOP / 高 belief 不停）", c21_stop_direction),
     ("c22 预算回路终止性", c22_budget_loop),
     ("c23 CLI next smoke", c23_cli_next_smoke),
+    ("c24 接缝规则方向性（R1..R4）", c24_seam_rule_signs),
+    ("c25 接缝抽取命中（R1/R2/R3/R4）", c25_seam_extraction),
+    ("c26 接缝→sheaf 端到端（奇环 ker=0 / TV 盲）", c26_seam_sheaf_end_to_end),
 ]
 
 

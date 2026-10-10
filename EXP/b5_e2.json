@@ -1,0 +1,245 @@
+{
+ "schema": "b5-e2/1",
+ "repos": [
+  {
+   "repo": "topos-audit/topos",
+   "n_modules": 40,
+   "n_edges": 46,
+   "edges_by_action": {
+    "private_touch": 5,
+    "public_call": 41
+   },
+   "vetoes": [],
+   "flip_edges": [
+    {
+     "src": "topos.core.sheaf",
+     "dst": "topos.core.embed",
+     "action": "private_touch",
+     "evidence": [
+      [
+       "topos/core/sheaf.py:27",
+       "_jacobi_eig"
+      ]
+     ]
+    },
+    {
+     "src": "topos.crosscheck",
+     "dst": "topos.core.embed",
+     "action": "private_touch",
+     "evidence": [
+      [
+       "topos/crosscheck.py:81",
+       "_matvec_L"
+      ]
+     ]
+    },
+    {
+     "src": "topos.selftest",
+     "dst": "topos.core.layers",
+     "action": "private_touch",
+     "evidence": [
+      [
+       "topos/selftest.py:95",
+       "_extract_layers"
+      ]
+     ]
+    },
+    {
+     "src": "topos.selftest",
+     "dst": "topos.core.seams",
+     "action": "private_touch",
+     "evidence": [
+      [
+       "topos/selftest.py:506",
+       "_veto_if"
+      ],
+      [
+       "topos/selftest.py:507",
+       "_veto_if"
+      ],
+      [
+       "topos/selftest.py:508",
+       "_veto_if"
+      ],
+      [
+       "topos/selftest.py:510",
+       "_veto_if"
+      ]
+     ]
+    },
+    {
+     "src": "topos.space",
+     "dst": "topos.core.layers",
+     "action": "private_touch",
+     "evidence": [
+      [
+       "topos/space.py:37",
+       "_extract_layers"
+      ]
+     ]
+    }
+   ],
+   "components": [
+    {
+     "nodes": [
+      "topos.__main__",
+      "topos.axis.manifest",
+      "topos.axis.methods.ast_metrics",
+      "topos.axis.methods.git_history",
+      "topos.axis.methods.graph_fields",
+      "topos.axis.methods.random_fields",
+      "topos.axis.methods.regex",
+      "topos.axis.registry",
+      "topos.cli",
+      "topos.core.embed",
+      "topos.core.fuse",
+      "topos.core.layers",
+      "topos.core.seams",
+      "topos.core.sheaf",
+      "topos.core.units",
+      "topos.crosscheck",
+      "topos.infer.decode",
+      "topos.infer.observe",
+      "topos.infer.prior",
+      "topos.pool.design",
+      "topos.pool.pool",
+      "topos.pool.slicer",
+      "topos.report.json_out",
+      "topos.selftest",
+      "topos.space",
+      "topos.stop.budget",
+      "topos.stop.weitzman"
+     ],
+     "h0": 0,
+     "frustrated": true,
+     "flip_edges": [
+      {
+       "edge": "topos.core.sheaf -> topos.core.embed",
+       "action": "private_touch",
+       "evidence": [
+        [
+         "topos/core/sheaf.py:27",
+         "_jacobi_eig"
+        ]
+       ]
+      },
+      {
+       "edge": "topos.crosscheck -> topos.core.embed",
+       "action": "private_touch",
+       "evidence": [
+        [
+         "topos/crosscheck.py:81",
+         "_matvec_L"
+        ]
+       ]
+      },
+      {
+       "edge": "topos.selftest -> topos.core.layers",
+       "action": "private_touch",
+       "evidence": [
+        [
+         "topos/selftest.py:95",
+         "_extract_layers"
+        ]
+       ]
+      },
+      {
+       "edge": "topos.selftest -> topos.core.seams",
+       "action": "private_touch",
+       "evidence": [
+        [
+         "topos/selftest.py:506",
+         "_veto_if"
+        ],
+        [
+         "topos/selftest.py:507",
+         "_veto_if"
+        ],
+        [
+         "topos/selftest.py:508",
+         "_veto_if"
+        ],
+        [
+         "topos/selftest.py:510",
+         "_veto_if"
+        ]
+       ]
+      },
+      {
+       "edge": "topos.space -> topos.core.layers",
+       "action": "private_touch",
+       "evidence": [
+        [
+         "topos/space.py:37",
+         "_extract_layers"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "top_residual": [
+    {
+     "module": "topos.core.embed",
+     "residual": 8.0
+    },
+    {
+     "module": "topos.core.layers",
+     "residual": 8.0
+    },
+    {
+     "module": "topos.selftest",
+     "residual": 8.0
+    },
+    {
+     "module": "topos.core.seams",
+     "residual": 4.0
+    },
+    {
+     "module": "topos.core.sheaf",
+     "residual": 4.0
+    },
+    {
+     "module": "topos.crosscheck",
+     "residual": 4.0
+    },
+    {
+     "module": "topos.space",
+     "residual": 4.0
+    }
+   ]
+  },
+  {
+   "repo": "audit-lab",
+   "n_modules": 7,
+   "n_edges": 5,
+   "edges_by_action": {
+    "public_call": 5
+   },
+   "vetoes": [],
+   "flip_edges": [],
+   "components": [
+    {
+     "nodes": [
+      "core.decode",
+      "core.sigma",
+      "core.space",
+      "preflight.P0_A_prior_lambda",
+      "preflight.P0_B_sweeps",
+      "selftest"
+     ],
+     "h0": 1,
+     "frustrated": false,
+     "flip_edges": []
+    }
+   ],
+   "top_residual": []
+  }
+ ],
+ "n_frustrated_components": 1,
+ "n_flip_edges": 5,
+ "judged": {
+  "D_B5_2a": true,
+  "D_B5_2b": null
+ }
+}
