@@ -36,6 +36,33 @@ python -m topos next out/space.json out/belief.json --cost0 0.05
 python -m topos report-md out/space.json --belief out/belief.json -o out/report.md
 ```
 
+## 拼合的开源成果与协议边界
+
+本仪器不是闭门造车——**站在一批开源成果上拼合而成**，但拼合方式经过刻意的协议设计。
+台账见 `reference/INTERFACE-CHECK.md`（每件的接口实测、许可、集成方式）：
+
+| 成果 | 许可证 | 拼合角色 | 集成方式 | 传播判定 |
+|---|---|---|---|---|
+| bandit (PyCQA) | Apache-2.0 | 锚点规则源 | **语义借化**：20 条调用黑名单转成自有清单 `reference/anchors-bandit.json`（33 tag），不拷代码 | 无 |
+| GraphRicciCurvature | MIT | Forman 曲率对拍校验器 | 离线跑（不进运行时），数值锚 78+76 边 max\|Δ\|=0 | 无 |
+| scipy / networkx / pandas | BSD/MIT | λ₂ 真值锚 / 标定依赖 | venv 内离线对拍；**运行时零 import** | 无 |
+| crowd-kit | Apache-2.0 | M1 标定 Dawid-Skene | 包壳 shim 待接（失败则自写精简 EM） | 无 |
+| Joern | Apache-2.0 | 离线金标校验器（CPG 对拍） | 便携环境放 `tools/`（gitignore），产物只进回执 | 无 |
+| binGroup2 (R) | **GPL-3** | 组检验算法规范（Dorfman/Inf.* 最优设计） | **故意不接线**：只读 R 源码学算法步骤，不抄码不打包 | **防火墙案例** |
+| semgrep-rules | **LGPL** | 规则语义参考 | **故意连下载都未做** | **防火墙案例** |
+| code-maat | Apache-2.0 | churn 对拍 | 镜像全挂 → 弃；自家 git 重放兜底 | 无 |
+| SVEN | 待查 | L3 金标种子层 | 未开工；**开工前先过许可审查** | 待查 |
+
+**协议防火墙的三道边界**（GPL/LGPL 不传播的结构性原因）：
+
+1. **运行时 stdlib-only**——外部件与运行时零链接，无依赖即无传播；
+2. **重件不进仓**——`reference/` 克隆件与 `tools/`（Joern 4GB）全部 gitignore，仓库只留
+   5 个轻文件（对拍脚本、转换器、结果 json、接口台账、锚点清单）；
+3. **借化留痕**——外部成果以「语义转换 / 读数回执 / 纸面规范」三种形态使用，全部在
+   INTERFACE-CHECK.md 声明来源与许可证；抄算法步骤不抄码（binGroup2 条款）。
+
+**结论：本仓 MIT 干净成立，发布物零第三方制品。**
+
 ## 首战战果（RUN1 · dsh-launcher）
 
 250 单元 / 762 边全链跑通；覆盖诊断当场报警默认清单不适配（96.4% 零覆盖 → 清单迭代
