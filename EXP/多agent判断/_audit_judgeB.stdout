@@ -1,0 +1,228 @@
+==============================================================================
+A. re-read the delivered jsonl from disk
+  [PASS] jsonl record count                                         got=100 want=100
+  [PASS] jsonl seq set == 1..100                                    got=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100] want=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100]
+  [PASS] jsonl no duplicate seq                                     got=100 want=100
+  [PASS] truth values subset of {1,0,None}                          got={'None', '0', '1'} want={'None', '0', '1'}
+  [PASS] truth counts sum to 100                                    got=100 want=100
+     truth = {'0': 75, 'None': 14, '1': 11}
+  [PASS] truth 1 count                                              got=11 want=11
+  [PASS] truth 0 count                                              got=75 want=75
+  [PASS] truth None count                                           got=14 want=14
+     rule  = {'R0': 75, 'RGAP-trunc': 4, 'RN-SHIM': 3, 'RN-INV': 6, 'R1': 11, 'RGAP-extfmt': 1}
+  [PASS] rule R0                                                    got=75 want=75
+  [PASS] rule R1                                                    got=11 want=11
+  [PASS] rule RN-INV                                                got=6 want=6
+  [PASS] rule RGAP-trunc                                            got=4 want=4
+  [PASS] rule RN-SHIM                                               got=3 want=3
+  [PASS] rule RGAP-extfmt                                           got=1 want=1
+  [PASS] rule counts sum                                            got=100 want=100
+     defect_type = {'logic': 4, 'error_handling': 5, 'boundary': 1, 'message': 1}
+  [PASS] defect_type totals                                         got=11 want=11
+  [PASS] error_handling                                             got=5 want=5
+  [PASS] logic                                                      got=4 want=4
+  [PASS] boundary                                                   got=1 want=1
+  [PASS] message                                                    got=1 want=1
+  [PASS] security used                                              got=0 want=0
+     verification = {'not-execution-tested': 87, 'exec-confirmed': 10, 'exec-confirmed-mechanism-corrected': 1, 'exec-refuted': 2}
+  [PASS] exec-confirmed                                             got=10 want=10
+  [PASS] exec-confirmed-mechanism-corrected                         got=1 want=1
+  [PASS] exec-refuted                                               got=2 want=2
+  [PASS] not-execution-tested                                       got=87 want=87
+
+B. per-record invariants demanded by RULE.md
+     truth=1 units   : [12, 20, 25, 26, 31, 33, 37, 55, 62, 93, 96]
+     truth=None units: [4, 10, 11, 14, 16, 17, 22, 24, 40, 54, 57, 72, 83, 94]
+  [PASS] 1-set                                                      got=[12, 20, 25, 26, 31, 33, 37, 55, 62, 93, 96] want=[12, 20, 25, 26, 31, 33, 37, 55, 62, 93, 96]
+  [PASS] None-set                                                   got=[4, 10, 11, 14, 16, 17, 22, 24, 40, 54, 57, 72, 83, 94] want=[4, 10, 11, 14, 16, 17, 22, 24, 40, 54, 57, 72, 83, 94]
+  [PASS] every 1 carries a mechanism sentence                       got=True want=True
+  [PASS] every 1 is execution-verified                              got=[12, 20, 25, 26, 31, 33, 37, 55, 62, 93, 96] want=[12, 20, 25, 26, 31, 33, 37, 55, 62, 93, 96]
+  [PASS] every None names a form                                    got=True want=True
+  [PASS] every record has a rule code                               got=True want=True
+  [PASS] every record marked non-gold                               got=True want=True
+  [PASS] every record marked L4-control                             got={'L4-control'} want={'L4-control'}
+  [PASS] annotator carries the model tag (user-directed 2026-10-10) got={'ai:qwen-3.8max(L4-control,judgeB,single-rater,no-kappa)'} want={'ai:qwen-3.8max(L4-control,judgeB,single-rater,no-kappa)'}
+  [PASS] retracted records                                          got=[80, 98] want=[80, 98]
+  [PASS] retracted ones now read 0                                  got=[80, 98] want=[80, 98]
+  [PASS] truncated flags                                            got=[4, 14, 16, 18, 33, 37, 55, 72, 96] want=[4, 14, 16, 18, 33, 37, 55, 72, 96]
+  [PASS] obs_verified flags                                         got=[89] want=[89]
+
+C. re-derive the stratum table from the artifacts (not from the report)
+  [PASS] random n                                                   got=30 want=30
+  [PASS] random 1-rate count                                        got=4 want=4
+  [PASS] random 0 count                                             got=22 want=22
+  [PASS] random None count                                          got=4 want=4
+  [PASS] random None-rate <= 40% (PREREG B2)                        got=True want=True
+     random      1-rate=13% CI 5-30%
+  [PASS] confluence n                                               got=20 want=20
+  [PASS] confluence 1-rate count                                    got=3 want=3
+  [PASS] confluence 0 count                                         got=13 want=13
+  [PASS] confluence None count                                      got=4 want=4
+  [PASS] confluence None-rate <= 40% (PREREG B2)                    got=True want=True
+     confluence  1-rate=15% CI 5-36%
+  [PASS] anchor n                                                   got=25 want=25
+  [PASS] anchor 1-rate count                                        got=2 want=2
+  [PASS] anchor 0 count                                             got=19 want=19
+  [PASS] anchor None count                                          got=4 want=4
+  [PASS] anchor None-rate <= 40% (PREREG B2)                        got=True want=True
+     anchor      1-rate=8% CI 2-25%
+  [PASS] zero_cover n                                               got=25 want=25
+  [PASS] zero_cover 1-rate count                                    got=2 want=2
+  [PASS] zero_cover 0 count                                         got=21 want=21
+  [PASS] zero_cover None count                                      got=2 want=2
+  [PASS] zero_cover None-rate <= 40% (PREREG B2)                    got=True want=True
+     zero_cover  1-rate=8% CI 2-25%
+     ALL         1-rate=11% CI 6-19%  (report says 11%, CI 6-19%)
+  [PASS] ALL 1-rate rounds to 11%                                   got=11 want=11
+  [PASS] ALL CI low rounds to 6%                                    got=6 want=6
+  [PASS] ALL CI high rounds to 19%                                  got=19 want=19
+     A1 order check: pi(anchor)=0.080 pi(random)=0.133 pi(zero_cover)=0.080
+  [PASS] A1 anchor>random VIOLATED (as reported)                    got=False want=False
+  [PASS] A1 random>zero_cover satisfied (as reported)               got=True want=True
+
+D. csv mirrors jsonl cell-for-cell
+  [PASS] csv row count                                              got=100 want=100
+  [PASS] csv has a note column (README's 备注)                        got=True want=True
+  [PASS] csv<->jsonl mismatches                                     got=[] want=[]
+  [PASS] csv lineno matches jsonl                                   got=True want=True
+
+E. roster integrity: my artifacts vs the COMMITTED roster
+  [PASS] unit_id all match HEAD roster                              got=True want=True
+  [PASS] file all match HEAD roster                                 got=True want=True
+  [PASS] lineno all match HEAD roster                               got=True want=True
+  [PASS] loc all match HEAD roster                                  got=True want=True
+  [PASS] stratum all match HEAD roster                              got=True want=True
+
+F. report text: every asserted number re-checked against artifacts
+  [PASS] report table \|\s*`1`\s*有缺陷\s*\|\s*\*\*(\                  got=11 want=11
+  [PASS] report table \|\s*`0`\s*所示证据内无缺陷\s*\|\s*\                  got=75 want=75
+  [PASS] report table \|\s*`None`\s*判不出来\s*\|\s*\*                  got=14 want=14
+  [PASS] report stratum row random (n,1)                            got=(30, 4) want=(30, 4)
+  [PASS] report stratum row confluence (n,1)                        got=(20, 3) want=(20, 3)
+  [PASS] report stratum row anchor (n,1)                            got=(25, 2) want=(25, 2)
+  [PASS] report stratum row zero_cover (n,1)                        got=(25, 2) want=(25, 2)
+  [PASS] report claims 100/100 source fidelity                      got=True want=True
+  [PASS] report claims 9 truncated                                  got=True want=True
+  [PASS] report claims 0/100 decorators                             got=True want=True
+  [PASS] report claims 11/52 prose anchor hits                      got=True want=True
+  [PASS] report names both retractions                              got=True want=True
+  [PASS] report states it did NOT write sample.csv                  got=True want=True
+  [PASS] report header carries the model tag                        got=True want=True
+  [PASS] report explains why the filename stays judgeB              got=True want=True
+  [PASS] report records the 3-judge landscape                       got=True want=True
+
+G. invariants that nobody may break (this session included)
+  G1 sealed modelside artifacts (PREREG A5) -- must be byte- and time-identical:
+    [PASS] EXP/B2-E4-modelside.jsonl              size=33046 mtime=1791568354
+    [PASS] EXP/B2-E4-modelside-SEAL.md            size=16687 mtime=1791568564
+    [PASS] EXP/B2-E4-modelside-stats.json         size=13139 mtime=1791568400
+  G2 tracked rule/instrument files must be CLEAN in git status:
+    [PASS] EXP/B2-E4-RULE.md                      clean
+    [PASS] EXP/B2-E4-workbook.md                  clean
+    [PASS] EXP/B2-E4-README.md                    clean
+    [PASS] EXP/make_b2_e4_sample.py               clean
+    [PASS] PREREG/B2.md                           clean
+    [PASS] topos/calib/gold.py                    clean
+  G3 shared/volatile files owned by other producers -- recorded, NOT asserted:
+    [INFO] EXP/B2-E4-sample.csv                   size=21622 mtime=1791595285 sha256=ef43254a2f67b91f
+    [INFO] EXP/B2-E4-adjudication.jsonl           size=62304 mtime=1791595285 sha256=adb52e0dd87d4e86
+    [INFO] EXP/B2-E4-adjudication.csv             size=33927 mtime=1791569733 sha256=48c2c7bcf43980b3
+    [INFO] EXP/B2-E4-adjudication.md              size=2941 mtime=1791595285 sha256=b5727aed49686c56
+    [INFO] EXP/B2-E4.md                           size=23513 mtime=1791569293 sha256=fc8237d741e29cb7
+  G4 my own deliverables must match the re-tag build:
+    [PASS] B2-E4-adjudication-judgeB-qwen-3.8max.jsonl    size=109334 sha=aa68ef385b137dc0
+    [PASS] B2-E4-adjudication-judgeB-qwen-3.8max.csv      size=82931 sha=77c76cff1b6125c1
+    [PASS] B2-E4-adjudication-judgeB-qwen-3.8max-stats.json size=3747 sha=5365b100f1d69809
+  G5 pre-retag archive must still exist (data-lossless re-tag):
+    [PASS] B2-E4-adjudication-judgeB.pretag.jsonl
+    [PASS] B2-E4-adjudication-judgeB.pretag.csv
+    [PASS] B2-E4-adjudication-judgeB.pretag.md
+    [PASS] B2-E4-adjudication-judgeB.pretag-stats.json
+  G6 foreign file edited this session (user-authorized 2026-10-10 '全改，文件名也要'):
+  [PASS] backup of the foreign file retained                        got=True want=True
+  [PASS] foreign file still parses                                  got=True want=True
+  [PASS] foreign file now resolves the renamed path                 got=True want=True
+  [PASS] foreign file no longer points at the dead path             got=False want=False
+  [PASS] my edit is marked in-place with date + reason              got=True want=True
+    [INFO] backup sha256=64af782a3ecb4ed8  current sha256=ceca4cfbbffd9774
+    [INFO] round-trip proof (undo my edits == original byte-for-byte) is in
+           _fix_foreign_ref.stdout; historical narrative docs were left untouched:
+           [LEFT AS-IS] B2-E4-adjudication-PROVENANCE-NOTE.md          8159 B
+           [LEFT AS-IS] B2-E4-adjudication-judgeC-crosscheck.md        7117 B
+           [LEFT AS-IS] _restore_judgeA_names.py                       7993 B
+           [LEFT AS-IS] B2-E4-adjudication.md                          2941 B
+
+H. workbook unchanged (my evidence base) + git view of what I added
+  [PASS] workbook sha256 (text) still 78f9356f...                   got='78f9356f' want='78f9356f'
+  files I created this session (29):
+     ?? EXP/B2-E4-adjudication-judgeB-qwen-3.8max-stats.json
+     ?? EXP/B2-E4-adjudication-judgeB-qwen-3.8max.csv
+     ?? EXP/B2-E4-adjudication-judgeB-qwen-3.8max.jsonl
+     ?? EXP/B2-E4-adjudication-judgeB-qwen-3.8max.md
+     ?? EXP/B2-E4-adjudication-judgeB.pretag-stats.json
+     ?? EXP/B2-E4-adjudication-judgeB.pretag.csv
+     ?? EXP/B2-E4-adjudication-judgeB.pretag.jsonl
+     ?? EXP/B2-E4-adjudication-judgeB.pretag.md
+     ?? EXP/_adj_batch1.json
+     ?? EXP/_adj_batch2.json
+     ?? EXP/_audit_judgeB.py
+     ?? EXP/_audit_judgeB.stdout
+     ?? EXP/_build_judgeB.py
+     ?? EXP/_build_judgeB.stdout
+     ?? EXP/_fix_foreign_ref.py
+     ?? EXP/_fix_foreign_ref.stdout
+     ?? EXP/_probe26.py
+     ?? EXP/_propagate_rename.py
+     ?? EXP/_propagate_rename.stdout
+     ?? EXP/_rename_to_model_tag.py
+     ?? EXP/_rename_to_model_tag.stdout
+     ?? EXP/_retag_judgeB.py
+     ?? EXP/_retag_judgeB.stdout
+     ?? EXP/_verify_b2e4_ones.py
+     ?? EXP/_verify_b2e4_pass2.py
+     ?? EXP/_verify_b2e4_pass3.py
+     ?? EXP/_verify_pass2.stdout
+     ?? EXP/_verify_pass3.stdout
+     ?? EXP/_xjudge_compare_judgeC.py.judgeB-edit-backup
+  other producers' tracked/untracked deliverables (21) -- none modified by me:
+      M EXP/B2-E4-sample.csv
+     ?? EXP/B2-E4-adjudication-PROVENANCE-NOTE.md
+     ?? EXP/B2-E4-adjudication-judgeA-hy4-preview.csv
+     ?? EXP/B2-E4-adjudication-judgeA-hy4-preview.jsonl
+     ?? EXP/B2-E4-adjudication-judgeA-hy4-preview.md
+     ?? EXP/B2-E4-adjudication-judgeC-crosscheck.md
+     ?? EXP/B2-E4-adjudication-judgeC.csv
+     ?? EXP/B2-E4-adjudication-judgeC.jsonl
+     ?? EXP/B2-E4-adjudication-judgeC.md
+     ?? EXP/B2-E4-adjudication-judgeC.src.jsonl
+     ?? EXP/B2-E4-adjudication.csv
+     ?? EXP/B2-E4-adjudication.jsonl
+     ?? EXP/B2-E4-adjudication.md
+     ?? EXP/B2-E4-adjudication.src.jsonl
+     ?? EXP/B2-E4-modelside-SEAL.md
+     ?? EXP/B2-E4-modelside-stats.json
+     ?? EXP/B2-E4-modelside.jsonl
+     ?? EXP/B2-E4-sample-mixed.csv
+     ?? EXP/B2-E4.md
+     ?? EXP/make_b2_e4_adjudication.py
+     ?? EXP/make_b2_e4_modelside_stats.py
+  anything else dirty (8) -- NOTE this bucket contains _xjudge_compare_judgeC.py,
+  which I DID edit under user authorization; that edit is asserted in G6, not here:
+     [('??', 'EXP/B2-E4-sample-judgeA-hy4-preview.csv'), ('??', 'EXP/B2-E4-sample-judgeC.csv'), ('??', 'EXP/B2-E4-workbook-judgeC.md'), ('??', 'EXP/__pycache__/'), ('??', 'EXP/_restore_judgeA_names.py'), ('??', 'EXP/_xjudge_compare_judgeC.py'), ('??', 'EXP/make_b2_e4_judgeC_copies.py'), ('??', 'EXP/多agent判断/')]
+  [PASS] no git-TRACKED foreign file modified by me beyond the pre-existing ' M sample.csv' got=['EXP/B2-E4-sample.csv'] want=['EXP/B2-E4-sample.csv']
+  NOTE: ' M EXP/B2-E4-sample.csv' predates this session (second producer filled it at
+        02:15:33, later restored by judgeC at 09:21:25). This session never wrote it.
+  NOTE: one UNTRACKED foreign file WAS edited by me under explicit user authorization
+        (_xjudge_compare_judgeC.py, see G6). git cannot show it as 'M' because it was
+        never committed -- so the check above does not cover it, and G6 does.
+
+I. deliverable hashes (for the seal / for citing)
+  B2-E4-adjudication-judgeB-qwen-3.8max.jsonl      109334 B  sha256=aa68ef385b137dc012fb5cf44a912caa4db9d215b2726d762c41a934de44f96e
+  B2-E4-adjudication-judgeB-qwen-3.8max.csv         82931 B  sha256=77c76cff1b6125c132be44a8c998d013576a423ae5b19e2e8b9b69bd32059465
+  B2-E4-adjudication-judgeB-qwen-3.8max.md          41537 B  sha256=f90265af63e6dfe7104a2baf05d416034f9ed1e75467144955a8db94788b45f7
+  B2-E4-adjudication-judgeB-qwen-3.8max-stats.json     3747 B  sha256=5365b100f1d69809125a395b352372d9b1500a713287b7e9dc6d2ddcd861f42f
+
+==============================================================================
+AUDIT PASS: every check held. Deliverables are internally consistent and match
+the committed roster. Foreign writes this session: exactly ONE file, authorized,
+backed up, syntax-gated and round-trip proven (G6). sample.csv never written.

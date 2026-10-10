@@ -1,0 +1,99 @@
+python = 3.13.14 | stdlib = C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib
+==============================================================================
+
+### #20 PURE-PYTHON pickle._Unpickler.load_binbytes (the sampled unit)
+  does _Unpickler define its own read(self, n)? : True
+     | if self.current_frame:
+     |             data = self.current_frame.read(n)
+     |             if not data and n != 0:
+     |                 self.current_frame = None
+     |                 return self.file_read(n)
+     |             if len(data) < n:
+     |                 raise UnpicklingError(
+     |                     "pickle exhausted before end of frame")
+     |             return data
+     |         else:
+     |             return self.file_read(n)
+  real load_binbytes body:
+     | len, = unpack('<I', self.read(4))
+     |         if len > maxsize:
+     |             raise UnpicklingError("BINBYTES exceeds system's maximum size "
+     |                                   "of %d bytes" % maxsize)
+     |         self.append(self.read(len))
+  how is self.read bound in __init__?
+     | self.read = self._unframer.read
+
+  -- live test against pickle._Unpickler (NOT the C impl) --
+  POSITIVE CONTROL well-formed BINBYTES(3)+b'abc': b'abc'
+  ATTACK BINBYTES declares 100, only 3 available : EOFError:  | is UnpicklingError: False
+  ATTACK header itself short (2 bytes)          : error: unpack requires a buffer of 4 bytes | is UnpicklingError: False | is struct.error: True
+  C impl for contrast, same truncated stream     : UnpicklingError: pickle data was truncated
+
+### #80 does __main__ really lack __spec__ in any real launch mode?
+  python -c                -> has_spec= True val= None
+  python script.py         -> has_spec= True val= None
+  python -m modpkg_probe   -> has_spec= True val= ModuleSpec(name='modpkg_probe', loader=<_frozen_importlib_ex
+  python -I -c (isolated)  -> has_spec= True val= None
+  python - (stdin)         -> has_spec= True
+  -- and the ORIGINAL_DIR=None leg of my original claim --
+     runtime value: 'D:\\WorkBuddy专用！危险！！！！！！！！\\2026-10-09-02-32-12\\topos-audit'
+     spawn.py   | sys_path[i] = process.ORIGINAL_DIR
+     spawn.py   | orig_dir=process.ORIGINAL_DIR,
+     spawn.py   | process.ORIGINAL_DIR is not None):
+     spawn.py   | main_path = os.path.join(process.ORIGINAL_DIR, main_path)
+     spawn.py   | process.ORIGINAL_DIR = data['orig_dir']
+
+### #96 real zipfile CLI against a genuine symlink loop
+  addToZip source fragment:
+     | def addToZip(zf, path, zippath):
+     |             if os.path.isfile(path):
+     |                 zf.write(path, zippath, ZIP_DEFLATED)
+     |             elif os.path.isdir(path):
+     |                 if zippath:
+     |                     zf.write(path, zippath)
+     |                 for nm in sorted(os.listdir(path)):
+     |                     addToZip(zf,
+     |                              os.path.join(path, nm), os.path.join(zippath, nm))
+     |             # else: ignore
+     | 
+     |         with ZipFile(zip_name, 'w') as zf:
+     |             for path in files:
+     |                 zippath = os.path.basename(path)
+     |                 if not zippath:
+     |                     zippath = os.path.basename(os.path.dirname(path))
+  mentions islink   : False
+  mentions realpath : False
+  has visited set   : False
+  os.path.isdir(sub/loop) = True (follows the link)
+  run with recursionlimit=300 -> rc=1
+  last stderr line: FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'C:\\Users\\26672\\AppData\\Local\\Temp\\tmpt6npa2l1\\sub\\loop\\loop\\loop
+  zip size bytes  : 12664
+  => recursion is unbounded (no islink guard): False
+
+### #26 pydoc TextRepr.repr_instance -- bare except
+  source:
+     | try:
+     |             return self.escape(cram(stripid(repr(x)), self.maxstring))
+     |         except:
+     |             return self.escape('<%s instance>' % x.__class__.__name__)
+     | 
+     |     repr_unicode = repr_string
+     | 
+     | class HTMLDoc(Doc):
+     |     """Formatter class for HTML documentation."""
+     | 
+     |     # ------------------------------------------- HTML formatting utilities
+     | 
+     |     _repr_instance = HTMLRepr()
+     |     repr = _repr_instance.repr
+     |     escape = _repr_instance.escape
+  bare 'except:' present  : True
+  'except Exception' used : False
+  ATTACK repr raises KeyboardInterrupt    -> propagated AttributeError: 'TextDoc' object has no attribute 'repr_
+  ATTACK repr raises SystemExit           -> propagated AttributeError: 'TextDoc' object has no attribute 'repr_
+  ATTACK repr AND __class__ both raise    -> propagated AttributeError: 'TextDoc' object has no attribute 'repr_
+Traceback (most recent call last):
+  File "D:\WorkBuddy专用！危险！！！！！！！！\2026-10-09-02-32-12\topos-audit\EXP\_verify_b2e4_pass2.py", line 189, in <module>
+    say("  POSITIVE CONTROL normal object:", repr(pydoc.text.repr_instance(object(), 0))[:60])
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'TextDoc' object has no attribute 'repr_instance'

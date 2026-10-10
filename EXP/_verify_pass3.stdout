@@ -1,0 +1,30 @@
+target stdlib root = C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib | exists: True
+==============================================================================
+roster from HEAD blob: 100 rows
+
+(a) SOURCE FIDELITY: 100/100 units match the real file byte-for-byte at the stated lineno
+    files not found under target root: 0 []
+    mismatches: 0
+
+==============================================================================
+(b) #26 -- the class the workbook actually names
+    workbook says: pydoc.py::TextRepr.repr_instance at line 1259 (5 lines)
+    real file lines 1259..1263:
+      1259|     def repr_instance(self, x, level):
+      1260|         try:
+      1261|             return cram(stripid(repr(x)), self.maxstring)
+      1262|         except:
+      1263|             return '<%s instance>' % x.__class__.__name__
+    enclosing class (real file): TextRepr  (line 1233)
+    workbook header names class  : TextRepr
+    => class name agrees: True
+    workbook source == real source: True
+
+    -- live behaviour of THAT class --
+resolved class: <class 'pydoc.TextRepr'>
+  POSITIVE CONTROL plain object              -> SWALLOWED, returned '<object object>'
+  NEGATIVE CONTROL repr raises ValueError    -> SWALLOWED, returned '<BoomPlain instance>'
+  ATTACK repr raises KeyboardInterrupt       -> SWALLOWED, returned '<BoomKI instance>'
+  ATTACK repr raises SystemExit              -> SWALLOWED, returned '<BoomSE instance>'
+==============================================================================
+pass 3 done

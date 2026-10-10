@@ -1,0 +1,50 @@
+==============================================================================
+0. before: what exists under the old name
+   B2-E4-adjudication-judgeB.jsonl                      109334 B sha=aa68ef385b137dc0
+   B2-E4-adjudication-judgeB.csv                        82931 B sha=77c76cff1b6125c1
+   B2-E4-adjudication-judgeB.md                         37145 B sha=0a24790631e28766
+   B2-E4-adjudication-judgeB-stats.json                 3747 B sha=5365b100f1d69809
+
+1. re-run builder with PRE = 'B2-E4-adjudication-judgeB-qwen-3.8max'
+  [PASS] builder rc                                                 got=0 want=0
+   truth: {'0': 75, 'None': 14, '1': 11}  total: 100
+   wrote D:\WorkBuddy专用！危险！！！！！！！！\2026-10-09-02-32-12\topos-audit\EXP\B2-E4-adjudication-judgeB-qwen-3.8max.jsonl (100 records, 1093
+   wrote D:\WorkBuddy专用！危险！！！！！！！！\2026-10-09-02-32-12\topos-audit\EXP\B2-E4-adjudication-judgeB-qwen-3.8max.csv (82931 bytes)
+   wrote B2-E4-adjudication-judgeB-qwen-3.8max-stats.json
+
+2. move the hand-written report to the new name
+  [PASS] report moved                                               got=(True, False) want=(True, False)
+   B2-E4-adjudication-judgeB.md -> B2-E4-adjudication-judgeB-qwen-3.8max.md (37145 B)
+
+3. prove the old machine files are byte-identical to the new ones
+  [PASS] byte-identical .jsonl                                      got=True want=True
+        old sha=aa68ef385b137dc0  new sha=aa68ef385b137dc0  sizes 109334/109334
+  [PASS] byte-identical .csv                                        got=True want=True
+        old sha=77c76cff1b6125c1  new sha=77c76cff1b6125c1  sizes 82931/82931
+  [PASS] byte-identical -stats.json                                 got=True want=True
+        old sha=5365b100f1d69809  new sha=5365b100f1d69809  sizes 3747/3747
+
+4. remove the superseded old-named trio (only because step 3 passed)
+   removed B2-E4-adjudication-judgeB.jsonl
+   removed B2-E4-adjudication-judgeB.csv
+   removed B2-E4-adjudication-judgeB-stats.json
+
+5. invariants re-checked after the rename
+   [PASS] archive intact: B2-E4-adjudication-judgeB.pretag.jsonl               106134 B
+   [PASS] archive intact: B2-E4-adjudication-judgeB.pretag.csv                 79531 B
+   [PASS] archive intact: B2-E4-adjudication-judgeB.pretag.md                  31854 B
+   [PASS] archive intact: B2-E4-adjudication-judgeB.pretag-stats.json          3715 B
+   [PASS] sealed untouched: EXP/B2-E4-modelside.jsonl              33046 B
+   [PASS] sealed untouched: EXP/B2-E4-modelside-SEAL.md            16687 B
+   [PASS] sealed untouched: EXP/B2-E4-modelside-stats.json         13139 B
+
+6. final state under the new name
+   B2-E4-adjudication-judgeB-qwen-3.8max.jsonl                109334 B  sha256=aa68ef385b137dc012fb5cf44a912caa4db9d215b2726d762c41a934de44f96e
+   B2-E4-adjudication-judgeB-qwen-3.8max.csv                   82931 B  sha256=77c76cff1b6125c132be44a8c998d013576a423ae5b19e2e8b9b69bd32059465
+   B2-E4-adjudication-judgeB-qwen-3.8max.md                    37145 B  sha256=0a24790631e287663533fe42b35aec4bf771a7c6d86746d22bbfe1f7c1c7d838
+   B2-E4-adjudication-judgeB-qwen-3.8max-stats.json             3747 B  sha256=5365b100f1d69809125a395b352372d9b1500a713287b7e9dc6d2ddcd861f42f
+  [PASS] no old-named deliverable left behind (pretag archive excluded) got=[] want=[]
+
+==============================================================================
+RENAME PASS: filenames now carry the model tag, content byte-identical,
+pretag archive and the sealed modelside files untouched.

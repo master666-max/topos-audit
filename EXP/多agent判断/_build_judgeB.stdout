@@ -1,0 +1,24 @@
+roster read from HEAD blob: 100 rows, sha256=0d4ad3343c8e7e43
+loaded verdicts: 100
+
+=== FINAL judgeB distribution ===
+truth: {'0': 75, 'None': 14, '1': 11}  total: 100
+rule : {'R0': 75, 'RGAP-trunc': 4, 'RN-SHIM': 3, 'RN-INV': 6, 'R1': 11, 'RGAP-extfmt': 1}
+defect_type: {'logic': 4, 'error_handling': 5, 'boundary': 1, 'message': 1}
+verification: {'not-execution-tested': 87, 'exec-confirmed': 10, 'exec-confirmed-mechanism-corrected': 1, 'exec-refuted': 2}
+revisions applied: 4
+   #98 truth: '1' -> '0'
+   #80 truth: '1' -> '0'
+   #19 truth: 'None' -> '0'
+   #28 truth: 'None' -> '0'
+
+wrote D:\WorkBuddy专用！危险！！！！！！！！\2026-10-09-02-32-12\topos-audit\EXP\B2-E4-adjudication-judgeB.jsonl (100 records, 106134 bytes, sha256=a8086e68bec6dedf)
+wrote D:\WorkBuddy专用！危险！！！！！！！！\2026-10-09-02-32-12\topos-audit\EXP\B2-E4-adjudication-judgeB.csv (79531 bytes)
+wrote B2-E4-adjudication-judgeB-stats.json
+
+per-stratum truth + Wilson 95% CI on the 1-rate:
+  random      n=30  1= 4 (13%, CI 5-30%)  0=22  None= 4 (13%, CI 5-30%)
+  confluence  n=20  1= 3 (15%, CI 5-36%)  0=13  None= 4 (20%, CI 8-42%)
+  anchor      n=25  1= 2 (8%, CI 2-25%)  0=19  None= 4 (16%, CI 6-35%)
+  zero_cover  n=25  1= 2 (8%, CI 2-25%)  0=21  None= 2 (8%, CI 2-25%)
+  ALL         n=100  1=11 (11%, CI 6-19%)  0=75  None=14 (14%, CI 9-22%)

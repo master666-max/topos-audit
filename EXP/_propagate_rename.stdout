@@ -1,0 +1,52 @@
+==============================================================================
+1. MINE -- mechanical replace (pretag archive names must NOT be touched)
+  [PASS] _build_judgeB.py: pretag occurrences preserved             got=0 want=0
+   _build_judgeB.py                               replacements=3  stale-refs-left=0
+  [PASS] _audit_judgeB.py: pretag occurrences preserved             got=4 want=4
+   _audit_judgeB.py                               replacements=4  stale-refs-left=0
+  [PASS] B2-E4-adjudication-judgeB-qwen-3.8max.md: pretag occurrences preserved got=2 want=2
+   B2-E4-adjudication-judgeB-qwen-3.8max.md       replacements=7  stale-refs-left=0
+  [PASS] audit PRE constant found before fix                        got=True want=True
+  [PASS] audit PRE updated                                          got=True want=True
+  [PASS] audit still asserts the same jsonl sha                     got=True want=True
+
+2. FOREIGN + FUNCTIONAL -- _xjudge_compare_judgeC.py (backed up, then surgical)
+   backup: _xjudge_compare_judgeC.py.judgeB-edit-backup (12720 B, sha=64af782a3ecb4ed8)
+   b = load_jsonl(os.path.join(exp, "B2-E4-adjudication-judgeB.js   occurrences=1
+   ("judgeB(qoder)", b)                                             occurrences=1
+   `L4-control-judgeB-qoder`                                        occurrences=1
+   `B2-E4-adjudication-judgeB.*`                                    occurrences=1
+  [FAIL] foreign script still parses after my edit                  got="SyntaxError: '[' was never closed (<unknown>, line 117)" want=True
+   !! ROLLED BACK from backup
+  [FAIL] foreign script now points at the new path                  got=False want=True
+
+3. FOREIGN + HISTORICAL -- deliberately NOT rewritten
+   [LEFT AS-IS] B2-E4-adjudication-PROVENANCE-NOTE.md          mentions judgeB 15 time(s), old exact filenames 1
+   [LEFT AS-IS] B2-E4-adjudication-judgeC-crosscheck.md        mentions judgeB 10 time(s), old exact filenames 1
+   [LEFT AS-IS] _restore_judgeA_names.py                       mentions judgeB  7 time(s), old exact filenames 0
+   [LEFT AS-IS] B2-E4-adjudication.md                          mentions judgeB  6 time(s), old exact filenames 0
+
+4. repo-wide sweep for stale exact references to the old names
+   STALE EXP\_audit_judgeB.stdout  ->  B2-E4-adjudication-judgeB-stats.json
+   STALE EXP\_audit_judgeB.stdout  ->  B2-E4-adjudication-judgeB.csv
+   STALE EXP\_audit_judgeB.stdout  ->  B2-E4-adjudication-judgeB.jsonl
+   STALE EXP\_audit_judgeB.stdout  ->  B2-E4-adjudication-judgeB.md
+   STALE EXP\_build_judgeB.stdout  ->  B2-E4-adjudication-judgeB-stats.json
+   STALE EXP\_build_judgeB.stdout  ->  B2-E4-adjudication-judgeB.csv
+   STALE EXP\_build_judgeB.stdout  ->  B2-E4-adjudication-judgeB.jsonl
+   STALE EXP\_rename_to_model_tag.stdout  ->  B2-E4-adjudication-judgeB-stats.json
+   STALE EXP\_rename_to_model_tag.stdout  ->  B2-E4-adjudication-judgeB.csv
+   STALE EXP\_rename_to_model_tag.stdout  ->  B2-E4-adjudication-judgeB.jsonl
+   STALE EXP\_rename_to_model_tag.stdout  ->  B2-E4-adjudication-judgeB.md
+   STALE EXP\_retag_judgeB.stdout  ->  B2-E4-adjudication-judgeB-stats.json
+   STALE EXP\_retag_judgeB.stdout  ->  B2-E4-adjudication-judgeB.csv
+   STALE EXP\_retag_judgeB.stdout  ->  B2-E4-adjudication-judgeB.jsonl
+   STALE EXP\_retag_judgeB.stdout  ->  B2-E4-adjudication-judgeB.md
+   STALE EXP\_xjudge_compare_judgeC.py  ->  B2-E4-adjudication-judgeB.jsonl
+  [FAIL] stale exact-name references outside historical docs and the backup got=['EXP\\_xjudge_compare_judgeC.py'] want=[]
+
+==============================================================================
+PROPAGATE FAIL: 3
+    ('foreign script still parses after my edit', "SyntaxError: '[' was never closed (<unknown>, line 117)", True)
+    ('foreign script now points at the new path', False, True)
+    ('stale exact-name references outside historical docs and the backup', ['EXP\\_xjudge_compare_judgeC.py'], [])

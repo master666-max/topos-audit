@@ -1,0 +1,50 @@
+==============================================================================
+1. archive the pre-retag deliverables (data-lossless; nothing deleted)
+   B2-E4-adjudication-judgeB.jsonl                -> B2-E4-adjudication-judgeB.pretag.jsonl               sha256=a8086e68bec6dedf
+   B2-E4-adjudication-judgeB.csv                  -> B2-E4-adjudication-judgeB.pretag.csv                 sha256=04241219e16ef2ae
+   B2-E4-adjudication-judgeB.md                   -> B2-E4-adjudication-judgeB.pretag.md                  sha256=fe6203d977ced411
+   B2-E4-adjudication-judgeB-stats.json           -> B2-E4-adjudication-judgeB.pretag-stats.json          sha256=ea3de12d726a120f
+
+2. rebuild with the new annotator
+   rc=0
+   truth: {'0': 75, 'None': 14, '1': 11}  total: 100
+   revisions applied: 4
+   #98 truth: '1' -> '0'
+   #80 truth: '1' -> '0'
+   #19 truth: 'None' -> '0'
+   #28 truth: 'None' -> '0'
+   wrote D:\WorkBuddy专用！危险！！！！！！！！\2026-10-09-02-32-12\topos-audit\EXP\B2-E4-adjudication-judgeB.jsonl (100 records, 109334 bytes, sha256=aa68ef385b137dc
+   wrote D:\WorkBuddy专用！危险！！！！！！！！\2026-10-09-02-32-12\topos-audit\EXP\B2-E4-adjudication-judgeB.csv (82931 bytes)
+   wrote B2-E4-adjudication-judgeB-stats.json
+
+3. prove the re-tag touched ONLY the annotator field
+  [PASS] record count unchanged                                   got=(100, 100) want=(100, 100)
+  [PASS] key set unchanged                                        got=True want=True
+  [PASS] judgment-field drift across all 100 records x 17 fields  got=[] want=[]
+  [PASS] old annotator set                                        got={'L4-control-judgeB-qoder'} want={'L4-control-judgeB-qoder'}
+  [PASS] new annotator set                                        got={'ai:qwen-3.8max(L4-control,judgeB,single-rater,no-kappa)'} want={'ai:qwen-3.8max(L4-control,judgeB,single-rater,no-kappa)'}
+  [PASS] date unchanged                                           got={'2026-10-10'} want={'2026-10-10'}
+  [PASS] truth distribution unchanged                             got={'0': 75, 'None': 14, '1': 11} want={'0': 75, 'None': 14, '1': 11}
+  [PASS] truth distribution == 11/75/14                           got={'0': 75, 'None': 14, '1': 11} want={'0': 75, 'None': 14, '1': 11}
+
+4. new hashes (cite these; the pretag hashes above are the archived predecessors)
+   B2-E4-adjudication-judgeB.jsonl                  109334 B  sha256=aa68ef385b137dc012fb5cf44a912caa4db9d215b2726d762c41a934de44f96e
+   B2-E4-adjudication-judgeB.csv                     82931 B  sha256=77c76cff1b6125c132be44a8c998d013576a423ae5b19e2e8b9b69bd32059465
+   B2-E4-adjudication-judgeB.md                      31854 B  sha256=fe6203d977ced4112c57c1e85050029b80b9d0650582af0cde5174897956b2e2
+   B2-E4-adjudication-judgeB-stats.json               3747 B  sha256=5365b100f1d69809125a395b352372d9b1500a713287b7e9dc6d2ddcd861f42f
+
+5. the judgeB filename suffix must survive (other producers depend on it)
+   [PASS] _xjudge_compare_judgeC.py                      references 'judgeB' 9 time(s)
+   [PASS] B2-E4-adjudication-PROVENANCE-NOTE.md          references 'judgeB' 15 time(s)
+   [PASS] B2-E4-adjudication-judgeC-crosscheck.md        references 'judgeB' 10 time(s)
+   [PASS] _restore_judgeA_names.py                       references 'judgeB' 7 time(s)
+   [PASS] B2-E4-adjudication.md                          references 'judgeB' 6 time(s)
+  [PASS] still on disk under the judgeB name: B2-E4-adjudication-judgeB.jsonl got=True want=True
+  [PASS] still on disk under the judgeB name: B2-E4-adjudication-judgeB.csv got=True want=True
+  [PASS] still on disk under the judgeB name: B2-E4-adjudication-judgeB.md got=True want=True
+  [PASS] still on disk under the judgeB name: B2-E4-adjudication-judgeB-stats.json got=True want=True
+
+==============================================================================
+RETAG PASS: annotator now carries the model tag, every judgment field is
+byte-identical to the frozen pre-retag archive, and the judgeB filenames
+that other producers reference are unchanged.

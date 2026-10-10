@@ -1,0 +1,101 @@
+unit_id,stratum,truth_guess,defect_type,confidence,evidence_type,reason
+ast.py::_dims_setter:681,random,0,,high,semantic,2行纯赋值setter，全窗语义闭合
+codecs.py::StreamReaderWriter.readline:712,random,0,,high,semantic,3行委托reader.readline，调用者wrapper链语义一致
+codeop.py::_maybe_compile:50,confluence,0,,medium,semantic,不完整输入检测链多层异常设计自洽，SyntaxWarning屏蔽在位
+dataclasses.py::_update_func_cell_for__class__:1222,confluence,0,,high,semantic,四边界全处理(f None/无__class__/空cell/跨类防误改)
+enum.py::_is_internal_class:69,zero_cover,0,,medium,semantic,qualname匹配语义正确，re循环导入规避注释在位
+fractions.py::_round_to_figures:103,random,0,,high,semantic,round-to-even链+进位调整，全窗+docstring语义一致
+inspect.py::getfile:923,confluence,0,,low,semantic,分派链自洽；module=None边缘错误文案略不准不构成行为缺陷
+inspect.py::getfullargspec:1340,confluence,0,,low,semantic-truncated,60/91行截断；前段设计注释链完整参数循环未全入窗
+locale.py::normalize:381,confluence,0,,low,semantic-truncated,60/82行截断；多级lookup回退链前段自洽
+operator.py::ixor:407,random,0,,high,semantic,4行纯语义包装
+os.py::spawnl:961,anchor,0,,high,semantic,单行委托spawnv+完整docstring
+pdb.py::Pdb._hold_exceptions:602,random,0,,medium,semantic,context manager清理契约注释在位，finally清空防泄漏
+pdb.py::Pdb._help_message_from_doc:2287,random,0,,medium,semantic,21行全窗docstring格式化自洽
+pickle.py::_Unframer.load_frame:307,zero_cover,0,,high,semantic,帧完整性检查在位(pickle协议4帧防御正确实现)
+pickle.py::_Unpickler.find_class:1608,anchor,0,,medium,semantic,audit钩子在位+fix_imports映射正确；协议固有风险非实现缺陷
+pickletools.py::OpcodeInfo.__init__:1124,anchor,0,,medium,semantic,27行全窗声明式构造，断言为内部不变量
+profile.py::Profile.create_stats:399,zero_cover,0,,high,semantic,3行两委托
+pydoc.py::TextRepr.__init__:1235,random,0,,high,semantic,5行字段赋值
+shutil.py::_rmtree_unsafe:608,confluence,0,,high,semantic,symlink不跟随+post-order+onexc回调链完整——rmtree安全实现范本
+socketserver.py::_SocketWriter.writable:841,random,0,,high,semantic,2行return True
+subprocess.py::check_output:423,anchor,0,,high,semantic,全窗：stdout/check拒绝+input=None兼容+run(check=True)委托
+threading.py::_MainThread.__init__:1353,random,0,,medium,semantic,自举链+锁内注册语义正确
+traceback.py::print_stack:230,zero_cover,0,,high,semantic,f_back跳过自身帧+委托print_list
+webbrowser.py::register_standard_browsers:491,anchor,0,,medium,semantic-truncated,60/87行截断；xdg-settings异常表3.13已扩容(加PermissionError/NotADirectoryError)
+webbrowser.py::GenericBrowser.open:188,anchor,0,,high,semantic,3.13新增_check_url防御+audit+OSError降级
+webbrowser.py::Konqueror.open:369,anchor,0,,medium,semantic,45行全窗三级降级链(kfmclient/konqueror/kfm)+设计注释
+_aix_support.py::_aix_bos_rte:42,anchor,0,,medium,semantic,全窗+9988哨兵注释在位+ImportError降级
+_pydatetime.py::timezone.__getinitargs__:2347,anchor,0,,high,semantic,pickle往返对称(offset/offset+name双分支)
+_pydecimal.py::Overflow.handle:279,random,0,,high,semantic,IBM decimal spec溢出分派完全对齐(四舍入模式/CEILING/FLOOR)
+asyncio/base_events.py::BaseEventLoop._log_subprocess:1736,anchor,0,,high,semantic,12行全窗纯debug日志格式化
+asyncio/events.py::AbstractEventLoop.subprocess_exec:542,anchor,0,,high,semantic,抽象方法NotImplementedError
+asyncio/events.py::AbstractEventLoop.set_exception_handler:617,zero_cover,0,,high,semantic,2行抽象方法
+asyncio/mixins.py::_LoopBoundMixin._get_loop:12,random,0,,high,semantic,10行全窗：DCL+绑定断言完整(v1部分窗升级)
+asyncio/selector_events.py::BaseSelectorEventLoop._add_reader:278,zero_cover,0,,high,semantic,14行全窗：selector注册/替换+旧handle cancel防双回调
+asyncio/selector_events.py::BaseSelectorEventLoop.sock_recvfrom:448,random,0,,medium,semantic,22行全窗：SSL检查+fastpath+future路径+清理回调完整
+asyncio/selector_events.py::_SelectorSocketTransport._make_empty_waiter:1206,zero_cover,0,,high,semantic,7行全窗：重复设置防护+空buffer立即完成
+asyncio/transports.py::SubprocessTransport.kill:241,anchor,0,,high,semantic,抽象方法+完整docstring
+collections/__init__.py::namedtuple:358,anchor,None,,low,coverage-miss,60/173行截断且截断段含sink:eval锚点命中区——判定面未覆盖锚点区，本窗判不出
+ctypes/util.py::test:347,random,0,,medium,semantic,39行全窗：平台三分派冒烟测试+issue-26439注释
+ctypes/util.py::_findLib_gcc:114,anchor,0,,high,semantic,48行全窗：re.escape注入防御+临时文件清理+elf过滤全链
+curses/ascii.py::isctrl:68,random,0,,high,semantic,1行全窗：C0区判定与模块文档语义一致
+email/contentmanager.py::_encode_base64:136,confluence,0,,low,semantic,7行全窗base64行宽数学正确；max_line_length<4时range step 0崩溃——调用方契约未入窗不足以判1
+email/encoders.py::encode_7or8bit:47,random,0,,medium,semantic,15行全窗：ascii探测技巧+向后兼容分支
+email/generator.py::Generator.__init__:38,zero_cover,0,,high,semantic,31行全窗：mangle_from_ policy分派正确+maxheaderlen 0语义docstring在位
+email/mime/audio.py::_au:84,confluence,0,,high,semantic,5行全窗：.snd魔数检测语义正确
+encodings/raw_unicode_escape.py::StreamReader.decode:32,zero_cover,0,,high,semantic,2行委托+errors透传
+encodings/utf_8_sig.py::StreamWriter.reset:86,zero_cover,0,,high,semantic,6行全窗：BOM重置语义(del encode+AttributeError容忍)
+ensurepip/__init__.py::_run_pip:65,anchor,0,,high,semantic,24行全窗：子进程隔离设计+f-string信任边界+isolated透传
+http/server.py::_url_collapse_path:922,confluence,0,,high,semantic,45行全窗：unquote先于折叠(防%2e绕过)+pop越界fail-fast契约docstring声明
+importlib/_bootstrap.py::_install:1546,confluence,0,,high,semantic,6行全窗自举安装
+importlib/_bootstrap_external.py::_compile_bytecode:779,anchor,0,,high,semantic,11行全窗：marshal本地pyc信任边界+类型检查
+importlib/_bootstrap_external.py::FileLoader.get_data:1211,random,0,,high,semantic,8行全窗：open_code审计路径分派语义正确
+logging/config.py::_strip_spaces:108,confluence,0,,high,semantic,2行map迭代器标准风格
+logging/handlers.py::SocketHandler.makePickle:649,anchor,0,,medium,semantic,21行全窗：#14436/#25685兼容修复链完整；pickle固有风险属接收端
+logging/handlers.py::QueueListener.enqueue_sentinel:1608,random,0,,high,semantic,9行全窗put_nowait哨兵+可覆写文档
+logging/__init__.py::Logger.getChild:1784,random,0,,high,semantic,18行全窗：root边界(不加前缀)处理正确
+multiprocessing/connection.py::_ConnectionBase.__exit__:267,random,0,,high,semantic,2行close委托
+multiprocessing/connection.py::XmlListener.accept:1019,anchor,0,,high,semantic,5行全窗：延迟导入+ConnectionWrapper
+multiprocessing/managers.py::BarrierProxy.abort:1116,zero_cover,0,,high,semantic,2行_callmethod委托
+multiprocessing/spawn.py::get_preparation_data:160,anchor,0,,high,semantic,45行全窗：__spec__优先分派+win特例+相对路径absolutize(v1 medium升high)
+multiprocessing/synchronize.py::Condition._make_methods:242,random,0,,high,semantic,3行方法绑定
+site-packages/pip/_internal/build_env.py::InprocessBuildEnvironmentInstaller.install:320,anchor,0,,medium,semantic,51行全窗：嵌套计数异常路径恢复+错误分级处理链完整(v1 version-miss，材料对齐消化)
+site-packages/pip/_internal/cli/cmdoptions.py::editable:575,random,0,,high,semantic,13行全窗选项声明(版本对齐)
+site-packages/pip/_internal/index/package_finder.py::LinkEvaluator.get_version_sort_key:283,zero_cover,0,,medium,semantic,2行全窗；非数字段跳过致排序键碰撞在heuristic用途内可容忍
+site-packages/pip/_internal/models/link.py::Link.path:455,zero_cover,0,,high,semantic,2行property
+site-packages/pip/_internal/operations/build/wheel.py::build_wheel_pep517:13,confluence,0,,medium,semantic,26行全窗：宽捕获与None返回契约一致，不吞KeyboardInterrupt/SystemExit
+site-packages/pip/_internal/req/constructors.py::parse_editable:148,confluence,0,,high,semantic,32行全窗：双语法解析分派(direct_url优先+pip语法fallback)+Link校验(v1读到的是25.0.1旧实现，25.1+重构后结构自洽)
+site-packages/pip/_internal/req/constructors.py::deduce_helpful_msg:210,random,0,,high,semantic,23行全窗纯消息构造
+site-packages/pip/_internal/req/req_file.py::handle_requirement_line:175,confluence,0,,medium,semantic,32行全窗：editable/普通两套选项过滤自洽
+site-packages/pip/_internal/utils/glibc.py::glibc_version_string:7,random,0,,high,semantic,3行双探测(confstr or ctypes)
+site-packages/pip/_internal/utils/misc.py::is_installable_dir:287,confluence,0,,high,semantic,15行全窗+docstring理由链
+site-packages/pip/_internal/utils/temp_dir.py::TempDirectoryTypeRegistry.set_delete:54,random,0,,high,semantic,5行字典赋值
+site-packages/pip/_vendor/cachecontrol/serialize.py::Serializer.dumps:20,random,0,,medium,semantic,41行全窗：response重置副作用有注释契约；私有属性访问vendored锁版本可控
+site-packages/pip/_vendor/distlib/util.py::proceed:322,random,0,,medium,semantic,14行全窗：交互循环边界(空输入/默认值/首字符校验)自洽
+site-packages/pip/_vendor/distro/distro.py::LinuxDistribution._lsb_release_info:1154,anchor,0,,high,semantic,17行全窗：降级链完整(OSError/CalledProcessError归空dict)——v1 identity-miss消化
+site-packages/pip/_vendor/distro/distro.py::LinuxDistribution._oslevel_info:1209,anchor,0,,high,semantic,8行全窗同模式降级链
+site-packages/pip/_vendor/idna/core.py::check_bidi:70,confluence,0,,high,semantic-truncated,60/68窗：RFC5893规则1-5逐条在位+未知方向性fail-fast——IDN安全正路
+site-packages/pip/_vendor/packaging/pylock.py::is_valid_pylock_path:73,zero_cover,0,,medium,semantic,3行窗谓词清晰；正则定义未入窗(v1 version-miss消化)
+site-packages/pip/_vendor/packaging/specifiers.py::_UpperBound.__lt__:213,random,0,,high,semantic,"12行全窗：无穷+同点开闭序(v)<[v]数学正确(v1 version-miss消化,25.1+新码)"
+site-packages/pip/_vendor/packaging/specifiers.py::Specifier._require_spec_version:623,zero_cover,0,,medium,semantic,9行全窗assert契约+docstring调用条件说明
+site-packages/pip/_vendor/pkg_resources/__init__.py::Distribution._dep_map:3029,zero_cover,0,,medium,semantic,10行全窗缓存惯用法+子类覆写分离正确
+site-packages/pip/_vendor/platformdirs/windows.py::get_win_folder_from_env_vars:143,confluence,0,,high,semantic,19行全窗三级错误链(未知CSIDL/未设变量)明确
+site-packages/pip/_vendor/pygments/lexers/__init__.py::guess_lexer:304,confluence,0,,medium,semantic,37行全窗：评分循环+modeline优先+编码兜底自洽
+site-packages/pip/_vendor/rich/highlighter.py::_combine_regex:8,confluence,0,,high,semantic,7行全窗join OR语义正确，调用方固定列表保证合法性
+site-packages/pip/_vendor/rich/_win32_console.py::SetConsoleCursorPosition:252,zero_cover,0,,high,semantic,13行全窗ctypes包装+调用者群语义一致
+site-packages/pip/_vendor/urllib3/_base_connection.py::BaseHTTPConnection.connect:75,zero_cover,0,,high,semantic,1行协议存根(...)语义明确(v1 version-miss消化)
+site-packages/pip/_vendor/urllib3/_base_connection.py::BaseHTTPConnection.close:95,zero_cover,0,,high,semantic,1行协议存根(v1 version-miss消化)
+site-packages/pip/_vendor/urllib3/_collections.py::HTTPHeaderDictItemView.__contains__:196,zero_cover,0,,high,semantic,"6行全窗：类型防御完整(非str,str二元组归False不抛)"
+site-packages/pip/_vendor/urllib3/http2/connection.py::HTTP2Connection.set_tunnel:215,zero_cover,0,,high,semantic,10行全窗：显式NotImplementedError而非静默错误行为
+site-packages/pip/_vendor/urllib3/util/connection.py::create_connection:27,confluence,0,,high,semantic-truncated,60/64窗：idna预校验+地址族循环+错误归集链完整
+tomllib/_parser.py::make_safe_parse_float:685,zero_cover,0,,high,semantic,19行全窗：parse_float类型污染防御(dict/list拒绝)+默认float快路径
+xml/dom/xmlbuilder.py::DOMBuilder.parse:187,anchor,0,,high,semantic,9行全窗：systemId属调用方信任边界(InputSource构造方)+entityResolver定制点在位
+xml/etree/ElementPath.py::findall:410,random,0,,high,semantic,2行委托iterfind
+xml/sax/xmlreader.py::IncrementalParser.parse:115,random,0,,medium,semantic,11行全窗：流归一后阻塞契约内while-walrus语义正确(v1 thin-None消化)
+zipfile/__init__.py::ZipFile.read:1618,zero_cover,0,,high,semantic,5行全窗：with资源管理+pwd透传(v1 identity-miss消化)
+zoneinfo/_zoneinfo.py::ZoneInfo.dst:112,random,0,,high,semantic,2行全窗_find_trans委托(v1窗=类头声明)
+zoneinfo/_zoneinfo.py::ZoneInfo._file_reduce:212,anchor,0,,high,semantic,6行全窗：显式PicklingError防不可逆状态pickle(v1 identity-uncertain消化)
+_pyrepl/historical_reader.py::isearch_end.do:205,zero_cover,0,,high,semantic,6行全窗：搜索模式收尾状态复位链完整(v1 version-miss消化)
+_pyrepl/pager.py::pipe_pager:127,anchor,0,,medium,semantic,36行全窗：shell=True属本地信任边界(PAGER)+escape_less防提示符注入+中断容忍链注释完整
+_pyrepl/reader.py::Reader.update_cursor:567,zero_cover,0,,high,semantic,4行全窗pos2xy+move_cursor委托

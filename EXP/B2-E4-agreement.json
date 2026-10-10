@@ -1,0 +1,126 @@
+{
+ "n_units": 100,
+ "judges": {
+  "judgeA-hy4": {
+   "one": 2,
+   "zero": 88,
+   "none": 10,
+   "one_rate_wilson": [
+    0.0055,
+    0.07
+   ]
+  },
+  "judgeB-qwen3.8max": {
+   "one": 11,
+   "zero": 75,
+   "none": 14,
+   "one_rate_wilson": [
+    0.0625,
+    0.1863
+   ]
+  },
+  "judgeC": {
+   "one": 4,
+   "zero": 96,
+   "none": 0,
+   "one_rate_wilson": [
+    0.0157,
+    0.0984
+   ]
+  }
+ },
+ "pairwise": {
+  "judgeA-hy4|judgeB-qwen3.8max": {
+   "hard": "71/82",
+   "hard_rate": 0.8659,
+   "full": "77/100",
+   "full_rate": 0.77,
+   "pos_intersection": [],
+   "pos_union": 13
+  },
+  "judgeA-hy4|judgeC": {
+   "hard": "88/90",
+   "hard_rate": 0.9778,
+   "full": "88/100",
+   "full_rate": 0.88,
+   "pos_intersection": [
+    "4",
+    "72"
+   ],
+   "pos_union": 4
+  },
+  "judgeB-qwen3.8max|judgeC": {
+   "hard": "73/86",
+   "hard_rate": 0.8488,
+   "full": "73/100",
+   "full_rate": 0.73,
+   "pos_intersection": [],
+   "pos_union": 15
+  }
+ },
+ "alpha": {
+  "all": 0.18693327133224835,
+  "units_used": 94,
+  "ci95_stratified_bootstrap": [
+   -0.0593,
+   0.4531
+  ],
+  "bootstrap_reps": 1000
+ },
+ "ac1": {
+  "all": 0.8954667859693198
+ },
+ "degenerate": {
+  "triggered": false,
+  "rule": "阳性合并计数 <5 → α/κ 分母趋零退化，改报一致率+Wilson，并判「域内缺陷密度低于本设计分辨力」",
+  "total_positive_labels": 17
+ },
+ "positive": {
+  "intersection_all": [],
+  "union_all": [
+   "12",
+   "18",
+   "20",
+   "25",
+   "26",
+   "31",
+   "33",
+   "37",
+   "4",
+   "5",
+   "55",
+   "62",
+   "72",
+   "93",
+   "96"
+  ],
+  "union_size": 15,
+  "total_positive_labels": 17
+ },
+ "by_layer": {
+  "anchor": {
+   "n": 25,
+   "alpha": 0.47619047619047616,
+   "none_rate": 0.0933,
+   "none_gt_40pct": false
+  },
+  "confluence": {
+   "n": 20,
+   "alpha": -0.05999999999999983,
+   "none_rate": 0.0833,
+   "none_gt_40pct": false
+  },
+  "random": {
+   "n": 30,
+   "alpha": 0.28828828828828823,
+   "none_rate": 0.0889,
+   "none_gt_40pct": false
+  },
+  "zero_cover": {
+   "n": 25,
+   "alpha": -0.030303030303030276,
+   "none_rate": 0.0533,
+   "none_gt_40pct": false
+  }
+ }
+}

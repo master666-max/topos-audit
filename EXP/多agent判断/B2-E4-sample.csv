@@ -1,0 +1,101 @@
+﻿seq,unit_id,file,name,lineno,loc,stratum,in_pools,anchor_tags,forman,evidence_hint,truth,defect_type,annotator,date,source_layer
+1,argparse.py::_ActionsContainer._add_action:1529,argparse.py,_ActionsContainer._add_action,1529,20,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+2,ast.py::_Unparser.escape_char:1209,ast.py,_Unparser.escape_char,1209,9,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+3,codeop.py::_maybe_compile:50,codeop.py,_maybe_compile,50,26,confluence,,,-224,曲率汇合点 forman=-224,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+4,compileall.py::compile_file:132,compileall.py,compile_file,132,148,random,p_big1,,-386,随机层（无偏基线）,1,boundary,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+5,dataclasses.py::_update_func_cell_for__class__:1222,dataclasses.py,_update_func_cell_for__class__,1222,27,confluence,,,-183,曲率汇合点 forman=-183,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+6,enum.py::Enum.__new__:1158,enum.py,Enum.__new__,1158,60,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+7,fileinput.py::isstdin:162,fileinput.py,isstdin,162,8,random,,,-20,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+8,functools.py::partial.__setstate__:330,functools.py,partial.__setstate__,330,23,random,,,-39,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+9,functools.py::is_related:767,functools.py,is_related,767,4,zero_cover,,,-4,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+10,glob.py::_Globber.compile:394,glob.py,_Globber.compile,394,2,confluence,,,-129,曲率汇合点 forman=-129,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+11,gzip.py::GzipFile.seek:423,gzip.py,GzipFile.seek,423,22,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+12,imaplib.py::IMAP4.uid:888,imaplib.py,IMAP4.uid,888,23,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+13,inspect.py::getfile:923,inspect.py,getfile,923,27,confluence,,,-239,曲率汇合点 forman=-239,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+14,inspect.py::getfullargspec:1340,inspect.py,getfullargspec,1340,91,confluence,,,-381,曲率汇合点 forman=-381,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+15,ipaddress.py::IPv4Address.is_unspecified:1389,ipaddress.py,IPv4Address.is_unspecified,1389,9,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+16,locale.py::normalize:381,locale.py,normalize,381,82,confluence,p_hot|p_deep_conf,,-393,曲率汇合点 forman=-393,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+17,modulefinder.py::ModuleFinder.import_hook:167,modulefinder.py,ModuleFinder.import_hook,167,10,random,,,-7,随机层（无偏基线）,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+18,netrc.py::netrc._parse:93,netrc.py,netrc._parse,93,63,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+19,os.py::spawnl:961,os.py,spawnl,961,8,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+20,pickle.py::_Unpickler.load_binbytes:1387,pickle.py,_Unpickler.load_binbytes,1387,6,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+21,pickle.py::_Unpickler.find_class:1608,pickle.py,_Unpickler.find_class,1608,13,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+22,pickletools.py::genops:2300,pickletools.py,genops,2300,24,anchor,p_anchor_breadth,import:import_pickle,-8,锚点命中 import:import_pickle,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+23,pickletools.py::OpcodeInfo.__init__:1124,pickletools.py,OpcodeInfo.__init__,1124,27,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+24,pstats.py::ProfileBrowser.do_callers:677,pstats.py,ProfileBrowser.do_callers,677,2,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+25,pyclbr.py::_ModuleBrowser.visit_ImportFrom:248,pyclbr.py,_ModuleBrowser.visit_ImportFrom,248,19,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+26,pydoc.py::TextRepr.repr_instance:1259,pydoc.py,TextRepr.repr_instance,1259,5,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+27,shutil.py::_rmtree_unsafe:608,shutil.py,_rmtree_unsafe,608,28,confluence,,,-367,曲率汇合点 forman=-367,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+28,socketserver.py::TCPServer.get_request:505,socketserver.py,TCPServer.get_request,505,7,random,,,,随机层（无偏基线）,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+29,socketserver.py::_SocketWriter.writable:841,socketserver.py,_SocketWriter.writable,841,2,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+30,subprocess.py::check_output:423,subprocess.py,check_output,423,51,anchor,p_anchor_breadth,import:import_subprocess,-217,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+31,tarfile.py::TarInfo._proc_gnusparse_01:1613,tarfile.py,TarInfo._proc_gnusparse_01,1613,5,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+32,tarfile.py::TarFile.makelink_with_filter:2677,tarfile.py,TarFile.makelink_with_filter,2677,52,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+33,tokenize.py::main:502,tokenize.py,main,502,62,random,,,-154,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+34,typing.py::_compare_args_orderless:368,typing.py,_compare_args_orderless,368,10,random,,,-147,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+35,uuid.py::_is_universal:409,uuid.py,_is_universal,409,2,zero_cover,,,-8,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+36,weakref.py::WeakValueDictionary.popitem:252,weakref.py,WeakValueDictionary.popitem,252,8,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+37,webbrowser.py::register_standard_browsers:491,webbrowser.py,register_standard_browsers,491,87,anchor,p_anchor_breadth,import:import_subprocess,-372,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+38,webbrowser.py::GenericBrowser.open:188,webbrowser.py,GenericBrowser.open,188,13,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+39,webbrowser.py::Konqueror.open:369,webbrowser.py,Konqueror.open,369,45,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+40,_aix_support.py::_aix_bos_rte:42,_aix_support.py,_aix_bos_rte,42,19,anchor,p_anchor_breadth,import:import_subprocess,-226,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+41,_collections_abc.py::MutableSequence.pop:1167,_collections_abc.py,MutableSequence.pop,1167,7,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+42,_pydatetime.py::time.__le__:1428,_pydatetime.py,time.__le__,1428,5,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+43,_pydecimal.py::Decimal.compare:840,_pydecimal.py,Decimal.compare,840,17,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+44,_pyio.py::TextIOWrapper.errors:2121,_pyio.py,TextIOWrapper.errors,2121,2,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+45,_strptime.py::parse_int:574,_strptime.py,parse_int,574,5,random,,,-27,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+46,asyncio/base_events.py::_format_pipe:80,asyncio/base_events.py,_format_pipe,80,7,anchor,p_anchor_breadth,import:import_subprocess,-55,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+47,asyncio/base_events.py::BaseEventLoop._log_subprocess:1736,asyncio/base_events.py,BaseEventLoop._log_subprocess,1736,12,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+48,asyncio/events.py::AbstractEventLoop.subprocess_exec:542,asyncio/events.py,AbstractEventLoop.subprocess_exec,542,6,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+49,asyncio/futures.py::wrap_future:406,asyncio/futures.py,wrap_future,406,11,zero_cover,,,-13,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+50,asyncio/locks.py::Lock.__repr__:79,asyncio/locks.py,Lock.__repr__,79,6,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+51,asyncio/locks.py::BoundedSemaphore.release:462,asyncio/locks.py,BoundedSemaphore.release,462,4,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+52,asyncio/transports.py::SubprocessTransport.get_returncode:207,asyncio/transports.py,SubprocessTransport.get_returncode,207,7,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+53,asyncio/transports.py::SubprocessTransport.kill:241,asyncio/transports.py,SubprocessTransport.kill,241,10,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+54,asyncio/unix_events.py::_UnixSelectorEventLoop._make_subprocess_transport:198,asyncio/unix_events.py,_UnixSelectorEventLoop._make_subprocess_transport,198,32,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+55,collections/__init__.py::namedtuple:358,collections/__init__.py,namedtuple,358,173,anchor,p_anchor_breadth|p_big1,sink:eval|import:import_pickle,-222,"锚点命中 sink:eval, import:import_pickle",0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+56,ctypes/util.py::_findLib_gcc:114,ctypes/util.py,_findLib_gcc,114,48,anchor,p_anchor_breadth,import:import_subprocess,,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+57,email/contentmanager.py::_encode_base64:136,email/contentmanager.py,_encode_base64,136,7,confluence,,,-380,曲率汇合点 forman=-380,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+58,email/feedparser.py::BufferedSubFile.unreadline:97,email/feedparser.py,BufferedSubFile.unreadline,97,4,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+59,email/feedparser.py::BufferedSubFile.pushlines:123,email/feedparser.py,BufferedSubFile.pushlines,123,2,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+60,email/feedparser.py::FeedParser._new_message:197,email/feedparser.py,FeedParser._new_message,197,12,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+61,email/message.py::MIMEPart._add_multipart:1183,email/message.py,MIMEPart._add_multipart,1183,9,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+62,email/_header_value_parser.py::get_local_part:1486,email/_header_value_parser.py,get_local_part,1486,38,confluence,p_hot|p_deep_conf,,-407,曲率汇合点 forman=-407,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+63,email/mime/audio.py::rule:68,email/mime/audio.py,rule,68,3,confluence,,,-376,曲率汇合点 forman=-376,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+64,email/mime/audio.py::_au:84,email/mime/audio.py,_au,84,5,confluence,,,-209,曲率汇合点 forman=-209,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+65,encodings/koi8_r.py::IncrementalEncoder.encode:18,encodings/koi8_r.py,IncrementalEncoder.encode,18,2,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+66,encodings/utf_16.py::IncrementalEncoder.reset:33,encodings/utf_16.py,IncrementalEncoder.reset,33,3,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+67,ensurepip/__init__.py::_run_pip:65,ensurepip/__init__.py,_run_pip,65,24,anchor,p_anchor_breadth,import:import_subprocess,-29,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+68,http/client.py::LineTooLong.__init__:1569,http/client.py,LineTooLong.__init__,1569,3,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+69,http/cookies.py::Morsel.__ior__:344,http/cookies.py,Morsel.__ior__,344,3,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+70,http/server.py::_url_collapse_path:922,http/server.py,_url_collapse_path,922,45,confluence,,,-380,曲率汇合点 forman=-380,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+71,http/server.py::HTTPServer.server_bind:138,http/server.py,HTTPServer.server_bind,138,6,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+72,http/server.py::CGIHTTPRequestHandler.run_cgi:1074,http/server.py,CGIHTTPRequestHandler.run_cgi,1074,196,anchor,p_anchor_breadth|p_big1,import:import_subprocess,,锚点命中 import:import_subprocess,1,logic,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+73,importlib/_bootstrap.py::_install:1546,importlib/_bootstrap.py,_install,1546,6,confluence,,,-377,曲率汇合点 forman=-377,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+74,importlib/resources/readers.py::NamespaceReader._resolve_zip_path:165,importlib/resources/readers.py,NamespaceReader._resolve_zip_path,165,10,random,,,,随机层（无偏基线）,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+75,logging/config.py::_strip_spaces:108,logging/config.py,_strip_spaces,108,2,confluence,,,-227,曲率汇合点 forman=-227,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+76,logging/handlers.py::SocketHandler.makePickle:649,logging/handlers.py,SocketHandler.makePickle,649,21,anchor,p_anchor_breadth,import:import_pickle,,锚点命中 import:import_pickle,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+77,logging/__init__.py::_checkLevel:205,logging/__init__.py,_checkLevel,205,11,confluence,,,-172,曲率汇合点 forman=-172,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+78,multiprocessing/connection.py::XmlListener.accept:1019,multiprocessing/connection.py,XmlListener.accept,1019,5,anchor,p_anchor_breadth,import:import_xmlrpclib,,锚点命中 import:import_xmlrpclib,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+79,multiprocessing/pool.py::ApplyResult.wait:764,multiprocessing/pool.py,ApplyResult.wait,764,2,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+80,multiprocessing/spawn.py::get_preparation_data:160,multiprocessing/spawn.py,get_preparation_data,160,45,anchor,p_anchor_breadth,import:import_subprocess,-370,锚点命中 import:import_subprocess,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+81,multiprocessing/synchronize.py::Condition.__setstate__:231,multiprocessing/synchronize.py,Condition.__setstate__,231,4,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+82,unittest/case.py::_AssertRaisesBaseContext.handle:214,unittest/case.py,_AssertRaisesBaseContext.handle,214,28,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+83,unittest/mock.py::MagicMixin._mock_set_magics:2179,unittest/mock.py,MagicMixin._mock_set_magics,2179,21,random,,,,随机层（无偏基线）,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+84,unittest/mock.py::MagicProxy.__init__:2253,unittest/mock.py,MagicProxy.__init__,2253,3,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+85,unittest/mock.py::_exit_side_effect:2994,unittest/mock.py,_exit_side_effect,2994,2,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+86,unittest/mock.py::ThreadingMixin._get_child_mock:3062,unittest/mock.py,ThreadingMixin._get_child_mock,3062,6,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+87,unittest/result.py::TestResult._setupStdout:65,unittest/result.py,TestResult._setupStdout,65,7,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+88,urllib/parse.py::_NetlocResultMixinStr._hostinfo:206,urllib/parse.py,_NetlocResultMixinStr._hostinfo,206,12,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+89,wsgiref/handlers.py::read_environ:34,wsgiref/handlers.py,read_environ,34,58,confluence,,,-214,曲率汇合点 forman=-214,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+90,xml/dom/expatbuilder.py::_parse_ns_name:114,xml/dom/expatbuilder.py,_parse_ns_name,114,17,confluence,,,-221,曲率汇合点 forman=-221,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+91,xml/dom/minidom.py::Node._get_lastChild:78,xml/dom/minidom.py,Node._get_lastChild,78,3,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+92,xml/dom/xmlbuilder.py::DOMBuilder._parse_bytestream:202,xml/dom/xmlbuilder.py,DOMBuilder._parse_bytestream,202,4,anchor,p_anchor_breadth,import:import_xml_expat,,锚点命中 import:import_xml_expat,None,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+93,xml/etree/ElementInclude.py::_include:132,xml/etree/ElementInclude.py,_include,132,55,confluence,,,-220,曲率汇合点 forman=-220,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+94,xmlrpc/client.py::Unmarshaller.end_value:782,xmlrpc/client.py,Unmarshaller.end_value,782,5,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+95,xmlrpc/server.py::SimpleXMLRPCDispatcher.register_introspection_functions:225,xmlrpc/server.py,SimpleXMLRPCDispatcher.register_introspection_functions,225,10,anchor,p_anchor_breadth,import:import_xmlrpclib,,锚点命中 import:import_xmlrpclib,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+96,zipfile/__init__.py::main:2316,zipfile/__init__.py,main,2316,68,confluence,,,-381,曲率汇合点 forman=-381,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+97,zipfile/_path/glob.py::Translator.restrict_rglob:77,zipfile/_path/glob.py,Translator.restrict_rglob,77,13,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+98,zoneinfo/_tzpath.py::_validate_tzfile_path:92,zoneinfo/_tzpath.py,_validate_tzfile_path,92,21,confluence,,,-366,曲率汇合点 forman=-366,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+99,zoneinfo/_zoneinfo.py::_TZStr._get_trans_info:465,zoneinfo/_zoneinfo.py,_TZStr._get_trans_info,465,23,random,,,,随机层（无偏基线）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
+100,_pyrepl/unix_console.py::UnixConsole.__move_x_hpa:759,_pyrepl/unix_console.py,UnixConsole.__move_x_hpa,759,3,zero_cover,,,,零覆盖：不在任何池内（盲区核查）,0,,"L4-control:Otto(single-rater,no-kappa)",2026-10-10,L4-control
