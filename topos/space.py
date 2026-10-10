@@ -32,13 +32,21 @@ class Space:
         manifest_dir = os.path.dirname(self.manifest_path)
 
         # ① 底空间（语言后端：py=AST 件 [M]；js=正则级 [U]，PREREG/M5 D-A）
+        # v0.2③：manifest 顶层 exclude_tests=true → 装配最上游滤测试单元
+        # （单元/边/图全在过滤后的集合上重建，下游零感知；图级豁免——
+        #   测试代码对融合图的几何污染一并消除）
         self.lang = lang
         if lang == "js":
             from topos.core import langjs
             self.units = langjs.discover_units_js(self.root)
-            self.layers = langjs.extract_layers_js(self.root, self.units)
         else:
             self.units = units_mod.discover_units(self.root)
+        if self.manifest.get("exclude_tests"):
+            self.units = [u for u in self.units
+                          if not units_mod.is_test_unit(u)]
+        if lang == "js":
+            self.layers = langjs.extract_layers_js(self.root, self.units)
+        else:
             self.layers = _extract_layers(self.root, self.units)
         self.n = len(self.units)
         self.alpha = self.manifest.get("layers", {})

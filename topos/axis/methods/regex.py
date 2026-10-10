@@ -10,6 +10,7 @@ import os
 import re
 
 from topos.axis.registry import field_method
+from topos.core.units import is_test_unit
 
 
 def _load_patterns(params, base_dir=None):
@@ -32,23 +33,12 @@ def regex_field(units, params, ctx):
     ex = bool(params.get("exclude_tests"))
     out = {}
     for i, u in enumerate(units):
-        if ex and _is_test_unit(u):
+        if ex and is_test_unit(u):
             continue
         out[i] = [t for t, pat in pats if pat.search(u["src"])]
     return out
 
 
 def _is_test_unit(u):
-    """测试文件启发：路径段 test(s)/testing/spec(s)/__tests__、conftest.py、
-    或文件名 token 化后含 test/tests（dsh_tests.py → [dsh, tests] 命中；
-    latest.py → [latest] 不误伤）。"""
-    f = (u.get("file") or "").replace("\\", "/").lower()
-    segs = f.split("/")
-    if segs[-1] == "conftest.py":
-        return True
-    if any(s in ("tests", "test", "testing", "spec", "specs", "__tests__")
-           for s in segs[:-1]):
-        return True
-    stem = segs[-1][:-3] if segs[-1].endswith(".py") else segs[-1]
-    tokens = re.split(r"[_.\-]+", stem)
-    return "test" in tokens or "tests" in tokens
+    """兼容别名（单源已上移 topos.core.units.is_test_unit）。"""
+    return is_test_unit(u)

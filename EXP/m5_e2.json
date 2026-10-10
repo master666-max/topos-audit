@@ -9,8 +9,8 @@
    "n_joern_edges_resolved": 26861,
    "n_gold_mapped": 217,
    "n_gold_unmapped": 26435,
-   "n_topos_edges": 252,
-   "n_intersect": 187,
+   "n_topos_edges": 134,
+   "n_intersect": 132,
    "gold_pairs": [
     "cli/baseline.py::main:39 -> cli/baseline.py::baseline_setup:135",
     "cli/baseline.py::main:39 -> cli/baseline.py::init_logger:146",
@@ -230,47 +230,38 @@
     "plugins/weak_cryptographic_key.py::_weak_crypto_key_size_cryptography_io:90 -> plugins/weak_cryptographic_key.py::weak_cryptographic_key:162",
     "plugins/weak_cryptographic_key.py::_weak_crypto_key_size_pycrypto:142 -> plugins/weak_cryptographic_key.py::weak_cryptographic_key:162"
    ],
-   "n_gap": 62,
-   "n_fp": 3,
+   "n_gap": 2,
+   "n_fp": 0,
    "n_gold_bug": 0,
-   "n_manual_overridden": 3,
-   "manual_overridden": [
-    "cli/config_generator.py::parse_args:62 -> cli/main.py::main:134 => fp",
-    "core/issue.py::issue_from_dict:242 -> core/issue.py::Cwe.from_dict:63 => fp",
-    "core/test_properties.py::checks:12 -> core/utils.py::check_ast_node:370 => fp"
-   ],
-   "precision_v13": 0.9881,
+   "n_manual_overridden": 0,
+   "manual_overridden": [],
+   "precision_v13": 1.0,
    "v13_sampling": {
-    "n": 7,
+    "n": 2,
     "all_pass": true,
     "samples": [
-     "gen_blacklist:346 -> build_conf_dict:8  [OK]  utils.build_conf_dict(",
-     "gen_blacklist:234 -> build_conf_dict:8  [OK]  utils.build_conf_dict(",
-     "get_config_settings:124 -> gen_config:62  [OK]  config[fn_name] = fn_module.gen_config(function._takes_config)",
-     "main:142 -> Manager.check_id:102  [OK]  if not extension_loader.MANAGER.check_id(skip):",
-     "_get_options_from_ini:46 -> Issue.filter:147  [OK]  for filename in fnmatch.filter(filenames, \".bandit\"):",
-     "_get_options_from_ini:46 -> parse_ini_file:355  [OK]  return utils.parse_ini_file(ini_file)",
-     "main:134 -> BanditConfig.get_option:84  [OK]  if b_conf.get_option(\"log_format\"):"
+     "main:134 -> Issue.filter:147  [OK]  for f in filter(",
+     "Manager.load_plugins:37 -> Issue.filter:147  [OK]  self.plugins = list(filter(test_has_id, list(self.plugins_mgr)))"
     ]
    },
-   "precision": 0.7421,
-   "recall": 0.8618,
+   "precision": 0.9851,
+   "recall": 0.6083,
    "map_exact": 25640,
    "map_contain": 42,
-   "miss_in_universe": 30,
+   "miss_in_universe": 85,
    "miss_sample": [
+    "cli/main.py::_get_profile:111 -> core/config.py::BanditConfig.get_option:84",
     "core/config.py::BanditConfig.get_option:84 -> core/config.py::BanditConfig.convert_names_to_ids:146",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/app_debug.py::flask_debug_true:51",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/crypto_request_no_cert_validation.py::request_with_no_cert_validation:56",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/huggingface_unsafe_download.py::huggingface_unsafe_download:72",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/injection_shell.py::subprocess_popen_with_shell_equals_true:110",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/injection_shell.py::subprocess_without_shell_equals_true:237",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/injection_shell.py::any_other_function_with_shell_equals_true:323",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/injection_wildcard.py::linux_commands_wildcard_injection:113",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/insecure_ssl_tls.py::ssl_with_no_version:225",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/pytorch_load.py::pytorch_load:52",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/snmp_security_check.py::snmp_insecure_version_check:12",
-    "core/context.py::Context.get_lineno_for_call_arg:250 -> plugins/snmp_security_check.py::snmp_crypto_check:63"
+    "core/config.py::BanditConfig.get_option:84 -> core/test_set.py::BanditTestSet._load_tests:88",
+    "core/context.py::Context.get_call_arg_value:218 -> plugins/huggingface_unsafe_download.py::huggingface_unsafe_download:72",
+    "core/context.py::Context.get_call_arg_value:218 -> plugins/pytorch_load.py::pytorch_load:52",
+    "core/context.py::Context.get_call_arg_value:218 -> plugins/weak_cryptographic_key.py::_weak_crypto_key_size_cryptography_io:90",
+    "core/context.py::Context.get_call_arg_value:218 -> plugins/weak_cryptographic_key.py::_weak_crypto_key_size_pycrypto:142",
+    "core/context.py::Context.check_call_arg_value:227 -> plugins/app_debug.py::flask_debug_true:51",
+    "core/context.py::Context.check_call_arg_value:227 -> plugins/crypto_request_no_cert_validation.py::request_with_no_cert_validation:56",
+    "core/context.py::Context.check_call_arg_value:227 -> plugins/injection_wildcard.py::linux_commands_wildcard_injection:113",
+    "core/context.py::Context.check_call_arg_value:227 -> plugins/insecure_ssl_tls.py::ssl_with_bad_version:34",
+    "core/context.py::Context.check_call_arg_value:227 -> plugins/insecure_ssl_tls.py::ssl_with_no_version:225"
    ]
   },
   "js": {
@@ -320,7 +311,7 @@
  },
  "judged": {
   "D_M5_2a": true,
-  "D_M5_2b": false,
+  "D_M5_2b": true,
   "D_M5_2c": false,
   "D_M5_2b_v13": true,
   "D_M5_2c_v13": true

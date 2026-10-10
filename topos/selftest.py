@@ -17,7 +17,7 @@ import shutil
 import tempfile
 import traceback
 
-from topos.core.units import discover_units
+from topos.core.units import discover_units, is_test_unit
 from topos.core.layers import _extract_layers
 from topos.core.fuse import fuse
 from topos.core.embed import diffusion_embedding
@@ -683,6 +683,78 @@ def _write_belief(workdir, bel):
     return p
 
 
+def c30_owner_attribution(workdir):
+    """v0.2②档1：F3-py owner 归属 + 点链解析规则（self/别名/不猜）。"""
+    root = os.path.join(workdir, "own")
+    os.makedirs(root)
+    with open(os.path.join(root, "mod.py"), "w", encoding="utf-8") as f:
+        f.write("def outer():\n"
+                "    def inner():\n"
+                "        return helper()\n"
+                "    return inner()\n"
+                "\n"
+                "def helper():\n"
+                "    return 1\n")
+    with open(os.path.join(root, "mod2.py"), "w", encoding="utf-8") as f:
+        f.write("import util\n\n\ndef g():\n    return util.h()\n\n\n"
+                "def g2(x):\n    return x.h()\n")
+    with open(os.path.join(root, "util.py"), "w", encoding="utf-8") as f:
+        f.write("def h():\n    return 0\n")
+    us = discover_units(root)
+    ly = _extract_layers(root, us)
+    call = ly["call"]
+
+    def uid(f, n):
+        for k, u in enumerate(us):
+            if u["file"] == f and u["name"] == n:
+                return k
+        raise AssertionError("unit not found %s/%s" % (f, n))
+
+    o, inner, helper = uid("mod.py", "outer"), uid("mod.py", "inner"), \
+        uid("mod.py", "helper")
+    g, g2, h = uid("mod2.py", "g"), uid("mod2.py", "g2"), uid("util.py", "h")
+
+    def pair(x, y):
+        return (min(x, y), max(x, y))
+
+    assert pair(o, inner) in call                    # 外层调内层 ✓
+    assert pair(inner, helper) in call               # 嵌套内调用归嵌套 ✓
+    assert pair(o, helper) not in call, "F3-py 嵌套归因泄漏"
+    assert pair(g, h) in call, "import 别名点链未解析"
+    assert pair(g2, h) not in call, "非别名链头仍在猜（可少不可假违反）"
+
+
+def c31_exclude_tests_space(workdir):
+    """v0.2③：manifest 顶层 exclude_tests → Space 装配级图豁免。"""
+    import json as _json
+    root = os.path.join(workdir, "ext")
+    os.makedirs(os.path.join(root, "tests"))
+    with open(os.path.join(root, "a.py"), "w", encoding="utf-8") as f:
+        f.write("def real():\n    return eval('1')\n")
+    with open(os.path.join(root, "tests", "test_a.py"), "w",
+              encoding="utf-8") as f:
+        f.write("def test_real():\n    return eval('2')\n")
+    mf = {"version": 3, "layers": {"call": 1.0},
+          "fields": [{"name": "anchor", "method": "regex",
+                      "params": {"patterns": [["sink:eval", r"\beval\s*\("]]}}],
+          "slicers": [], "pools": []}
+    on, off = os.path.join(workdir, "mf_on.json"), \
+        os.path.join(workdir, "mf_off.json")
+    m_on = dict(mf)
+    m_on["exclude_tests"] = True
+    with open(on, "w", encoding="utf-8") as f:
+        _json.dump(m_on, f)
+    with open(off, "w", encoding="utf-8") as f:
+        _json.dump(mf, f)
+    s_on = Space(root, manifest_path=on)
+    s_off = Space(root, manifest_path=off)
+    assert all(not is_test_unit(u) for u in s_on.units), "豁免后仍有测试单元"
+    assert any(is_test_unit(u) for u in s_off.units), "未豁免应含测试单元"
+    assert len(s_on.units) < len(s_off.units)
+
+
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -713,9 +785,9 @@ CHECKS = [
     ("c27 JS 抽取（单元/require 边/eval veto）", c27_js_extraction),
     ("c28 JS 链微缩（space→next 零退出）", c28_js_chain),
     ("c29 MD 报告渲染（W5④：schema+必填诊断+后验表）", c29_md_render),
+    ("c30 owner 归属 + 点链解析（F3-py/self/别名/不猜）", c30_owner_attribution),
+    ("c31 装配级测试豁免（图级 exclude_tests）", c31_exclude_tests_space),
 ]
-
-
 def run_all(verbose=True):
     workdir = tempfile.mkdtemp(prefix="topos-selftest-")
     ok = 0

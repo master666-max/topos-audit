@@ -92,3 +92,23 @@ str(TOOLS / script)], …)`——生产代码真实 subprocess 直连 ✓。
 **判读**：测试豁免把读数从「测试脚手架通胀」拉回「生产危险 API 面」——top-12 全部是
 进程管理/环境治理函数（kill_node、pid_alive、port_excluded、run_plugins、action_check），
 这正是 dsh-launcher 作为启动器的真实风险面。v0.2 修复①实战闭环完成。
+
+## 8. RUN1 v1.3 addendum——解析器 v0.2 + 装配级测试豁免（同日第三轮）
+
+改动：layers.py 点链解析器（F3-py owner 归属 + self/import 别名才解析 + bare Name import
+绑定精确解析）+ space.py 装配级 exclude_tests（图级豁免，测试单元及边最上游滤除）。
+selftest c30/c31 → **31/31**。PREREG/M5 v1.4 登记。
+
+| 项 | v1.1 | v1.2 | **v1.3（本轮）** |
+|---|---|---|---|
+| 单元 | 250 | 250 | **169**（装配级豁免） |
+| 融合边 | 762 | 762 | 445 |
+| 零覆盖 | 96.4% | 90.4% | **69.2%** |
+| belief max | 0.9310（测试替身） | 0.3945 | **0.9724（run_heal——编排执行面）** |
+| top-12 构成 | 测试通胀 | 生产面 | **dsh-launcher 编排执行面全占**（图先验扩散到危险操作调用方） |
+| σ NEXT | anchor（10.85） | anchor（6.11） | **p_hot（24.67，池宽修复后最大池回归）** |
+
+**判读**：测试豁免从「anchor 场读数豁免」升级为「图级豁免」后，几何/谱族读数同步对齐
+生产面；图先验把信念扩散到危险操作的**调用方**（run_heal/run_plugins/_spawn_bg_and_wait
+——恰是 §2 信任边界注记点），读数语义与架构认知一致。py 对拍 v1.3 = 1.0000（FP=0）、
+js = 1.0000（FP=0）；**代价如实登记：py recall 0.8618→0.6083**（非别名链头不再猜）。
