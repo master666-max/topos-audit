@@ -96,3 +96,18 @@ python -m topos report-md out/space.json --belief out/belief.json -o out/report.
 | 3 | py 侧 3 条对拍 FP（from_dict / 嵌套归因 / argparse 撞名） | 可选收敛 | 不影响门（v1.3 py 0.9881） |
 | 4 | control/return 层召回欠采 | 已知天花板 | M5 对拍已定量，[M] docstring 声明 |
 | 5 | B2 出口豁免（E-B2-4 缺省层） | 已登记 | WORK-ORDERS 附录 D |
+
+---
+
+## 7. 2026-10-10 晚更新（对账铺平批，e751f0e+）
+
+设计书对账（`EXP/DESIGN-RECON.md`）发现的三处差异**全部铺平**：
+
+- **random 对照轴**：已实现未接线 → 接线默认清单（同种子可复现，c33）
+- **T 族场 2/5**：补 authors / fix_coupling / stability（git_history 单次全仓 log 解析）→ **T 族 5/5**
+- **Fisher 轴准入**：工具化 `topos/axis/admission.py` + CLI `axis-admit`（Δcov / 正相关 ρ / Δlogdet 三读数合看；负 ρ=互补覆盖是组测试的好性质，不算冗余）
+- **py 解析器 v0.2 + 图级测试豁免**：点链解析器（F3-py owner 归属、self/别名才解析、不猜）+ manifest 顶层 exclude_tests → **两靶对拍 v1.3 双 1.0000（FP=0）**，py 注册口径 0.9851 咬合；代价 py recall 0.8618→0.6083 如实披露
+- selftest 29→**34/34**（c30 owner 归属 / c31 装配级豁免 / c32 T 族 / c33 random / c34 准入）
+- RUN1 v1.4 重跑：**10 场全接**，dsh 上 T 族三场 100% 可算（`EXP/run1_dsh/a`）
+
+**剩余欠账（不变）**：L4 人工仲裁 100 单元（~8h 人工）｜ L3 SVEN（对外报数前）｜ forman 豁免已在本批（③方案B）✅

@@ -755,6 +755,74 @@ def c31_exclude_tests_space(workdir):
 
 
 
+def c32_t_family(workdir):
+    """v0.2 T 族三场：authors / fix_coupling / stability（temp git 仓实测）。"""
+    import subprocess
+    from topos.axis.methods.git_history import git_field
+    root = os.path.join(workdir, "trepo")
+    os.makedirs(root)
+    with open(os.path.join(root, "a.py"), "w", encoding="utf-8") as f:
+        f.write("def fa():\n    return 1\n")
+    with open(os.path.join(root, "b.py"), "w", encoding="utf-8") as f:
+        f.write("def fb():\n    return 2\n")
+
+    def git(*a):
+        r = subprocess.run(["git", "-C", root] + list(a), capture_output=True)
+        assert r.returncode == 0, r.stderr
+
+    git("init")
+    git("add", "-A")
+    git("-c", "user.name=U1", "-c", "user.email=u1@t", "commit", "-m", "init")
+    with open(os.path.join(root, "a.py"), "a", encoding="utf-8") as f:
+        f.write("def fa2():\n    return 3\n")
+    with open(os.path.join(root, "b.py"), "a", encoding="utf-8") as f:
+        f.write("def fb2():\n    return 4\n")
+    git("add", "-A")
+    git("-c", "user.name=U2", "-c", "user.email=u2@t", "commit",
+        "-m", "fix bug in fa2/fb2")
+    us = discover_units(root)
+    res = {m: git_field(us, {"metric": m}, {"root": root})
+           for m in ("authors", "fix_coupling", "stability")}
+    for m in ("authors", "fix_coupling", "stability"):
+        assert len(res[m]) == len(us), "%s 有 None（应全部可算）" % m
+    assert all(v >= 2 for v in res["authors"].values()), "双作者应 ≥2"
+    assert all(v >= 1 for v in res["fix_coupling"].values()), "修复耦合应 ≥1"
+    assert all(0.0 <= v <= 1.0 for v in res["stability"].values())
+    assert all(v == 0.0 for v in res["stability"].values()), \
+        "全部提交都在近 90 天 → 稳定性=0"
+
+
+def c33_random_field(workdir):
+    """v0.2 random 对照场：同种子可复现、非常量、异种子不同。"""
+    from topos.axis.methods.random_fields import random_field
+    us = [{"src": ""} for _ in range(5)]
+    r1 = random_field(us, {"seed": 7}, {})
+    r2 = random_field(us, {"seed": 7}, {})
+    r3 = random_field(us, {"seed": 8}, {})
+    assert r1 == r2, "同种子必须可复现"
+    assert len(set(r1.values())) == 5, "连续随机场不应撞值"
+    assert r1 != r3, "不同种子应不同"
+
+
+def c34_axis_admission(workdir):
+    """§4.5 轴准入三读数：新池 Δcov=1/ρ=0/Δlogdet>0；重复池 Δcov=0/|ρ|=1。"""
+    from topos.axis.admission import admit
+    pools = [("P1", [0, 1, 2]), ("P2", [3, 4, 5])]
+    r_new = admit(pools, ("P3", [6, 7, 8]))
+    assert r_new["dcov"] == 1.0
+    assert r_new["max_rho"] == -0.5, "不相交隶属向量应负相关（互补）"
+    assert r_new["max_rho_pos"] == 0.0, "互补覆盖无冗余"
+    assert r_new["dlogdet"] is not None and r_new["dlogdet"] > 0
+    r_dup = admit(pools, ("P1dup", [0, 1, 2]))
+    assert r_dup["dcov"] == 0.0
+    assert r_dup["max_rho"] == 1.0, "完全重叠 = 冗余上限"
+    assert r_dup["dlogdet"] is None, "完全重复池 → G 奇异（零信息增益的极端形式）"
+    r_part = admit(pools, ("Ppart", [2, 3]))
+    assert r_part["dcov"] == 0.0, "部分重叠池的新覆盖为 0"
+    assert r_part["max_rho"] == 0.0, "n=6 下 [2,3] 与 P1/P2 的协方差恰好抵消"
+    assert r_part["dlogdet"] is not None and r_part["dlogdet"] > 0
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -787,6 +855,9 @@ CHECKS = [
     ("c29 MD 报告渲染（W5④：schema+必填诊断+后验表）", c29_md_render),
     ("c30 owner 归属 + 点链解析（F3-py/self/别名/不猜）", c30_owner_attribution),
     ("c31 装配级测试豁免（图级 exclude_tests）", c31_exclude_tests_space),
+    ("c32 T 族三场（authors/fix_coupling/stability）", c32_t_family),
+    ("c33 random 对照场（同种子可复现）", c33_random_field),
+    ("c34 轴准入三读数（Δcov/|ρ|/Δlogdet）", c34_axis_admission),
 ]
 def run_all(verbose=True):
     workdir = tempfile.mkdtemp(prefix="topos-selftest-")

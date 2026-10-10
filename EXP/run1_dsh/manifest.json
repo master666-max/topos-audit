@@ -55,6 +55,38 @@
       "params": {
         "k": 3
       }
+    },
+    {
+      "name": "authors",
+      "layer": "T",
+      "method": "git",
+      "params": {
+        "metric": "authors"
+      }
+    },
+    {
+      "name": "fix_coupling",
+      "layer": "T",
+      "method": "git",
+      "params": {
+        "metric": "fix_coupling"
+      }
+    },
+    {
+      "name": "stability",
+      "layer": "T",
+      "method": "git",
+      "params": {
+        "metric": "stability"
+      }
+    },
+    {
+      "name": "random",
+      "layer": "-",
+      "method": "random",
+      "params": {
+        "seed": 20261009
+      }
     }
   ],
   "slicers": [

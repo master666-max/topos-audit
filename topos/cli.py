@@ -218,6 +218,19 @@ def cmd_report_md(args):
     return 0
 
 
+def cmd_axis_admit(args):
+    """topos axis-admit <space.json> --cand-name N --cand 0,1,2 [--belief b.json]
+
+    轴准入三准则工具化（§4.5 欠账补齐）：Δcov / max|ρ| / Δlogdet 三读数合看。
+    """
+    from topos.axis.admission import from_space_json
+    r = from_space_json(args.space_json, args.cand_name,
+                        [int(x) for x in args.cand.split(",")],
+                        belief_json=args.belief)
+    print(json.dumps(r, ensure_ascii=False, indent=1))
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="topos", description="ToposAudit —— "
                                  "在拓扑空间上做统计最优的缺陷检出")
@@ -274,11 +287,19 @@ def main(argv=None):
     rm.add_argument("--top", type=int, default=10, help="后验表行数")
     rm.add_argument("-o", default=None, help="输出 .md 路径（默认与 space.json 同名）")
 
+    am = sub.add_parser("axis-admit",
+                        help="[§4.5] 轴准入三读数：Δcov / max|ρ| / Δlogdet")
+    am.add_argument("space_json")
+    am.add_argument("--cand-name", required=True, help="候选池名")
+    am.add_argument("--cand", required=True,
+                    help="候选池成员（逗号分隔单元号）")
+    am.add_argument("--belief", default=None, help="belief.json（d̂ 加权，可选）")
+
     args = ap.parse_args(argv)
     return {"selftest": cmd_selftest, "space": cmd_space, "pools": cmd_pools,
             "fields": cmd_fields, "decode": cmd_decode, "next": cmd_next,
-            "crosscheck": cmd_crosscheck,
-            "report-md": cmd_report_md}[args.cmd](args)
+            "crosscheck": cmd_crosscheck, "report-md": cmd_report_md,
+            "axis-admit": cmd_axis_admit}[args.cmd](args)
 
 
 if __name__ == "__main__":

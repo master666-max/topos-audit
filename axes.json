@@ -5,9 +5,13 @@
     {"name": "anchor",    "layer": "L", "method": "regex", "params": {"patterns_file": "reference/anchors-bandit.json"}},
     {"name": "churn",     "layer": "T", "method": "git",   "params": {"metric": "commits"}},
     {"name": "age",       "layer": "T", "method": "git",   "params": {"metric": "age_days"}},
+    {"name": "authors",   "layer": "T", "method": "git",   "params": {"metric": "authors"}},
+    {"name": "fix_coupling", "layer": "T", "method": "git", "params": {"metric": "fix_coupling"}},
+    {"name": "stability", "layer": "T", "method": "git",   "params": {"metric": "stability"}},
     {"name": "loc",       "layer": "L", "method": "ast",   "params": {"metric": "lines"}},
     {"name": "forman",    "layer": "G", "method": "graph", "params": {"formula": "forman_unweighted"}},
-    {"name": "diffusion", "layer": "G", "method": "graph", "params": {"k": 3}}
+    {"name": "diffusion", "layer": "G", "method": "graph", "params": {"k": 3}},
+    {"name": "random",    "layer": "-", "method": "random","params": {"seed": 20261009}}
   ],
   "slicers": [
     {"name": "anchor:*",          "field": "anchor",  "op": "expand"},
