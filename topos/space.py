@@ -15,7 +15,7 @@ from topos.axis.registry import FIELD_METHODS
 from topos.axis.registry import is_missing
 from topos.axis.manifest import load_manifest
 from topos.pool.pool import eval_pools
-from topos.pool.design import build_design, coverage
+from topos.pool.design import build_design, coverage, coverage_fill
 
 
 class Space:
@@ -77,6 +77,21 @@ class Space:
             self.fields, self.n)
         self.rows, self.design_warnings = build_design(
             pool_pairs, self.n, self.manifest.get("constraints"))
+        # B8：兜底覆盖池——仅当零覆盖 > θ_cov 时才追加（θ 取自 B7 门，同阈值同语义）
+        self.coverage_fill_cfg = self.manifest.get("coverage_fill")
+        if self.coverage_fill_cfg:
+            _theta = float(self.coverage_fill_cfg.get("theta_cov", 0.30))
+            _z0 = coverage(self.rows, self.n)["zero_cover_rate"]
+            if _z0 > _theta:
+                add = coverage_fill(self.rows, self.n,
+                                    self.manifest.get("constraints"))
+                if add:
+                    self.rows = self.rows + add
+                    self.design_warnings.append(
+                        "B8 兜底覆盖池已追加 %d 个（等宽块，最大宽 %d）：补前零覆盖 %.4f "
+                        "> θ_cov %.2f ⇒ 补后 %.4f"
+                        % (len(add), max(len(m) for _nm, m in add), _z0,
+                           _theta, coverage(self.rows, self.n)["zero_cover_rate"]))
         self.coverage = coverage(self.rows, self.n)
         self.elapsed = round(time.time() - t0, 2)
 

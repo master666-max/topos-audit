@@ -43,6 +43,62 @@ def build_design(pool_pairs, n, constraints=None):
     return rows, warnings
 
 
+def coverage_fill(rows, n, constraints=None, prefix="fill_"):
+    """B8 兜底覆盖池：把**未覆盖单元**按编号顺序切成等宽块追加为池。
+
+    constraints=None ⇒ 不启用（返回 []，一行都不许加）。
+    语义：不猜谁可疑，**只保证每个单元至少被一个池碰到**——
+    等价于"人肉通读一遍"，与 D-B6-5 的 grep 对照臂同口径（grep 也是看全部）。
+    这样设计是为了回答 **"到底是覆盖问题还是信号问题"**：
+    兜底池不携带任何信号，若补满覆盖后 AUC 仍 ≈0.5 ⇒ 答案是信号问题（D-B8-4）。
+
+    块宽 W = max(min_pool_size, min(max_width, max_width_pct·n))；
+    尾块不足 min_pool_size 则并入前一块（**不得丢单元**）；总池数受 max_pools 上限约束。
+    """
+    if not constraints:
+        return []
+    c = constraints
+    max_width = c.get("max_width")
+    if c.get("max_width_pct") is not None:
+        pct_w = max(1, int(n * float(c["max_width_pct"])))
+        max_width = pct_w if max_width is None else min(max_width, pct_w)
+    min_size = int(c.get("min_pool_size", 1))
+    W = max(min_size, int(max_width)) if max_width else max(min_size, 1)
+    max_pools = c.get("max_pools")
+
+    covered = set()
+    for _nm, m in rows:
+        covered |= m
+    uncovered = [i for i in range(n) if i not in covered]
+    if not uncovered:
+        return []
+
+    out = []
+    for s in range(0, len(uncovered), W):
+        chunk = set(uncovered[s:s + W])
+        if not chunk:
+            continue
+        if len(chunk) < min_size and out:
+            out[-1] = (out[-1][0], out[-1][1] | chunk)   # 尾巴并入前一块，不丢单元
+            continue
+        out.append(("%s%02d" % (prefix, len(out) + 1), chunk))
+
+    if max_pools is not None:
+        room = max_pools - len(rows)
+        if room <= 0:
+            return []
+        if len(out) > room:
+            # 截断：把多余的块并进最后一个保留块，仍不丢单元
+            keep, rest = out[:room], out[room:]
+            if keep:
+                merged = set(keep[-1][1])
+                for _nm, m in rest:
+                    merged |= m
+                keep[-1] = (keep[-1][0], merged)
+            out = keep
+    return out
+
+
 def coverage(rows, n):
     """三诊断（必填契约字段）：c_min / c_mean / zero_cover_rate + 宽度分布。"""
     col_cnt = [0] * n

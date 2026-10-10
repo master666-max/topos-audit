@@ -907,6 +907,48 @@ def c37_gate_position_independent(workdir):
         outs[0], outs[1])
 
 
+def c42_coverage_fill(workdir):
+    """B8 兜底覆盖池：未覆盖单元必须被等宽块兜住；不开就不许动原池。"""
+    from topos.pool.design import coverage_fill, build_design, coverage
+    from topos.stop.gate import DEFAULT_CONSTRAINTS
+    n = 40
+    # 原设计只有两个窄池，覆盖 0..5
+    rows = [("p1", {0, 1, 2}), ("p2", {3, 4, 5})]
+    cov0 = coverage(rows, n)
+    assert cov0["zero_cover_rate"] > 0.30, "前提：原设计零覆盖必须 > θ_cov"
+
+    # ① 关闭（None）⇒ 一行都不许加
+    assert coverage_fill(rows, n, None) == [], "未启用时不得追加任何池"
+
+    # ② 开启 ⇒ 未覆盖单元全部入池（等宽，宽 W=max(min_pool_size, ceil(3%·n))=3）
+    add = coverage_fill(rows, n, dict(DEFAULT_CONSTRAINTS))
+    assert add, "必须追加兜底池"
+    union = set()
+    for _nm, m in add:
+        union |= m
+    assert union == set(range(6, n)), "兜底池必须恰好覆盖原本未覆盖的单元"
+    allrows = rows + add
+    cov1 = coverage(allrows, n)
+    assert cov1["zero_cover_rate"] == 0.0, "补满后零覆盖必须为 0"
+
+    # ③ 块宽不得超过 max_width；总池数不得超过 max_pools
+    c = dict(DEFAULT_CONSTRAINTS)
+    c["max_width"] = 5
+    c["max_width_pct"] = 1.0
+    add2 = coverage_fill(rows, n, c)
+    assert all(len(m) <= 5 for _nm, m in add2), "块宽不得超过 max_width"
+    assert len(add2) + len(rows) <= c["max_pools"]
+
+    # ④ 碎块（不足 min_pool_size 的尾巴）必须并入前一块，不得丢单元
+    c2 = dict(DEFAULT_CONSTRAINTS)
+    c2["max_width_pct"] = 0.5          # W = 20；34 个未覆盖 → 20 + 14（尾块 14 ≥ 3，独立）
+    add3 = coverage_fill(rows, n, c2)
+    u3 = set()
+    for _nm, m in add3:
+        u3 |= m
+    assert u3 == set(range(6, n)), "任何宽度配置下都不得丢单元"
+
+
 def c41_call_direction(workdir):
     """A3：调用边恢复方向；无向投影必须逐字不变（不破基线）。
 
@@ -1094,6 +1136,7 @@ CHECKS = [
     ("c39 多层进场层（span/gap/deg 逐层可观测量）", c39_layer_fields),
     ("c40 扫子目录 T 族不灭（git 路径前缀归一化）", c40_git_prefix_subdir),
     ("c41 调用边方向恢复（out/in/net + 无向投影不变）", c41_call_direction),
+    ("c42 兜底覆盖池（等宽块补满零覆盖 + 不丢单元）", c42_coverage_fill),
 ]
 def run_all(verbose=True):
     workdir = tempfile.mkdtemp(prefix="topos-selftest-")

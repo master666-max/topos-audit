@@ -1,0 +1,58 @@
+{
+ "target": "L3-SVEN（副靶）",
+ "pos_n": 369,
+ "neg_n": 369,
+ "arms": [
+  {
+   "arm": "a",
+   "budget": 8,
+   "pools_total": 36,
+   "pools_opened": 8,
+   "zero_cover_after_fill": 0.0,
+   "reviewed_units": 176,
+   "reviewed_pct": 23.85,
+   "D-B6-1_k": 88,
+   "D-B6-1_recall": 0.2385,
+   "D-B6-3_coverage_pos": 1.0,
+   "predicted_coverage_cap": 0.2385,
+   "auc": 0.4986,
+   "balanced_acc": 0.5,
+   "D-B6-5_k_grep": 31,
+   "max_pool_width": 22
+  },
+  {
+   "arm": "b",
+   "budget": 8,
+   "pools_total": 19,
+   "pools_opened": 8,
+   "zero_cover_after_fill": 0.0,
+   "reviewed_units": 368,
+   "reviewed_pct": 49.86,
+   "D-B6-1_k": 184,
+   "D-B6-1_recall": 0.4986,
+   "D-B6-3_coverage_pos": 1.0,
+   "predicted_coverage_cap": 0.4986,
+   "auc": 0.4986,
+   "balanced_acc": 0.5,
+   "D-B6-5_k_grep": 31,
+   "max_pool_width": 46
+  },
+  {
+   "arm": "c",
+   "budget": 36,
+   "pools_total": 36,
+   "pools_opened": 36,
+   "zero_cover_after_fill": 0.0,
+   "reviewed_units": 738,
+   "reviewed_pct": 100.0,
+   "D-B6-1_k": 369,
+   "D-B6-1_recall": 1.0,
+   "D-B6-3_coverage_pos": 1.0,
+   "predicted_coverage_cap": 1.0,
+   "auc": 0.5036,
+   "balanced_acc": 0.5,
+   "D-B6-5_k_grep": 31,
+   "max_pool_width": 22
+  }
+ ]
+}
