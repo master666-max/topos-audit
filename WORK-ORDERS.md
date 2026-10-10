@@ -195,3 +195,19 @@ flowchart LR
 | A11 | `expand` 算子自动展开列表场 | 33 个 bandit tag 免手写 33 条切片声明 |
 | A12 | None 是合法场值；切片一律排除 None，`notnull` 独立捞回 | "如实降级"红线的载体（缺 git 不填 0） |
 | A13 | 解码器对照评估强制 AUC + 平衡准确率双指标 | decode run1 accuracy 被 FPR 主导的事故条款 |
+
+## 附录 D · 逐单状态注记（2026-10-10 工单核对，证据先行）
+
+| 单 | 状态 | 证据指针 |
+|---|---|---|
+| O1 基线 | ✅ | bd6f92f；工作区干净（终态产物清点后） |
+| O2 骨架 | ✅（落位偏差已修） | 骨架在位；`tests/test_contract.py` shim 补上；`PREREG/B1.md` 补追认版 |
+| O3 GitHub | ✅（本次恢复同步） | push 后 ls-remote 回读一致 |
+| W1/W2/W6/W7（B1） | ✅ 出口过 | e1b15d4；selftest 12/12 → **29/29**；`reference/crosscheck-result.json` 6/6 |
+| W8 标定层（B2） | ◐ E-B2-1/2/3/5 咬合；**E-B2-4 走「缺省层如实登记」支线** | B2-E1..E5 回执；**出口豁免登记于此**：PREREG/B2 v1.5/v1.6 修订披露，α=0.187 作废 L4-control，定向锚改由 L1 承担；**欠账 = L4 人工仲裁 100 单元**；另 L3 SVEN 锚定集未开工（无 E-B2-x 门，登记为实战前可选层） |
+| W5 解码器（B3） | ✅（④ MD 渲染本次补做） | 27dcaa7 12.4×≥8；B3-E1/E2/E3；`report/md_out.py` + `report-md` CLI + c29 |
+| W4 停止（B4） | ✅ | ac051ce；B4-E1.md；c₀=0.05（v1.4） |
+| W3 sheaf（B5） | ✅ | 6841e44（Q3 降标采纳已登记于正文划线）；B5-E1/E2.md |
+| W9 多语言+Joern（M5） | ✅（验收门语义以 **PREREG/M5 v1.3** 为准） | b502284→289536a；M5-E1/E2.md；v1.3 口径 py **0.9881** / js **1.0000** 双咬合（注册口径 js 不咬合的记录不回溯） |
+
+**核对发现的落位偏差及处置**：① W2「断言搬进 tests/」实际在 `topos/selftest.py`（功能等价）→ 补 pytest shim 双入口；② W1 交付物 `PREREG/B1.md` 缺失 → 补追认版（B1 为 [M] 搬迁批无数据自由度，追认不影响证据学地位）；③ W5④ MD 渲染欠账 → 本次补做；④ 红线复核：stdlib-only / 轴名单源 / [U] 带证伪判据 / mini-lab 与既有工程区只读——**全数未破**。
