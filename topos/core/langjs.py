@@ -137,6 +137,10 @@ def discover_units_js(root):
             # class 缩进方法（顶层 function/箭头未占用的行段内）
             for m in _RE_METHOD.finditer(src):
                 ln = src[: m.start()].count("\n") + 1
+                # E-M5-2 对拍发现（2026-10-10）：switch/if/for/while 等
+                # 控制流语句形态同构于方法声明 → 垃圾单元污染单元宇宙，滤除
+                if m.group(1) in _KEYWORDS:
+                    continue
                 if any(a <= ln <= b for a, b, _ in taken):
                     continue
                 end = _brace_end(lines, ln)
@@ -219,31 +223,55 @@ def extract_layers_js(root, units):
                     amap[nm] = tgt
         aliases[f] = amap
     layers = {"call": set()}
+    # E-M5-2 对拍发现（2026-10-10）：单元 src 切片含嵌套函数体，嵌套内调用
+    # 被同时归因到每一层外层单元（sendfile→onX 假边家族）。修复：调用点
+    # 归属"最小包含单元"，只有 owner==i 才计入 i 的出边。
+    spans = {}
     for i, u in enumerate(units):
-        span = u["src"]
-        # 同文件直接调用
-        own = u["name"].split(".")[-1]
-        for m in _RE_CALL.finditer(span):
-            nm = m.group(1)
-            if nm in _KEYWORDS:
+        spans.setdefault(u["file"], []).append(
+            (u["lineno"], u["end_lineno"], i))
+    for f in spans:
+        spans[f].sort(key=lambda x: (x[1] - x[0], x[0]))
+
+    _RE_CHAIN_CALL = re.compile(
+        r"\b([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*\(")
+
+    def _own_calls(i, u):
+        """span 内归属 i 自己（最小包含= i）的调用点 [(点链, 绝对行)]。"""
+        base = u["lineno"]
+        out = []
+        for m in _RE_CHAIN_CALL.finditer(u["src"]):
+            abs_ln = base + u["src"][: m.start()].count("\n")
+            owner = None
+            for a, b, k in spans.get(u["file"], []):
+                if a <= abs_ln <= b:
+                    owner = k
+                    break
+            if owner == i:
+                out.append((m.group(1), abs_ln))
+        return out
+
+    for i, u in enumerate(units):
+        # 同文件直接调用：取链尾名（仅归属 i 自己的调用点）
+        for chain, _ln in _own_calls(i, u):
+            _head, _sep, last = chain.rpartition(".")
+            if _sep == "" and last in _KEYWORDS:
                 continue
-            j = names.get(u["file"], {}).get(nm)
+            j = names.get(u["file"], {}).get(last)
             if j is not None and j != i:
                 layers["call"].add((min(i, j), max(i, j)))
         # require 别名 → 跨文件调用（属性形态 alias.fn( + 裸名形态 alias(）
         for alias, tgt in aliases.get(u["file"], {}).items():
-            for am in re.finditer(r"\b%s\.([A-Za-z_$][\w$]*)\s*\(" % alias,
-                                  span):
-                fnm = am.group(1)
-                j = names.get(tgt, {}).get(fnm)
-                if j is not None:
-                    layers["call"].add((min(i, j), max(i, j)))
-            # 裸名调用：var compileETag = require('./utils').compileETag →
-            # compileETag( … ) 直接调用目标模块的同名单元
-            j = names.get(tgt, {}).get(alias)
-            if j is not None and j != i and \
-                    re.search(r"\b%s\s*\(" % re.escape(alias), span):
-                layers["call"].add((min(i, j), max(i, j)))
+            for chain, _ln in _own_calls(i, u):
+                if chain == alias:
+                    j = names.get(tgt, {}).get(alias)
+                    if j is not None and j != i:
+                        layers["call"].add((min(i, j), max(i, j)))
+                elif chain.startswith(alias + "."):
+                    fnm = chain[len(alias) + 1:]
+                    j = names.get(tgt, {}).get(fnm)
+                    if j is not None:
+                        layers["call"].add((min(i, j), max(i, j)))
     return {k: layers.get(k, set()) for k in ("call",)}
 
 

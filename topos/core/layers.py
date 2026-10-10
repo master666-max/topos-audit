@@ -8,6 +8,7 @@ topos.core.layers —— 五类耦合边抽取（call/data/control/return/vardep
 """
 import ast
 import os
+import textwrap
 from collections import defaultdict
 
 LAYER_TYPES = ("call", "data", "control", "return", "vardep")
@@ -114,7 +115,13 @@ def _extract_layers(root, units):
         try:
             tree = ast.parse(u["src"])
         except SyntaxError:
-            continue
+            # E-M5-2 对拍发现（2026-10-10）：类方法切片带缩进，直接 parse 抛
+            # IndentationError（SyntaxError 子类）→ 此前整个单元被静默跳过，
+            # 类方法全部 call/vardep 边丢失。dedent 兜底修复。
+            try:
+                tree = ast.parse(textwrap.dedent(u["src"]))
+            except SyntaxError:
+                continue
         calls = []
         _walk_calls(tree, {"call"}, calls)
         used_globals = set()
