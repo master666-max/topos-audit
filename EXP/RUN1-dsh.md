@@ -67,3 +67,28 @@
   改进项（测试豁免、池宽自适应、多信号源）全部落在已登记的 v0.2 清单内。
 - **下一步候选**：① v0.2 测试豁免 + 池宽自适应 → 重跑 RUN1 读数对照；② 接 LLM 批作第二
   信号源（B2 E4 既有管线）；③ L4 人工仲裁定标后重读。
+
+## 7. RUN1 v1.2 addendum——测试豁免落地（v0.2 修复①，2026-10-10 同日）
+
+**改动**：`axis/methods/regex.py` anchor 场新增 opt-in 参数 `exclude_tests: true`（token 化
+测试识别：路径段 test(s)/spec(s)、conftest.py、文件名 token 含 test/tests——`dsh_tests.py`
+命中、`latest.py` 不误伤）。**默认关闭，selftest 29/29 不受扰**；dsh 定制清单开启。
+（池宽自适应**不做自动放宽**——W6 禁止条款「诊断只告警不拦截」，调清单走工作流人工步骤。）
+
+### v1.1 vs v1.2 对照（同靶同清单仅差测试豁免）
+
+| 项 | v1.1 | v1.2（测试豁免） |
+|---|---|---|
+| anchor 非空率 | 0.084 | 0.064（测试命中豁免） |
+| 存活池 | 4（3 阳 1 阴） | 3（**1 阳 2 阴**；p_semantic_hot 变空池如实丢弃、p_deep_conf 阳→阴——原阳性就是测试单元） |
+| belief max | 0.9310（`_Boom.run`，测试替身） | **0.3945**（`dsh-accept.py::run_py`） |
+| top-12 构成 | 前五全 dsh_tests.py | **零测试文件**：dsh-accept / dsh-fallback-heal ×4 / dsh_env ×4 / dsh-launcher ×2 / dsh-plugins |
+| σ 停止 | NEXT → p_anchor_breadth（10.85） | NEXT → p_anchor_breadth（6.11） |
+| zero_cover | 88.4% | 90.4%（anchor 池收窄，如实） |
+
+**榜首源码核验**：`dsh-accept.py::run_py` L24 `subprocess.run([PYEXE, "-X", "utf8",
+str(TOOLS / script)], …)`——生产代码真实 subprocess 直连 ✓。
+
+**判读**：测试豁免把读数从「测试脚手架通胀」拉回「生产危险 API 面」——top-12 全部是
+进程管理/环境治理函数（kill_node、pid_alive、port_excluded、run_plugins、action_check），
+这正是 dsh-launcher 作为启动器的真实风险面。v0.2 修复①实战闭环完成。

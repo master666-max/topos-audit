@@ -2,7 +2,7 @@
   "version": 3,
   "layers": {"call": 1.0, "data": 1.0, "control": 1.0, "return": 1.0, "vardep": 1.0},
   "fields": [
-    {"name": "anchor",    "layer": "L", "method": "regex", "params": {"patterns_file": "../../reference/anchors-bandit.json"}},
+    {"name": "anchor",    "layer": "L", "method": "regex", "params": {"patterns_file": "../../reference/anchors-bandit.json", "exclude_tests": true}},
     {"name": "churn",     "layer": "T", "method": "git",   "params": {"metric": "commits"}},
     {"name": "age",       "layer": "T", "method": "git",   "params": {"metric": "age_days"}},
     {"name": "loc",       "layer": "L", "method": "ast",   "params": {"metric": "lines"}},

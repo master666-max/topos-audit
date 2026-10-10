@@ -26,5 +26,29 @@ def _load_patterns(params, base_dir=None):
 @field_method("regex")
 def regex_field(units, params, ctx):
     pats = _load_patterns(params, base_dir=ctx.get("manifest_dir"))
-    return {i: [t for t, pat in pats if pat.search(u["src"])]
-            for i, u in enumerate(units)}
+    # v0.2（RUN1 首战实测）：opt-in 测试豁免——测试脚手架合法使用危险 API
+    #（mock subprocess 等），anchor 语义是生产代码危险直连。exclude_tests=true
+    # 时测试单元 anchor 缺失（不假装命中）；默认关闭，旧读数不受扰。
+    ex = bool(params.get("exclude_tests"))
+    out = {}
+    for i, u in enumerate(units):
+        if ex and _is_test_unit(u):
+            continue
+        out[i] = [t for t, pat in pats if pat.search(u["src"])]
+    return out
+
+
+def _is_test_unit(u):
+    """测试文件启发：路径段 test(s)/testing/spec(s)/__tests__、conftest.py、
+    或文件名 token 化后含 test/tests（dsh_tests.py → [dsh, tests] 命中；
+    latest.py → [latest] 不误伤）。"""
+    f = (u.get("file") or "").replace("\\", "/").lower()
+    segs = f.split("/")
+    if segs[-1] == "conftest.py":
+        return True
+    if any(s in ("tests", "test", "testing", "spec", "specs", "__tests__")
+           for s in segs[:-1]):
+        return True
+    stem = segs[-1][:-3] if segs[-1].endswith(".py") else segs[-1]
+    tokens = re.split(r"[_.\-]+", stem)
+    return "test" in tokens or "tests" in tokens

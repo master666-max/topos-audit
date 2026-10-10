@@ -10,7 +10,7 @@ sys.path.insert(0, REPO)
 
 from topos.cli import main as cli_main                                # noqa: E402
 
-B = os.path.join(HERE, "b")
+B = os.path.join(HERE, sys.argv[1] if len(sys.argv) > 1 else "b")
 
 
 def main():
