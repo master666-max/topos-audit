@@ -102,9 +102,14 @@ def c02_layers(w):
     assert e("finish", "load") in ly["data"], "值穿越 load→finish 缺失"
     assert e("sink", "load") in ly["data"], "值穿越 load→sink 缺失"
     assert ly["vardep"] == {e("probe", "load")}, "vardep 应恰为 probe↔load: %r" % ly["vardep"]
-    for pair in (("probe", "gate"), ("gate", "process"), ("process", "load"),
+    # A3：call 层已改有向 (caller, callee)——下列 pair 一律按"前者调后者"书写，
+    # 方向写反会失败，故本断言同时钉住了方向的正确性（不是靠归一化蒙过去）
+    d = lambda a, b: (idx[a], idx[b])
+    # 注意：SYNTH 里是 **gate 调 probe**（`if probe():`），旧断言的 ("probe","gate")
+    # 只是随手写的无序对，A3 后按真实方向书写为 ("gate","probe")
+    for pair in (("gate", "probe"), ("gate", "process"), ("process", "load"),
                  ("process", "finish"), ("passthrough", "load"), ("passthrough", "sink")):
-        assert e(*pair) in ly["call"]
+        assert d(*pair) in ly["call"], "call 有向边缺失 %s→%s" % pair
 
 
 def c03_fuse(w):
@@ -714,13 +719,16 @@ def c30_owner_attribution(workdir):
         uid("mod.py", "helper")
     g, g2, h = uid("mod2.py", "g"), uid("mod2.py", "g2"), uid("util.py", "h")
 
+    # A3：call 层有向 (caller, callee)；按"前者调后者"书写，方向错即失败
     def pair(x, y):
-        return (min(x, y), max(x, y))
+        return (x, y)
 
     assert pair(o, inner) in call                    # 外层调内层 ✓
     assert pair(inner, helper) in call               # 嵌套内调用归嵌套 ✓
     assert pair(o, helper) not in call, "F3-py 嵌套归因泄漏"
+    assert pair(helper, o) not in call, "F3-py 嵌套归因泄漏（反向）"
     assert pair(g, h) in call, "import 别名点链未解析"
+    assert pair(h, g) not in call, "方向反了（util.h 不可能调 mod2.g）"
     assert pair(g2, h) not in call, "非别名链头仍在猜（可少不可假违反）"
 
 
@@ -821,6 +829,116 @@ def c34_axis_admission(workdir):
     assert r_part["dcov"] == 0.0, "部分重叠池的新覆盖为 0"
     assert r_part["max_rho"] == 0.0, "n=6 下 [2,3] 与 P1/P2 的协方差恰好抵消"
     assert r_part["dlogdet"] is not None and r_part["dlogdet"] > 0
+
+
+def _gate_fixture(workdir, tag):
+    """在两个不同临时目录下建**同形**的合成仓 + 清单，用于 c37 位置无关性。"""
+    import json as _json
+    root = os.path.join(workdir, "g" + tag)
+    os.makedirs(root)
+    for k in range(6):
+        with open(os.path.join(root, "m%d.py" % k), "w", encoding="utf-8") as f:
+            f.write("def f%d():\n    return %d\n" % (k, k))
+    mf = {"version": 3,
+          "layers": {"call": 1.0},
+          "fields": [{"name": "loc", "method": "ast",
+                      "params": {"metric": "lines"}}],
+          "slicers": [{"name": "tiny", "field": "loc", "op": "lt", "value": 1}],
+          "pools": [{"name": "p", "expr": "tiny"}],
+          "constraints": {"max_width": 400, "max_width_pct": 0.03,
+                          "max_pools": 64, "min_pool_size": 3}}
+    mp = os.path.join(workdir, "mf" + tag + ".json")
+    with open(mp, "w", encoding="utf-8") as f:
+        _json.dump(mf, f)
+    return root, mp
+
+
+def c35_gate_true_red(workdir):
+    """D-B7-4/c35 真红：门必须能红（钉在**已被收集、原本全绿**的归档件上）。
+
+    `EXP/run1_dsh/c/space.json` 的 zero_cover_rate=0.904——这是 RUN1 真实产出的红灯，
+    在它上面 next 必须输出 BLOCKED-COVERAGE，**不得**输出 STOP。
+    θ_cov 缺失/非法必须 raise（不许静默回落给默认值）。
+    """
+    from topos.stop.gate import coverage_gate
+    arch = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), "EXP", "run1_dsh", "c", "space.json")
+    if not os.path.exists(arch):
+        raise AssertionError("归档件缺失，c35 失去意义: %s" % arch)
+    with open(arch, encoding="utf-8") as f:
+        sj = json.load(f)
+    cov = sj["coverage"]
+    n = sj["n_units"]
+    assert cov["zero_cover_rate"] > 0.30, "归档件应仍是红灯"
+    r = coverage_gate(cov, n, 0.30)
+    assert r["verdict"] == "BLOCKED-COVERAGE", "真红件必须 BLOCKED，实为 %r" % r
+    assert r["zero_cover_units"] > 0 and r["covered_units"] >= 0
+    assert r["pools_needed_lower_bound"] >= 1, "必须给出补池数下界"
+    # θ 缺失 / 非法 ⇒ raise（B7 §1.1：不许静默回落）
+    for bad in (None, "0.3", -1, 0, 1.5):
+        try:
+            coverage_gate(cov, n, bad)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("θ_cov=%r 必须 raise" % (bad,))
+
+
+def c36_gate_true_green(workdir):
+    """D-B7-4/c36 绿分支：θ_cov 提到 0.95 ⇒ 同一红灯件必须转 PASS（证明门不是恒红）。"""
+    from topos.stop.gate import coverage_gate
+    arch = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), "EXP", "run1_dsh", "c", "space.json")
+    with open(arch, encoding="utf-8") as f:
+        sj = json.load(f)
+    r = coverage_gate(sj["coverage"], sj["n_units"], 0.95)
+    assert r["verdict"] == "PASS", "θ=0.95 时应 PASS（门不得恒红），实为 %r" % r
+
+
+def c37_gate_position_independent(workdir):
+    """D-B7-4/c37 位置无关 + 可复现：两个不同临时目录下，读数逐字相同。"""
+    from topos.stop.gate import coverage_gate
+    outs = []
+    for tag in ("a", "b"):
+        root, mp = _gate_fixture(workdir, tag)
+        sp = Space(root, manifest_path=mp)
+        outs.append(coverage_gate(sp.coverage, sp.n, 0.30))
+    assert outs[0] == outs[1], "不同目录下读数必须逐字相同: %r vs %r" % (
+        outs[0], outs[1])
+
+
+def c41_call_direction(workdir):
+    """A3：调用边恢复方向；无向投影必须逐字不变（不破基线）。
+
+    表示：layers["call"] = {(caller, callee)} 有序。
+    投影：fuse/to_adj 归一化为 (min,max) ⇒ 几何与所有下游读数不变。
+    """
+    from topos.core import units as units_mod
+    from topos.core.layers import _extract_layers, to_adj
+    from topos.core.fuse import fuse
+    from topos.axis.methods.layer_fields import layer_field
+    root = os.path.join(workdir, "dir")
+    os.makedirs(root)
+    with open(os.path.join(root, "m.py"), "w", encoding="utf-8") as f:
+        f.write("def callee():\n    return 1\n\n"
+                "def caller():\n    return callee()\n")
+    us = units_mod.discover_units(root)
+    by = {u["name"]: i for i, u in enumerate(us)}
+    L = _extract_layers(root, us)
+    ci, ce = by["caller"], by["callee"]
+    assert (ci, ce) in L["call"], \
+        "call 边必须是有向的 (caller, callee)，实为 %r" % sorted(L["call"])
+    out = layer_field(us, {"formula": "out"}, {"layers": L})
+    inn = layer_field(us, {"formula": "in"}, {"layers": L})
+    net = layer_field(us, {"formula": "net"}, {"layers": L})
+    assert out[ci] == 1 and out[ce] == 0, "caller 出度应为 1，callee 出度应为 0"
+    assert inn[ce] == 1 and inn[ci] == 0, "callee 入度应为 1，caller 入度应为 0"
+    assert net[ci] == 1 and net[ce] == -1, "net = 出−入 应异号"
+    # 无向投影不变：融合键仍归一化为 (min,max)
+    fz = fuse(L, {"call": 1.0, "data": 1.0})
+    assert all(a <= b for (a, b) in fz), "fuse 键必须归一化，实为 %r" % list(fz)
+    adj = to_adj(fz)
+    assert ce in adj[ci] and ci in adj[ce], "to_adj 必须仍对称（无向投影）"
 
 
 def c38_alpha_is_live(workdir):
@@ -969,9 +1087,13 @@ CHECKS = [
     ("c32 T 族三场（authors/fix_coupling/stability）", c32_t_family),
     ("c33 random 对照场（同种子可复现）", c33_random_field),
     ("c34 轴准入三读数（Δcov/|ρ|/Δlogdet）", c34_axis_admission),
+    ("c35 覆盖率门真红（RUN1 c 件 zcr=0.904 必须 BLOCKED）", c35_gate_true_red),
+    ("c36 覆盖率门真绿（θ=0.95 必须 PASS，不得恒红）", c36_gate_true_green),
+    ("c37 覆盖率门位置无关（两目录读数逐字相同）", c37_gate_position_independent),
     ("c38 α 活旋钮（min_weight 生效 + 默认不破基线）", c38_alpha_is_live),
     ("c39 多层进场层（span/gap/deg 逐层可观测量）", c39_layer_fields),
     ("c40 扫子目录 T 族不灭（git 路径前缀归一化）", c40_git_prefix_subdir),
+    ("c41 调用边方向恢复（out/in/net + 无向投影不变）", c41_call_direction),
 ]
 def run_all(verbose=True):
     workdir = tempfile.mkdtemp(prefix="topos-selftest-")

@@ -63,6 +63,21 @@ def layer_field(units, params, ctx):
         dv = deg.get("vardep", [0] * n)
         return {i: (dd[i] + dv[i]) - dc[i] for i in range(n)}
 
+    # A3：方向可观测量（仅 call 层有方向语义；其余层是无向的）
+    if formula in ("out", "in", "net"):
+        d_out = [0] * n
+        d_in = [0] * n
+        for (u, v) in layers.get("call", ()):
+            if u < n:
+                d_out[u] += 1
+            if v < n:
+                d_in[v] += 1
+        if formula == "out":
+            return {i: d_out[i] for i in range(n)}
+        if formula == "in":
+            return {i: d_in[i] for i in range(n)}
+        return {i: d_out[i] - d_in[i] for i in range(n)}
+
     if formula.startswith("deg:"):
         t = formula.split(":", 1)[1]
         if t not in LAYER_TYPES:

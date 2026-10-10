@@ -1,0 +1,29 @@
+{
+ "target": "L3-SVEN（副靶，只作旁证）",
+ "manifest_sha": "8e0f22bd245c8be2",
+ "n_units": 738,
+ "n_pools": 3,
+ "zero_cover_rate": 0.9837,
+ "gold_rows": 736,
+ "gold_pos": 368,
+ "aligned_gold": 736,
+ "aligned_units": 738,
+ "pos_n": 369,
+ "neg_n": 369,
+ "opened_pools": [
+  "p_big1",
+  "p_hot",
+  "p_deep_conf"
+ ],
+ "reviewed_units": 12,
+ "D-B6-1_k": 7,
+ "D-B6-1_recall": 0.018970189701897018,
+ "D-B6-2_hits": 2,
+ "D-B6-2_fp": 1,
+ "D-B6-2_fp_rate": 0.5,
+ "D-B6-3_coverage": 0.018970189701897018,
+ "D-B6-4_k_per_pool": 0.875,
+ "D-B6-5_k_grep": 6,
+ "auc": 0.5000697703453999,
+ "balanced_acc": 0.5
+}

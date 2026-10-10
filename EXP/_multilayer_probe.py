@@ -24,7 +24,10 @@ L = _extract_layers(TARGET, us)
 mem = defaultdict(set)          # edge -> {layer}
 for t in LAYER_TYPES:
     for e in L.get(t, ()):
-        mem[e].add(t)
+        # A3 后 call 层是有向 (caller, callee)；多重度必须在**无向投影**上算，
+        # 否则 (i,j) 与 (j,i) 会被当成两条边，多重度被低估（本脚本曾因此误报 9.0%）
+        u, v = e
+        mem[(u, v) if u <= v else (v, u)].add(t)
 
 mult = Counter(len(v) for v in mem.values())
 tot_membership = sum(len(v) for v in mem.values())

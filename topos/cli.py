@@ -155,6 +155,24 @@ def cmd_next(args):
     belief = {int(k): v for k, v in bj["belief"].items()}
     pools = [(nm, set(m)) for nm, m in sj["pool_members"]]
     opened = set(x for x in (args.opened or "").split(",") if x)
+
+    # ---- B7 §1.1 覆盖率前置门（先于 σ 判据；门红 ⇒ 不做停止决策）----
+    from topos.stop.gate import (coverage_gate, gate_line, VERDICT_BLOCKED,
+                                 DEFAULT_CONSTRAINTS)
+    g = coverage_gate(sj.get("coverage") or {}, sj.get("n_units", 0),
+                      getattr(args, "theta_cov", None),
+                      sj.get("constraints") or DEFAULT_CONSTRAINTS)
+    print("覆盖率门 θ_cov=%.2f  零覆盖 %.1f%%（未覆盖 %d / 已覆盖 %d，共 %d 单元）"
+          % (g["theta_cov"], 100.0 * g["zero_cover_rate"],
+             g["zero_cover_units"], g["covered_units"], g["n_units"]))
+    if g["verdict"] == VERDICT_BLOCKED:
+        print("BLOCKED-COVERAGE —— " + gate_line(g))
+        print("  需要补的池数下界 = %d（单池覆盖上界 W=%d，θ_cov 只许收紧不许放宽 T-B7-a）"
+              % (g["pools_needed_lower_bound"], g["effective_width"]))
+        print("  ⇒ 以当前设计矩阵，本仪器**无权**对未覆盖部分下任何判断；"
+              "不做 STOP 也不做 NEXT")
+        return 3
+    print("  " + gate_line(g))
     mus = W.pool_value_mean(pools, belief)
     remaining = [(nm, m) for nm, m in pools if nm not in opened]
     sigmas = {nm: W.sigma_exact([belief.get(i, 0.0) for i in m], args.cost0)
@@ -275,6 +293,9 @@ def main(argv=None):
                      help="已开池名（逗号分隔）；confirmed 由 belief 重算")
     nx_.add_argument("--cost0", type=float, default=0.05,
                      help="一次池检测动作成本（缺陷价值单位，PREREG/B4 v1.4 默认 0.05）")
+    nx_.add_argument("--theta-cov", type=float, default=0.30,
+                     help="[B7] 覆盖率门阈值 θ_cov（默认 0.30，见数据前写死，"
+                          "只许收紧不许放宽 T-B7-a）")
 
     ck = sub.add_parser("crosscheck", help="对拍钩子：Forman/λ₂ vs 参考件")
     ck.add_argument("dir")

@@ -285,8 +285,11 @@ def _extract_layers(root, units):
             j = resolve(i, chain)
             if j is None:
                 continue
+            # A3（2026-10-11）：call 层改存**有向** (caller, callee)。
+            # 其余层仍存无向归一化对；fuse/to_adj 会把一切投影回 (min,max)，
+            # ⇒ 几何与所有下游读数不变（c41 断言）。
+            layers["call"].add((i, j))
             e = (min(i, j), max(i, j))
-            layers["call"].add(e)
             if "test" in ctx:
                 layers["control"].add(e)
             if "return" in ctx:

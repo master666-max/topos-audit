@@ -9,6 +9,8 @@ import os
 
 SCHEMA = "topos-space/1"
 REQUIRED_COVERAGE_KEYS = ("n_pools", "c_min", "c_mean", "zero_cover_rate", "pool_sizes")
+# B7 §1.2：报告必填两个覆盖率绝对数（不只是比率——比率会被分母稀释）
+REQUIRED_COVERAGE_UNITS_KEYS = ("covered_units", "zero_cover_units")
 
 
 def build_report(space):
@@ -36,6 +38,14 @@ def build_report(space):
     for k in REQUIRED_COVERAGE_KEYS:
         if k not in cov:
             raise ValueError("coverage 缺必填诊断字段 %s——缺失即 bug" % k)
+    # B7 §1.2：covered_units / zero_cover_units —— 新件必写，旧件现算回填
+    from topos.stop.gate import coverage_gate
+    _g = coverage_gate(cov, report["n_units"], 1.0)     # θ=1 ⇒ 恒 PASS，只为取绝对数
+    if not all(k in cov for k in REQUIRED_COVERAGE_UNITS_KEYS):
+        cov["zero_cover_units"] = _g["zero_cover_units"]
+        cov["covered_units"] = _g["covered_units"]
+        cov["_units_backfilled"] = True                  # 旧件标记，可追溯
+    report["constraints"] = space.manifest.get("constraints") or None
     return report
 
 

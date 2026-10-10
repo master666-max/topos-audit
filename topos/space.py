@@ -100,7 +100,9 @@ class Space:
 
     def summary(self):
         layer_counts = {t: len(self.layers.get(t, ())) for t in LAYER_TYPES}
-        call_set = self.layers.get("call", set())
+        # A3：call 层已改有向，比对前必须归一化，否则 outside 会误报为全部边
+        call_set = {(min(u, v), max(u, v))
+                    for (u, v) in self.layers.get("call", ())}
         outside = sum(1 for e in self.fused if e not in call_set)
         g = self._graph_cache.get("g", {})
         return {
