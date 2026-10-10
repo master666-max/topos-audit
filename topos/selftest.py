@@ -371,6 +371,94 @@ def c19_scomp_terminal_cli_smoke(w):
     assert all(0.0 < v < 1.0 for v in bel["belief"].values())
 
 
+# ---------------- B4(W4) 停止契约 c20–c23（PREREG/B4 §2） ----------------
+
+def c20_sigma_monotone(w):
+    """σ 单调：c ↑ → σ ↓；μ ↑ → σ ↑；c ≥ μ → 0（精确式 + 冷启动闭式，c₀ 口径）。"""
+    from topos.stop.weitzman import sigma_exact, sigma_coldstart, global_theta
+    p_low = [0.1] * 4                          # μ=0.4
+    p_high = [0.8] * 4                         # μ=3.2
+    s = sigma_exact(p_low, 0.1)
+    assert 0.0 < s <= 4.0
+    assert sigma_exact(p_low, 0.3) < s, "c ↑ 应使 σ ↓"
+    assert sigma_exact(p_high, 0.1) > s, "μ ↑ 应使 σ ↑"
+    assert sigma_exact(p_low, 0.4) == 0.0, "c ≥ μ 应 σ=0"
+    theta = global_theta([0.4, 3.2], [0.5, 0.5])
+    assert theta > 0
+    assert sigma_coldstart(3.2, 0.5, theta) > sigma_coldstart(0.4, 0.5, theta)
+    assert sigma_coldstart(0.4, 1.5, theta) == 0.0, "闭式 c/θ ≥ μ 应 σ=0"
+    assert sigma_coldstart(1.0, 1.0, 0.0) == 0.0, "θ=0 应 σ=0"
+
+
+def c21_stop_direction(w):
+    """停止方向：全低 belief → 无下一发；高 belief → σ>0 且可选池（c₀=0.5 口径）。"""
+    from topos.stop.weitzman import (sigma_exact,
+                                     next_pool, stop_decision)
+    pools = [("a", {0, 1, 2}), ("b", {2, 3})]
+    low = {i: 0.005 for i in range(4)}
+    sig_low = {nm: sigma_exact([low.get(i, 0.0) for i in m], 0.5)
+               for nm, m in pools}
+    assert all(s == 0.0 for s in sig_low.values()), "全低 belief 应全 σ=0"
+    assert next_pool(pools, sig_low) is None, "全 σ=0 应无下一发"
+    assert stop_decision(sig_low, 0.0), "全低应 STOP"
+    high = {i: 0.9 for i in range(4)}
+    sig_high = {nm: sigma_exact([high.get(i, 0.0) for i in m], 0.5)
+                for nm, m in pools}
+    assert max(sig_high.values()) > 0, "高 belief + c₀=0.5 应有正 σ"
+    assert not stop_decision(sig_high, 0.0), "高 belief 不应 STOP"
+    pick = next_pool(pools, sig_high)
+    assert pick is not None and pick[0] in ("a", "b")
+
+
+def c22_budget_loop(w):
+    """预算回路：预算 0 不开池；预算内必终止；开池记录与观测对齐。"""
+    from topos.stop.budget import run_budget
+    from topos.infer.decode import decode
+    pools = [("a", {0, 1}), ("b", {1, 2}), ("c", {2, 3})]
+    truth = {0, 2}
+    calls = {"n": 0}
+
+    def obs_fn(name, members):
+        calls["n"] += 1
+        return 1 if members & truth else 0
+
+    def dec_fn(sub_pools, obs):
+        return decode(sub_pools, obs, 4, method="nb", se=0.9, sp=0.95,
+                      prior=0.25)
+
+    tr0 = run_budget(pools, obs_fn, dec_fn, 0, 0.9, 0.95, 0.25)
+    assert tr0["opened"] == [], "预算 0 不应开池"
+    tr = run_budget(pools, obs_fn, dec_fn, 3, 0.9, 0.95, 0.25)
+    assert len(tr["opened"]) <= 3 and len(tr["y"]) == len(tr["opened"])
+    assert calls["n"] == len(tr["opened"]), "观测次数应等于开池数"
+    assert tr["stopped_at"] is not None or len(tr["opened"]) == 3
+
+
+def c23_cli_next_smoke(w):
+    """CLI next 端到端：space.json + belief.json → 合法输出（NEXT 或 STOP）。"""
+    import json as _json
+    d = _make_synth(w)
+    mf = {"version": 3, "layers": {"call": 1.0}, "fields": [], "slicers": [],
+          "pools": [], "constraints": {"min_pool_size": 1}}
+    mf_path = os.path.join(w, "mf.json")
+    with open(mf_path, "w", encoding="utf-8") as f:
+        _json.dump(mf, f)
+    from topos.cli import main as cli_main
+    sj = os.path.join(w, "space.json")
+    assert cli_main(["space", d, "--axes", mf_path, "--json", sj]) == 0
+    with open(sj, encoding="utf-8") as f:
+        rep = _json.load(f)
+    if not rep["pool_members"]:
+        return                               # 小仓无池则跳过
+    bj = os.path.join(w, "belief.json")
+    with open(bj, "w", encoding="utf-8") as f:
+        _json.dump({"schema": "topos-belief/1", "decoder": "nb", "params": {},
+                    "n_units": rep["n_units"],
+                    "belief": {str(i): 0.3 for i in range(rep["n_units"])},
+                    "unit_ids": rep.get("units")}, f)
+    assert cli_main(["next", sj, bj]) == 0   # 全员 0.3：σ 视池而定，出 NEXT 或 STOP 均合法
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -391,6 +479,10 @@ CHECKS = [
     ("c17 证据方向性（NB 单调）", c17_evidence_direction),
     ("c18 α 稳定域 + 宽度单调衰减", c18_alpha_stability),
     ("c19 SCOMP 终止性 + CLI decode smoke", c19_scomp_terminal_cli_smoke),
+    ("c20 σ 单调与值域（精确式+闭式）", c20_sigma_monotone),
+    ("c21 停止方向（全低 STOP / 高 belief 不停）", c21_stop_direction),
+    ("c22 预算回路终止性", c22_budget_loop),
+    ("c23 CLI next smoke", c23_cli_next_smoke),
 ]
 
 

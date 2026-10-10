@@ -139,6 +139,42 @@ def cmd_decode(args):
     return 0
 
 
+def cmd_next(args):
+    """topos next <space_json> <belief_json> [--opened a,b,c] → 下一池或 STOP（B4）。"""
+    from topos.stop import weitzman as W
+    with open(args.space_json, encoding="utf-8") as f:
+        sj = json.load(f)
+    if sj.get("schema") != "topos-space/1" or "pool_members" not in sj:
+        print("space.json 不合法（需 topos-space/1 + pool_members）")
+        return 2
+    with open(args.belief_json, encoding="utf-8") as f:
+        bj = json.load(f)
+    if bj.get("schema") != "topos-belief/1":
+        print("belief.json 不合法（需 topos-belief/1）")
+        return 2
+    belief = {int(k): v for k, v in bj["belief"].items()}
+    pools = [(nm, set(m)) for nm, m in sj["pool_members"]]
+    opened = set(x for x in (args.opened or "").split(",") if x)
+    mus = W.pool_value_mean(pools, belief)
+    remaining = [(nm, m) for nm, m in pools if nm not in opened]
+    sigmas = {nm: W.sigma_exact([belief.get(i, 0.0) for i in m], args.cost0)
+              for nm, m in remaining}
+    confirmed = max((mus[nm] for nm in opened), default=0.0)
+    print("已开 %d 池，confirmed=%.4f；候选 %d 池" %
+          (len(opened), confirmed, len(remaining)))
+    if W.stop_decision({k: v for k, v in sigmas.items()
+                        if k not in opened}, confirmed):
+        print("STOP —— max(剩余σ)=%.4f ≤ confirmed=%.4f"
+              % (max(sigmas.values()) if sigmas else 0.0, confirmed))
+        return 0
+    pick = W.next_pool(remaining, sigmas)
+    top = sorted(sigmas.items(), key=lambda kv: -kv[1])[:5]
+    for nm, s in top:
+        print("  σ=%-8.4f %s" % (s, nm))
+    print("NEXT → %s（σ=%.4f）" % (pick[0], sigmas[pick[0]]))
+    return 0
+
+
 def cmd_crosscheck(args):
     from topos.crosscheck import crosscheck_dir
     results = crosscheck_dir(args.dir, args.axes)
@@ -193,6 +229,10 @@ def main(argv=None):
     nx_ = sub.add_parser("next", help="[B4] σ 排序 → 下一池或 STOP")
     nx_.add_argument("space_json")
     nx_.add_argument("belief_json")
+    nx_.add_argument("--opened", default=None,
+                     help="已开池名（逗号分隔）；confirmed 由 belief 重算")
+    nx_.add_argument("--cost0", type=float, default=0.05,
+                     help="一次池检测动作成本（缺陷价值单位，PREREG/B4 v1.4 默认 0.05）")
 
     ck = sub.add_parser("crosscheck", help="对拍钩子：Forman/λ₂ vs 参考件")
     ck.add_argument("dir")
@@ -200,7 +240,7 @@ def main(argv=None):
 
     args = ap.parse_args(argv)
     return {"selftest": cmd_selftest, "space": cmd_space, "pools": cmd_pools,
-            "fields": cmd_fields, "decode": cmd_decode, "next": cmd_stub,
+            "fields": cmd_fields, "decode": cmd_decode, "next": cmd_next,
             "crosscheck": cmd_crosscheck}[args.cmd](args)
 
 
