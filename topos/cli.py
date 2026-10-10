@@ -191,6 +191,33 @@ def cmd_crosscheck(args):
     return 0 if ok_n == judged else 1
 
 
+def cmd_report_md(args):
+    """topos report-md <space.json> [--belief belief.json] [-o out.md] → MD 报告
+
+    W5④/W7「MD 报告渲染」落地（B3 欠账 2026-10-10 补做）。只渲染不计算：
+    coverage 必填诊断字段缺失即抛异常（与 json_out 同款契约）。
+    """
+    from topos.report.md_out import render_md
+    with open(args.space_json, encoding="utf-8") as f:
+        rep = json.load(f)
+    if rep.get("schema") != "topos-space/1":
+        print("schema 不是 topos-space/1：%r" % rep.get("schema"))
+        return 2
+    bel = None
+    if args.belief:
+        with open(args.belief, encoding="utf-8") as f:
+            bel = json.load(f)
+        if bel.get("schema") != "topos-belief/1":
+            print("belief schema 不是 topos-belief/1：%r" % bel.get("schema"))
+            return 2
+    md = render_md(rep, bel, top_n=args.top)
+    out = args.o or (os.path.splitext(args.space_json)[0] + ".md")
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(md)
+    print("→ %s" % out)
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="topos", description="ToposAudit —— "
                                  "在拓扑空间上做统计最优的缺陷检出")
@@ -240,10 +267,18 @@ def main(argv=None):
     ck.add_argument("dir")
     ck.add_argument("--axes", default=None)
 
+    rm = sub.add_parser("report-md",
+                        help="[W5④] space/belief → MD 报告（只渲染不计算）")
+    rm.add_argument("space_json")
+    rm.add_argument("--belief", default=None, help="belief.json（topos-belief/1）")
+    rm.add_argument("--top", type=int, default=10, help="后验表行数")
+    rm.add_argument("-o", default=None, help="输出 .md 路径（默认与 space.json 同名）")
+
     args = ap.parse_args(argv)
     return {"selftest": cmd_selftest, "space": cmd_space, "pools": cmd_pools,
             "fields": cmd_fields, "decode": cmd_decode, "next": cmd_next,
-            "crosscheck": cmd_crosscheck}[args.cmd](args)
+            "crosscheck": cmd_crosscheck,
+            "report-md": cmd_report_md}[args.cmd](args)
 
 
 if __name__ == "__main__":

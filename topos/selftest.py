@@ -644,6 +644,45 @@ def c28_js_chain(w):
     assert cli_main(["next", sj, bj]) == 0
 
 
+def c29_md_render(workdir):
+    """W5④ MD 报告渲染：space 报告必带 schema+必填诊断；belief 后验表有行。"""
+    from topos.report.json_out import build_report
+    from topos.report.md_out import render_md
+    root = os.path.join(workdir, "mdrepo")
+    os.makedirs(root)
+    with open(os.path.join(root, "a.py"), "w", encoding="utf-8") as f:
+        f.write("import util_b\n\n\ndef fa():\n    return util_b.fb(1)\n")
+    with open(os.path.join(root, "util_b.py"), "w", encoding="utf-8") as f:
+        f.write("def fb(x):\n    return x + 1\n")
+    sp = Space(root)
+    rep = build_report(sp)
+    md = render_md(rep)
+    assert "topos-space/1" in md
+    for k in ("c_min", "c_mean", "zero_cover_rate", "n_pools"):
+        assert k in md, "MD 缺必填诊断 %s" % k
+    bel = {"schema": "topos-belief/1", "decoder": "nb",
+           "belief": {rep["units"][0]: 0.7, rep["units"][1]: 0.1}}
+    md2 = render_md(rep, bel)
+    assert "0.7000" in md2 and "topos-belief" in md2
+    # CLI smoke：report-md 子命令零退出
+    sj = os.path.join(workdir, "sp.json")
+    from topos.report.json_out import write as jwrite
+    jwrite(rep, sj)
+    from topos.cli import main as cli_main
+    rc = cli_main(["report-md", sj, "--belief", _write_belief(workdir, bel),
+                   "-o", os.path.join(workdir, "out.md")])
+    assert rc == 0
+    with open(os.path.join(workdir, "out.md"), encoding="utf-8") as f:
+        assert "topos space 报告" in f.read()
+
+
+def _write_belief(workdir, bel):
+    p = os.path.join(workdir, "bel.json")
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(bel, f)
+    return p
+
+
 CHECKS = [
     ("c01 单元发现", c01_units),
     ("c02 五类耦合边", c02_layers),
@@ -673,6 +712,7 @@ CHECKS = [
     ("c26 接缝→sheaf 端到端（奇环 ker=0 / TV 盲）", c26_seam_sheaf_end_to_end),
     ("c27 JS 抽取（单元/require 边/eval veto）", c27_js_extraction),
     ("c28 JS 链微缩（space→next 零退出）", c28_js_chain),
+    ("c29 MD 报告渲染（W5④：schema+必填诊断+后验表）", c29_md_render),
 ]
 
 
