@@ -1,0 +1,100 @@
+Exception in thread Thread-2 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd3 in position 24: invalid continuation byte
+Exception in thread Thread-3 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd3 in position 31: invalid continuation byte
+Exception in thread Thread-6 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd3 in position 24: invalid continuation byte
+Exception in thread Thread-7 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd3 in position 31: invalid continuation byte
+Exception in thread Thread-10 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\26672\.workbuddy\binaries\python\versions\3.13.12\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd3 in position 24: invalid continuation byte
+E-M5-2 Joern 离线金标校验（PREREG/M5 §2，对拍口径 v1.1）
+==================================================================
+D-M5-2a（joern 在便携 JRE 跑通，JAVA_HOME 按调用注入）：咬合
+    version: banner(版本行未解析，probe 通过)
+[py] joern-parse ok ｜ call 边（resolved callee）26861 条 ｜ dump 完整
+──────────────────────────────────────────────────────────────────
+E-M5-2[py] ｜ bandit（PY 后端）
+──────────────────────────────────────────────────────────────────
+topos 单元 275 ｜ topos call 边 155 ｜ Joern 金标(resolved) 26861 ｜ 可映射金标 217 ｜ 宇宙差边 26435
+映射：精确行 25640 ｜ 包含兜底 42
+→ precision（topos 边可指认率，门 ≥0.80）：0.8065 ｜ recall（报数不设门）：0.5760
+金标独有（前 12 条，喂 v0.2 召回迭代）：
+    - core/config.py::BanditConfig.__init__:26 -> core/config.py::BanditConfig._init_settings:117
+    - core/config.py::BanditConfig.__init__:26 -> core/config.py::BanditConfig.convert_legacy_config:136
+    - core/config.py::BanditConfig.__init__:26 -> core/config.py::BanditConfig.validate:235
+    - core/config.py::BanditConfig.get_option:84 -> core/config.py::BanditConfig._init_plugin_name_pattern:129
+    - core/config.py::BanditConfig.get_option:84 -> core/config.py::BanditConfig.convert_names_to_ids:146
+    - core/config.py::BanditConfig.get_option:84 -> core/config.py::BanditConfig.convert_legacy_blacklist_data:166
+    - core/config.py::BanditConfig.get_option:84 -> core/test_set.py::BanditTestSet._load_tests:88
+    - core/config.py::BanditConfig._init_settings:117 -> core/config.py::BanditConfig._init_plugin_name_pattern:129
+    - core/config.py::BanditConfig.convert_legacy_config:136 -> core/config.py::BanditConfig.convert_names_to_ids:146
+    - core/config.py::BanditConfig.convert_legacy_config:136 -> core/config.py::BanditConfig.convert_legacy_blacklist_data:166
+    - core/config.py::BanditConfig.convert_legacy_config:136 -> core/config.py::BanditConfig.convert_legacy_blacklist_tests:197
+    - core/config.py::BanditConfig.convert_legacy_blacklist_tests:197 -> core/config.py::BanditConfig._clean_set:200
+[js] joern-parse ok ｜ call 边（resolved callee）2098 条 ｜ dump 完整
+──────────────────────────────────────────────────────────────────
+E-M5-2[js] ｜ lib（JS 后端）
+──────────────────────────────────────────────────────────────────
+topos 单元 84 ｜ topos call 边 27 ｜ Joern 金标(resolved) 2098 ｜ 可映射金标 6 ｜ 宇宙差边 2089
+映射：精确行 503 ｜ 包含兜底 66
+→ precision（topos 边可指认率，门 ≥0.80）：0.2222 ｜ recall（报数不设门）：1.0000
+──────────────────────────────────────────────────────────────────
+D-M5-2b（Python 靶 precision ≥0.8，recall 报数）：咬合  precision=0.8065 recall=0.5760
+D-M5-2c（JS 靶 precision ≥0.8，recall 报数）：不咬合  precision=0.2222 recall=1.0000
+→ D:\WorkBuddy专用！危险！！！！！！！！\2026-10-09-02-32-12\topos-audit\EXP\m5_e2.json

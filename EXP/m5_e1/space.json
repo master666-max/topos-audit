@@ -5,50 +5,46 @@
  "n_units": 35,
  "elapsed_s": 0.02,
  "layer_edges": {
-  "call": 14,
+  "call": 10,
   "data": 0,
   "control": 0,
   "return": 0,
   "vardep": 0
  },
- "fused_edges": 14,
+ "fused_edges": 10,
  "edges_outside_call": 0,
  "embed": {
   "dims": 3,
-  "lam_residual": -2.452889660231139e-16
+  "lam_residual": 2.526087286856829e-17
  },
  "coverage": {
   "n_pools": 2,
   "c_min": 0,
-  "c_mean": 0.57,
-  "zero_cover_rate": 0.4286,
+  "c_mean": 0.23,
+  "zero_cover_rate": 0.7714,
   "pool_sizes": [
-   10,
-   10
+   2,
+   6
   ]
  },
  "fields_nonnull": {
-  "forman": 0.571,
+  "forman": 0.4,
   "anchor": 0.0
  },
  "pools": [
   {
    "name": "p_curv_lo",
-   "width": 10
+   "width": 6
   },
   {
    "name": "p_curv_hi",
-   "width": 10
+   "width": 2
   }
  ],
  "pool_members": [
   [
    "p_curv_lo",
    [
-    5,
-    6,
-    7,
-    8,
     19,
     22,
     26,
@@ -60,16 +56,8 @@
   [
    "p_curv_hi",
    [
-    10,
-    12,
-    15,
-    17,
     18,
-    20,
-    21,
-    23,
-    30,
-    31
+    20
    ]
   ]
  ],

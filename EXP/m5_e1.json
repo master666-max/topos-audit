@@ -3,7 +3,7 @@
  "target": "express lib/",
  "n_files": 6,
  "n_units": 35,
- "n_call_edges": 14,
+ "n_call_edges": 10,
  "n_require_edges": 6,
  "n_vetoes": 0,
  "anchor_hit_units": 0,
