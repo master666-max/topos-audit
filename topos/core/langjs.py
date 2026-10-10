@@ -193,8 +193,9 @@ def extract_layers_js(root, units):
     names = {}
     for i, u in enumerate(units):
         names.setdefault(u["file"], {})[u["name"].split(".")[-1]] = i
-    # 文件级 require alias 表
+    # 文件级 require alias 表 + 裸模块外部名清单
     aliases = {}                          # file → {alias: target_file}
+    external = {}                         # file → set(绑定到裸模块的绑定名)
     for f in sorted(byfile):
         p = os.path.join(root, f)
         try:
@@ -203,14 +204,20 @@ def extract_layers_js(root, units):
         except OSError:
             continue
         amap = {}
+        ext = set()
         for rm in _RE_REQUIRE.finditer(fsrc):
             tgt = _resolve_require(root, f, rm.group(1))
-            if tgt is None:
-                continue
             head = fsrc[: rm.start()]
             am = re.search(
                 r"(?:const|let|var)[ \t]+([A-Za-z_$][\w$]*)[ \t]*=[ \t]*$",
                 head.split("\n")[-1])
+            if tgt is None:
+                # v0.2（E-M5-2 对拍发现）：裸模块绑定名记入外部名清单——
+                # npm 包名（如 accepts）与同文件方法名撞名时，简单名解析
+                # 不得把外部绑定解析成同文件单元（accepts×3 假边根因）
+                if am:
+                    ext.add(am.group(1))
+                continue
             if am:
                 amap[am.group(1)] = tgt
         for dm in _RE_DESTRUCT.finditer(fsrc):
@@ -222,6 +229,7 @@ def extract_layers_js(root, units):
                 if nm:
                     amap[nm] = tgt
         aliases[f] = amap
+        external[f] = ext
     layers = {"call": set()}
     # E-M5-2 对拍发现（2026-10-10）：单元 src 切片含嵌套函数体，嵌套内调用
     # 被同时归因到每一层外层单元（sendfile→onX 假边家族）。修复：调用点
@@ -257,6 +265,8 @@ def extract_layers_js(root, units):
             _head, _sep, last = chain.rpartition(".")
             if _sep == "" and last in _KEYWORDS:
                 continue
+            if chain.split(".")[0] in external.get(u["file"], set()):
+                continue                     # v0.2：外部绑定名不作同文件解析
             j = names.get(u["file"], {}).get(last)
             if j is not None and j != i:
                 layers["call"].add((min(i, j), max(i, j)))
