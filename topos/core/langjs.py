@@ -267,6 +267,11 @@ def extract_layers_js(root, units):
                 continue
             if chain.split(".")[0] in external.get(u["file"], set()):
                 continue                     # v0.2：外部绑定名不作同文件解析
+            if _sep and _head != "this":
+                continue                     # v0.2：X.y 链尾名不解析为同文件
+                                             # 自由函数（JSON.stringify 撞本地
+                                             # stringify 假边根因）；this.x 保留
+                                             # （同对象方法，this.vary/get 真边）
             j = names.get(u["file"], {}).get(last)
             if j is not None and j != i:
                 layers["call"].add((min(i, j), max(i, j)))
