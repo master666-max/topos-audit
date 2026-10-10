@@ -1,0 +1,53 @@
+{
+ "version": 3,
+ "layers": {
+  "call": 1.0
+ },
+ "fields": [
+  {
+   "name": "anchor",
+   "method": "regex",
+   "params": {
+    "patterns_file": "../../reference/anchors-bandit.json"
+   }
+  },
+  {
+   "name": "loc",
+   "method": "ast",
+   "params": {
+    "metric": "lines"
+   }
+  }
+ ],
+ "slicers": [
+  {
+   "name": "anchor:*",
+   "field": "anchor",
+   "op": "expand"
+  },
+  {
+   "name": "anchor:any",
+   "field": "anchor",
+   "op": "notnull"
+  }
+ ],
+ "pools": [
+  {
+   "name": "p_anchor_breadth",
+   "expr": "anchor:*"
+  },
+  {
+   "name": "p_no_anchor",
+   "expr": {
+    "not": "anchor:any"
+   }
+  }
+ ],
+ "constraints": {
+  "min_pool_size": 1,
+  "max_width": 100000,
+  "max_width_pct": 1.0,
+  "max_pools": 128
+ },
+ "exclude_tests": false
+}

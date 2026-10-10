@@ -1,0 +1,129 @@
+{
+ "phase1": {
+  "pairs": 368,
+  "win": 0,
+  "tie": 360,
+  "loss": 8,
+  "win_rate": 0.0,
+  "sign_test_p": 0.0078125,
+  "tag_diff": {},
+  "per_cwe": {
+   "cwe-022": {
+    "win": 0,
+    "tie": 33,
+    "loss": 0
+   },
+   "cwe-078": {
+    "win": 0,
+    "tie": 90,
+    "loss": 8
+   },
+   "cwe-079": {
+    "win": 0,
+    "tie": 37,
+    "loss": 0
+   },
+   "cwe-089": {
+    "win": 0,
+    "tie": 200,
+    "loss": 0
+   }
+  },
+  "loss_detail": [
+   {
+    "base": "sven/train/cwe-078/qt4/plugins/notifyplugin.py::on_message",
+    "cwe": "cwe-078",
+    "vul_tags": [],
+    "fix_tags": [
+     "import:import_subprocess"
+    ],
+    "file": "qt4/plugins/notifyplugin.py",
+    "commit": "github.com/bit-team/backintime/commit/cef81d0da93ff601252607df3db1a48f7f6f01b3"
+   },
+   {
+    "base": "sven/train/cwe-078/vuedj/configtitania/views.py::add_user",
+    "cwe": "cwe-078",
+    "vul_tags": [],
+    "fix_tags": [
+     "import:import_subprocess"
+    ],
+    "file": "vuedj/configtitania/views.py",
+    "commit": "github.com/Internet-of-People/titania-os/commit/9b7805119938343fcac9dc929d8882f1d97cf14a"
+   },
+   {
+    "base": "sven/train/cwe-078/repack_rust.py::install",
+    "cwe": "cwe-078",
+    "vul_tags": [],
+    "fix_tags": [
+     "import:import_subprocess"
+    ],
+    "file": "repack_rust.py",
+    "commit": "github.com/rillian/rust-build/commit/b8af51e5811fcb35eff9e1e3e91c98490e7a7dcb"
+   },
+   {
+    "base": "sven/train/cwe-078/test_isort.py::test_settings_path_skip_issue_909",
+    "cwe": "cwe-078",
+    "vul_tags": [],
+    "fix_tags": [
+     "import:import_subprocess"
+    ],
+    "file": "test_isort.py",
+    "commit": "github.com/timothycrosley/isort/commit/1ab38f4f7840a3c19bf961a24630a992a8373a76"
+   },
+   {
+    "base": "sven/train/cwe-078/mobly/controllers/android_device_lib/adb.py::__getattr__.adb_call",
+    "cwe": "cwe-078",
+    "vul_tags": [],
+    "fix_tags": [
+     "import:import_subprocess"
+    ],
+    "file": "mobly/controllers/android_device_lib/adb.py",
+    "commit": "github.com/google/mobly/commit/3862e8ba359040fbdd6e1a6d36e51d07cda8e1ee"
+   },
+   {
+    "base": "sven/train/cwe-078/test_isort.py::test_skip_paths_issue_938",
+    "cwe": "cwe-078",
+    "vul_tags": [],
+    "fix_tags": [
+     "import:import_subprocess"
+    ],
+    "file": "test_isort.py",
+    "commit": "github.com/timothycrosley/isort/commit/1ab38f4f7840a3c19bf961a24630a992a8373a76"
+   },
+   {
+    "base": "sven/train/cwe-078/repack_rust.py::repack",
+    "cwe": "cwe-078",
+    "vul_tags": [],
+    "fix_tags": [
+     "import:import_subprocess"
+    ],
+    "file": "repack_rust.py",
+    "commit": "github.com/rillian/rust-build/commit/b8af51e5811fcb35eff9e1e3e91c98490e7a7dcb"
+   },
+   {
+    "base": "sven/train/cwe-078/repack_rust.py::fetch",
+    "cwe": "cwe-078",
+    "vul_tags": [],
+    "fix_tags": [
+     "import:import_subprocess"
+    ],
+    "file": "repack_rust.py",
+    "commit": "github.com/rillian/rust-build/commit/b8af51e5811fcb35eff9e1e3e91c98490e7a7dcb"
+   }
+  ]
+ },
+ "phase2": {
+  "n_units": 738,
+  "pos_n": 34,
+  "neg_n": 704,
+  "obs": {
+   "p_anchor_breadth": 1,
+   "p_no_anchor": 0
+  },
+  "paired": {
+   "win": 0,
+   "tie": 359,
+   "loss": 9
+  }
+ }
+}
