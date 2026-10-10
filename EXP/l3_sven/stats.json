@@ -1,0 +1,22 @@
+{
+ "rows": 803,
+ "py": 380,
+ "parse_fail": 6,
+ "gold": {
+  "n": 736,
+  "positive": 368,
+  "negative": 368,
+  "unlabeled": 0
+ },
+ "dup": 18,
+ "cwe_dist": {
+  "cwe-022": 33,
+  "cwe-078": 100,
+  "cwe-079": 37,
+  "cwe-089": 204
+ },
+ "split_dist": {
+  "train": 336,
+  "val": 38
+ }
+}
